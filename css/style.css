@@ -719,6 +719,141 @@ details.advanced summary::before { content: "⚙  "; }
 .sheet.copies-4 .pc-couple { font-size: 24px; } .sheet.copies-4 .pc-qr { width: 40mm; height: 40mm; } .sheet.copies-4 .pc-cta { font-size: 15px; } .sheet.copies-4 .pc-sub { font-size: 11px; }
 .sheet.copies-6 .pc-couple { font-size: 20px; } .sheet.copies-6 .pc-qr { width: 33mm; height: 33mm; } .sheet.copies-6 .pc-cta { font-size: 13px; } .sheet.copies-6 .pc-sub { font-size: 10px; }
 
+/* --- Google Bağlantı Bölümü ---------------------------------------------- */
+
+.google-section {
+  margin-bottom: 24px;
+}
+
+.google-card {
+  text-align: center;
+  padding: 28px 24px;
+  background: var(--gold-bg);
+  border-radius: var(--radius);
+  border: 1px solid var(--gold-light);
+}
+
+.google-card.success {
+  background: #F0F7EE;
+  border-color: #C8DCC0;
+}
+
+.google-icon,
+.success-icon {
+  font-size: 36px;
+  display: block;
+  margin-bottom: 10px;
+}
+
+.google-card h2 {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 22px;
+  margin: 0 0 8px;
+  color: var(--ink);
+}
+
+.google-card p {
+  margin: 0 0 16px;
+  color: var(--ink-soft);
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* --- Google buton -------------------------------------------------------- */
+
+.btn-google {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 24px;
+  background: #fff;
+  color: #444;
+  border: 1px solid #dadce0;
+  border-radius: 4px;
+  font-family: 'Google Sans', var(--sans);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, box-shadow 0.15s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+.btn-google:hover {
+  background: #f8f9fa;
+  box-shadow: 0 1px 5px rgba(0,0,0,0.12);
+}
+
+.btn-google:active {
+  background: #f1f3f4;
+}
+
+.google-logo {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+/* --- Deployment Progress ------------------------------------------------- */
+
+.deploy-card {
+  text-align: center;
+  padding: 28px 24px;
+  background: var(--gold-bg);
+  border-radius: var(--radius);
+  border: 1px solid var(--gold-light);
+}
+
+.deploy-card h2 {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 20px;
+  margin: 0 0 16px;
+  color: var(--ink);
+}
+
+.deploy-steps {
+  text-align: left;
+  max-width: 340px;
+  margin: 0 auto;
+}
+
+.deploy-step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  color: var(--muted);
+  transition: all 0.3s ease;
+}
+
+.deploy-step.active {
+  color: var(--ink);
+  background: rgba(198, 161, 91, 0.12);
+  font-weight: 500;
+}
+
+.deploy-step.done {
+  color: var(--success);
+}
+
+.deploy-step.done::after {
+  content: ' ✓';
+  font-weight: 700;
+  margin-left: auto;
+}
+
+/* --- Generate buton disabled --------------------------------------------- */
+
+#generateBtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
 /* --- Yazdırma ----------------------------------------------------------- */
 
 @media print {
@@ -728,7 +863,6 @@ details.advanced summary::before { content: "⚙  "; }
   .card { box-shadow: none; border: none; }
   .qr-card { border: 1px solid #ddd; }
 
-  /* Kart sayfası: sadece kağıt yazdırılsın */
   .paper-wrap { overflow: visible; padding: 0; }
   .sheet { box-shadow: none; margin: 0; width: auto; min-height: auto; }
   @page { size: A4; margin: 0; }

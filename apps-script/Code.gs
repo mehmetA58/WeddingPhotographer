@@ -4,41 +4,71 @@
  * Bu betik, katılımcılardan gelen fotoğrafları SİZİN Google Drive'ınızdaki
  * bir klasöre kaydeder. Sunucu gerektirmez, ücretsizdir.
  *
- * KURULUM (özet — ayrıntı için README.md):
- *   1) script.google.com → Yeni proje → bu dosyanın tamamını yapıştırın.
- *   2) (İsteğe bağlı) Güvenlik anahtarı için: aşağıdaki SETUP_setToken()
- *      fonksiyonunu bir kez çalıştırın (menüden Run) veya
- *      Proje Ayarları → Script Properties'ten TOKEN ekleyin.
- *   3) Deploy → New deployment → "Web app"
- *        - Execute as:      Me (kendi hesabınız)
- *        - Who has access:  Anyone
- *      Çıkan "Web app URL"i (…/exec) kopyalayın → kurulum sayfasına yapıştırın.
- *   4) İlk çalıştırmada Google, Drive erişim izni ister → onaylayın.
+ * KURULUM:
+ *   Kurulum sayfasındaki "Google ile Bağlan" butonu, bu betiği içeren
+ *   bir Apps Script projesini otomatik oluşturup yayınlar. Yayın sonrası
+ *   aşağıdaki `action=setup` adımı ile TOKEN ve klasör ayarları yapılır.
  *
  * NOT: Kodda değişiklik yaparsanız, aynı URL'i korumak için
  *      Deploy → Manage deployments → (kalem ikonu) → Version: New version
  *      ile güncelleyin (yeni deployment yeni URL üretir).
  ****************************************************************************/
 
-// Fotoğrafların kaydedileceği klasör adı (ilk yüklemede otomatik oluşturulur).
 var DEFAULT_FOLDER_NAME = 'Etkinlik Fotoğrafları';
-
-// Apps Script istek gövdesi limiti için kaba koruma.
-// Base64 veri ham dosyadan yaklasik %33 daha buyuktur; 55MB base64 ~= 40MB dosya.
 var MAX_BASE64_CHARS = 55 * 1024 * 1024;
 
 /**
- * GET uç noktası. İki iş görür:
- *   - action yok / 'ping'  → sağlık kontrolü (kurulum "Bağlantıyı Test Et")
+ * GET uç noktası. Üç iş görür:
+ *   - action yok / 'ping'  → sağlık kontrolü
  *   - action = 'list'      → galeri için fotoğraf listesi (token korumalı)
- * `callback` parametresi verilirse JSONP döner (tarayıcı CORS'unu tamamen aşar).
+ *   - action = 'setup'     → otomatik kurulum (TOKEN, folder ID vb. kaydeder)
+ * `callback` parametresi verilirse JSONP döner.
  */
 function doGet(e) {
   var p = (e && e.parameter) || {};
   var action = p.action || 'ping';
+
+  if (action === 'setup') {
+    return handleSetup_(p);
+  }
+
   var out = (action === 'list') ? listFiles_(p)
                                 : { status: 'ready', service: 'event-photo-upload' };
   return reply_(out, p.callback);
+}
+
+/** Otomatik kurulum: TOKEN, ROOT_FOLDER_ID ve FOLDER_NAME'i URL
+ *  parametrelerinden alıp Script Properties'e kaydeder. */
+function handleSetup_(p) {
+  var props = PropertiesService.getScriptProperties();
+  var changed = [];
+  if (p.token)     { props.setProperty('TOKEN', p.token); changed.push('TOKEN'); }
+  if (p.folderId)  { props.setProperty('ROOT_FOLDER_ID', p.folderId); changed.push('ROOT_FOLDER_ID'); }
+  if (p.folderName){ props.setProperty('FOLDER_NAME', p.folderName); changed.push('FOLDER_NAME'); }
+
+  var body = '<!DOCTYPE html><html><head><meta charset="utf-8">' +
+    '<title>Kurulum</title>' +
+    '<style>body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;' +
+    'display:flex;align-items:center;justify-content:center;min-height:100vh;' +
+    'margin:0;background:#FBF8F3;color:#3A3632}' +
+    '.card{text-align:center;padding:48px 32px;background:#fff;' +
+    'border-radius:12px;box-shadow:0 18px 50px -24px rgba(90,70,30,.35);max-width:420px}' +
+    'h1{color:#6E8B5B;font-size:28px;margin:0 0 8px}' +
+    'p{font-size:15px;line-height:1.5;margin:0 0 16px;color:#6E655B}' +
+    '.emoji{font-size:48px;display:block;margin-bottom:16px}' +
+    '.btn{display:inline-block;padding:10px 28px;background:#C6A15B;color:#fff;' +
+    'border-radius:8px;text-decoration:none;font-weight:500;font-size:14px;cursor:pointer}' +
+    '</style></head><body>' +
+    '<div class="card">' +
+    '<span class="emoji">✅</span>' +
+    '<h1>Kurulum Başarılı!</h1>' +
+    '<p>Google Drive bağlantınız tamamlandı' +
+    (changed.length ? ' (' + changed.join(', ') + ' ayarlandı)' : '') +
+    '.<br>Bu sekmeyi kapatıp kurulum sayfasına dönebilirsiniz.</p>' +
+    '<button class="btn" onclick="window.close()">Bu Sekmeyi Kapat</button>' +
+    '</div></body></html>';
+
+  return HtmlService.createHtmlOutput(body);
 }
 
 /** Galeri: klasördeki görselleri (yeni → eski) döndürür. */
@@ -227,60 +257,4 @@ function isValidCallback_(callback) {
   return /^[A-Za-z_$][0-9A-Za-z_$]*(\.[A-Za-z_$][0-9A-Za-z_$]*)*$/.test(String(callback || ''));
 }
 
-/* ------------------------------------------------------------------------ */
-/* İSTEĞE BAĞLI: kurulum yardımcıları (menüden bir kez Run edin)            */
-/* ------------------------------------------------------------------------ */
 
-/**
- * Güvenlik anahtarını ayarlar. Kurulum sayfasında ürettiğiniz token'ı
- * aşağıdaki tırnaklar arasına yapıştırıp bu fonksiyonu bir kez çalıştırın.
- */
-function SETUP_setToken() {
-  var TOKEN = 'BURAYA_TOKEN_YAPISTIRIN';
-  if (!TOKEN || TOKEN === 'BURAYA_TOKEN_YAPISTIRIN') {
-    throw new Error('Önce TOKEN değerini kurulum sayfasında ürettiğiniz anahtarla değiştirin.');
-  }
-  PropertiesService.getScriptProperties().setProperty('TOKEN', TOKEN);
-  Logger.log('TOKEN ayarlandı.');
-}
-
-/** Token kullanmak istemezseniz mevcut güvenlik anahtarını siler. */
-function SETUP_clearToken() {
-  PropertiesService.getScriptProperties().deleteProperty('TOKEN');
-  Logger.log('TOKEN silindi.');
-}
-
-/** Klasör adını değiştirmek isterseniz (yüklemeden önce çalıştırın). */
-function SETUP_setFolderName() {
-  var NAME = 'Etkinlik Fotoğrafları';
-  PropertiesService.getScriptProperties().setProperty('FOLDER_NAME', NAME);
-  Logger.log('Klasör adı ayarlandı: ' + NAME);
-}
-
-/**
- * Fotoğrafları otomatik oluşturulan klasör yerine mevcut bir Drive klasörüne
- * kaydetmek isterseniz, klasör ID'sini aşağıya yapıştırıp bir kez çalıştırın.
- */
-function SETUP_setExistingFolderId() {
-  var FOLDER_ID = 'BURAYA_DRIVE_KLASOR_ID_YAPISTIRIN';
-  if (!FOLDER_ID || FOLDER_ID === 'BURAYA_DRIVE_KLASOR_ID_YAPISTIRIN') {
-    throw new Error('Önce FOLDER_ID değerini Drive klasör linkinizdeki ID ile değiştirin.');
-  }
-  var folder = DriveApp.getFolderById(FOLDER_ID); // izin/ID kontrolü
-  PropertiesService.getScriptProperties().setProperty('ROOT_FOLDER_ID', folder.getId());
-  Logger.log('Klasör bağlandı: ' + folder.getUrl());
-}
-
-/** Kayıtlı klasör eşleşmesini siler; sonraki yüklemede yeni klasör oluşturulur. */
-function SETUP_resetFolderBinding() {
-  PropertiesService.getScriptProperties().deleteProperty('ROOT_FOLDER_ID');
-  Logger.log('Klasör eşleşmesi silindi.');
-}
-
-/** Kurulum durumunu Apps Script günlüklerine yazar. */
-function SETUP_showConfig() {
-  var props = PropertiesService.getScriptProperties();
-  Logger.log('TOKEN: ' + (props.getProperty('TOKEN') ? 'ayarlı' : 'yok'));
-  Logger.log('FOLDER_NAME: ' + (props.getProperty('FOLDER_NAME') || DEFAULT_FOLDER_NAME));
-  Logger.log('ROOT_FOLDER_ID: ' + (props.getProperty('ROOT_FOLDER_ID') || 'henüz yok'));
-}

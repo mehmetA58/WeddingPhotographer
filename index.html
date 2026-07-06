@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/style.css" />
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
   <main class="page">
@@ -23,52 +24,44 @@
       <!-- === Form === -->
       <section id="form">
 
-        <!-- Kurulum sihirbazı: Drive bağlantısını 3 adımda kolaylaştırır -->
-        <div class="wizard">
-          <div class="wizard-head">
-            <span class="wizard-badge">★</span>
-            <div>
-              <b data-i18n="setup.wizTitle">Google Drive'a bağlanmak çok kolay</b>
-              <p class="small" data-i18n="setup.wizIntro" style="margin:2px 0 0">Aşağıdaki 3 adımı yalnızca bir kez yapın (~2 dk), sonra çıkan adresi 1. kutuya yapıştırın.</p>
+        <!-- Google ile Bağlan -->
+        <section class="google-section" id="googleSection">
+          <div id="googleNotAuthed">
+            <div class="google-card">
+              <div class="google-icon">🔗</div>
+              <h2 data-i18n="setup.googleTitle">Google Drive'a Bağlan</h2>
+              <p class="small" data-i18n="setup.googleDesc">
+                Fotoğraflar otomatik olarak Google Drive'ınıza kaydedilecek.
+                Apps Script projesi sizin için otomatik oluşturulup yayınlanacak.
+              </p>
+              <button type="button" class="btn btn-google" id="googleBtn">
+                <svg class="google-logo" viewBox="0 0 48 48" width="20" height="20"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.54 28.59A14.5 14.5 0 0 1 9.5 24c0-1.59.28-3.14.76-4.59l-7.98-6.19A23.99 23.99 0 0 0 0 24c0 3.77.87 7.35 2.56 10.56l7.98-5.97z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 5.97C6.51 42.62 14.62 48 24 48z"/></svg>
+                <span data-i18n="setup.googleSignIn">Google ile Bağlan</span>
+              </button>
+              <p class="small" id="googleError" style="color:#B4544B;margin-top:10px;display:none"></p>
             </div>
           </div>
-          <ol class="wizard-steps">
-            <li>
-              <span class="wz-num">1</span>
-              <div class="wz-body">
-                <b data-i18n="setup.wizStep1">Apps Script'i açın</b>
-                <a class="btn btn-outline wz-btn" id="openScriptBtn" href="https://script.google.com/create" target="_blank" rel="noopener" data-i18n="setup.wizOpenScript">Apps Script'i Aç ↗</a>
+          <div id="deployProgress" class="hidden">
+            <div class="deploy-card">
+              <h2 data-i18n="setup.deployTitle">Kurulum yapılıyor…</h2>
+              <div class="deploy-steps">
+                <div class="deploy-step" data-step="folder">📁 <span data-i18n="setup.deployFolder">Drive klasörü oluşturuluyor</span></div>
+                <div class="deploy-step" data-step="project">⚙️ <span data-i18n="setup.deployProject">Apps Script projesi oluşturuluyor</span></div>
+                <div class="deploy-step" data-step="deploy">🚀 <span data-i18n="setup.deployDeploy">Web App yayınlanıyor</span></div>
+                <div class="deploy-step" data-step="auth">🔐 <span data-i18n="setup.deployAuth">Drive izni bekleniyor</span></div>
+                <div class="deploy-step" data-step="done">✅ <span data-i18n="setup.deployDone">Kurulum tamamlandı</span></div>
               </div>
-            </li>
-            <li>
-              <span class="wz-num">2</span>
-              <div class="wz-body">
-                <b data-i18n="setup.wizStep2">Kodu kopyalayıp yapıştırın</b>
-                <p class="small" data-i18n="setup.wizStep2Desc">Açılan projedeki tüm kodu silin, aşağıdaki butonla kopyaladığınız kodu yapıştırın ve kaydedin (💾).</p>
-                <button type="button" class="btn btn-outline wz-btn" id="copyCodeBtn" data-i18n="setup.wizCopyCode">Backend Kodunu Kopyala</button>
-              </div>
-            </li>
-            <li>
-              <span class="wz-num">3</span>
-              <div class="wz-body">
-                <b data-i18n="setup.wizStep3">Yayınlayın (Deploy)</b>
-                <p class="small" data-i18n-html="setup.wizStep3DescHtml">Sağ üstten <b>Deploy → New deployment → Web app</b>. “Execute as: <b>Me</b>”, “Who has access: <b>Anyone</b>” seçin, <b>Deploy</b>'a basın ve çıkan <b>Web App URL</b>'ini kopyalayın.</p>
-              </div>
-            </li>
-          </ol>
-          <p class="small wz-guide" data-i18n-html="setup.wizGuideHtml">Takılırsanız ekran görüntülü <a href="README.md" target="_blank" rel="noopener">kurulum rehberine</a> bakın.</p>
-        </div>
-
-        <div class="field">
-          <label for="apiUrl" data-i18n="setup.apiLabel">1 · Apps Script Web App URL'iniz</label>
-          <input class="input" type="url" id="apiUrl" inputmode="url"
-                 placeholder="https://script.google.com/macros/s/AK.../exec"
-                 data-i18n-placeholder="setup.apiPlaceholder" />
-          <p class="small" style="margin:6px 2px 0" data-i18n-html="setup.apiHelpHtml">
-            Bu adresi nasıl alacağınız <a href="README.md" target="_blank" rel="noopener">kurulum rehberinde</a> anlatılıyor
-            (2 dakikalık işlem).
-          </p>
-        </div>
+            </div>
+          </div>
+          <div id="setupComplete" class="hidden">
+            <div class="google-card success">
+              <div class="success-icon">✅</div>
+              <h2 data-i18n="setup.completeTitle">Google Drive Bağlantısı Hazır</h2>
+              <p class="small" data-i18n="setup.completeDesc">Apps Script projeniz oluşturuldu ve Drive klasörünüz hazır. Şimdi etkinlik ayarlarını yapabilirsiniz.</p>
+              <button type="button" class="btn btn-ghost" id="reconnectBtn" data-i18n="setup.reconnect">Yeniden Bağlan</button>
+            </div>
+          </div>
+        </section>
 
         <div class="field">
           <label id="eventLabel" data-i18n="setup.eventLabel">2 · Etkinlik Türü</label>
@@ -108,11 +101,7 @@
 
         <div id="setupNote" class="note note-info hidden"></div>
 
-        <button type="button" class="btn btn-outline" id="testBtn" style="margin-bottom:12px">
-          <svg class="icon" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>
-          <span data-i18n="setup.testButton">Bağlantıyı Test Et</span>
-        </button>
-        <button type="button" class="btn btn-gold" id="generateBtn">
+        <button type="button" class="btn btn-gold" id="generateBtn" disabled>
           <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14h1M20 20h1M17 20h1M14 20h.01M20 17h.01"/></svg>
           <span data-i18n="setup.generateButton">QR Kodu Oluştur</span>
         </button>
