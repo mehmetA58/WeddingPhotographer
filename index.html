@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title data-i18n="title.setup">Düğün Fotoğraf QR · Kurulum</title>
+  <meta name="theme-color" content="#FBF8F3" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <main class="page">
+    <div class="card">
+
+      <p class="eyebrow" data-i18n="setup.eyebrow">Kurulum · Yalnızca Çift İçin</p>
+      <h1 class="couple" data-i18n-html="setup.brandHtml">Düğün<span class="amp">Fotoğraf</span>Albümü</h1>
+      <div class="divider"><span>❦</span></div>
+      <p class="subtitle" data-i18n-html="setup.subtitleHtml">Kendi Google Drive'ınıza bağlı bir <b>QR kod</b> oluşturun.
+        Misafirleriniz bu QR'ı okutup fotoğraflarını doğrudan Drive'ınıza yükleyecek.</p>
+
+      <!-- === Form === -->
+      <section id="form">
+        <div class="field">
+          <label for="apiUrl" data-i18n="setup.apiLabel">1 · Apps Script Web App URL'iniz</label>
+          <input class="input" type="url" id="apiUrl" inputmode="url"
+                 placeholder="https://script.google.com/macros/s/AK.../exec"
+                 data-i18n-placeholder="setup.apiPlaceholder" />
+          <p class="small" style="margin:6px 2px 0" data-i18n-html="setup.apiHelpHtml">
+            Bu adresi nasıl alacağınız <a href="README.md" target="_blank" rel="noopener">kurulum rehberinde</a> anlatılıyor
+            (2 dakikalık işlem).
+          </p>
+        </div>
+
+        <div class="field">
+          <label for="coupleNames" data-i18n-html="setup.coupleLabelHtml">2 · Çift İsimleri <span class="hint">(karşılama yazısında görünecek)</span></label>
+          <input class="input" type="text" id="coupleNames" maxlength="60"
+                 placeholder="Örn. Ayşe & Mehmet"
+                 data-i18n-placeholder="setup.couplePlaceholder" />
+        </div>
+
+        <div class="field">
+          <label for="languageSelect" data-i18n="setup.languageLabel">3 · Dil</label>
+          <select class="input" id="languageSelect">
+            <option value="tr">Türkçe</option>
+            <option value="en">English</option>
+          </select>
+        </div>
+
+        <details class="advanced">
+          <summary data-i18n="setup.advanced">Gelişmiş ayarlar (isteğe bağlı)</summary>
+          <div class="field" style="margin-top:12px">
+            <label for="token" data-i18n-html="setup.tokenLabelHtml">Güvenlik anahtarı (token)
+              <span class="hint">— linkiniz sızsa bile yabancı yüklemeleri engeller</span></label>
+            <div style="display:flex; gap:8px">
+              <input class="input" type="text" id="token" placeholder="(boş bırakılabilir)" data-i18n-placeholder="setup.tokenPlaceholder" />
+              <button type="button" class="btn btn-ghost" id="genToken" style="width:auto; padding:0 16px" data-i18n="setup.generateToken">Üret</button>
+            </div>
+            <p class="small" style="margin:6px 2px 0" data-i18n-html="setup.tokenHelpHtml">Bu anahtarı Apps Script'te de <code>TOKEN</code> olarak ayarlayın (rehbere bakın).</p>
+          </div>
+          <div class="field">
+            <label><input type="checkbox" id="rawMode" /> <span data-i18n-html="setup.rawLabelHtml">Orijinal çözünürlükte yükle
+              <span class="hint">(kapalıyken fotoğraflar hızlı yüklenmesi için ~2560px'e küçültülür)</span></span></label>
+          </div>
+        </details>
+
+        <div id="setupNote" class="note note-info hidden"></div>
+
+        <button type="button" class="btn btn-outline" id="testBtn" style="margin-bottom:12px">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg>
+          <span data-i18n="setup.testButton">Bağlantıyı Test Et</span>
+        </button>
+        <button type="button" class="btn btn-gold" id="generateBtn">
+          <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM20 14h1M20 20h1M17 20h1M14 20h.01M20 17h.01"/></svg>
+          <span data-i18n="setup.generateButton">QR Kodu Oluştur</span>
+        </button>
+      </section>
+
+      <!-- === Sonuç === -->
+      <section id="result" class="hidden">
+        <div class="divider" style="margin-top:26px"><span>❦</span></div>
+        <h2 class="section center" data-i18n="setup.resultTitle">QR Kodunuz Hazır</h2>
+        <p class="subtitle no-print" data-i18n="setup.resultSubtitle">Aşağıdaki QR'ı indirip masalara yerleştirin veya bu kartı doğrudan yazdırın.</p>
+
+        <div class="qr-card">
+          <div class="qr-holder" id="qrHolder"></div>
+          <div class="qr-caption" id="qrCaption"></div>
+          <p class="small" style="margin-top:2px" data-i18n="setup.qrSmall">Fotoğraflarınızı bizimle paylaşmak için okutun</p>
+        </div>
+
+        <div class="no-print stack">
+          <div class="btn-row">
+            <button type="button" class="btn btn-gold" id="downloadBtn">
+              <svg class="icon" viewBox="0 0 24 24"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/></svg>
+              <span data-i18n="setup.downloadPng">PNG İndir</span>
+            </button>
+            <a class="btn btn-outline" id="cardBtn" href="#" target="_blank" rel="noopener">
+              <svg class="icon" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><rect x="8" y="7" width="8" height="8" rx="1"/><path d="M9 18h6"/></svg>
+              <span data-i18n="setup.cardPdf">Kart Yazdır (PDF)</span>
+            </a>
+          </div>
+          <button type="button" class="btn btn-outline" id="copyBtn">
+            <svg class="icon" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            <span data-i18n="setup.copyUpload">Yükleme Linkini Kopyala</span>
+          </button>
+          <a class="btn btn-ghost" id="previewBtn" href="#" target="_blank" rel="noopener">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
+            <span data-i18n="setup.preview">Misafir Sayfasını Önizle</span>
+          </a>
+          <p class="qr-link" id="linkText"></p>
+
+          <!-- Çift için özel galeri -->
+          <div class="divider" style="margin-top:24px"><span>❦</span></div>
+          <h2 class="section center" style="font-size:21px" data-i18n="setup.galleryTitle">Çift İçin Galeri</h2>
+          <p class="subtitle" data-i18n-html="setup.gallerySubtitleHtml">Yüklenen tüm fotoğrafları görmek için bu <b>özel</b> linki
+            <b>yalnızca siz</b> kullanın. Misafirlerle paylaşmayın.</p>
+          <a class="btn btn-gold" id="galleryOpenBtn" href="#" target="_blank" rel="noopener">
+            <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+            <span data-i18n="setup.openGallery">Galeriyi Aç</span>
+          </a>
+          <button type="button" class="btn btn-outline" id="copyGalleryBtn">
+            <svg class="icon" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            <span data-i18n="setup.copyGallery">Galeri Linkini Kopyala</span>
+          </button>
+          <p class="qr-link" id="galleryLinkText"></p>
+
+          <button type="button" class="btn btn-ghost" id="editBtn" style="margin-top:8px"><span data-i18n="setup.edit">Ayarları Düzenle</span></button>
+        </div>
+      </section>
+
+      <p class="footer-note no-print" data-i18n="setup.footer">
+        Sunucusuz &amp; ücretsiz · Fotoğraflar yalnızca sizin Google Drive'ınıza kaydedilir.
+      </p>
+    </div>
+  </main>
+
+  <script src="js/qrcode.min.js"></script>
+  <script src="js/i18n.js"></script>
+  <script src="js/setup.js"></script>
+</body>
+</html>

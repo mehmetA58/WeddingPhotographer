@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title data-i18n="title.card">Yazdırılabilir QR Kart</title>
+  <meta name="theme-color" content="#FBF8F3" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <!-- Araçlar (yazdırmada gizlenir) -->
+  <div class="card-tools no-print">
+    <p class="eyebrow" data-i18n="card.toolsEyebrow">Yazdırılabilir QR Kart</p>
+    <h1 class="couple" style="font-size:34px" data-i18n="card.toolsTitle">Masa Kartı</h1>
+    <p class="subtitle" data-i18n-html="card.toolsSubtitleHtml">Sayfa başına kaç kart istediğinizi seçin, ardından <b>Yazdır</b>'a basıp
+      hedef olarak <b>“PDF olarak kaydet”</b>i seçin. Kesik çizgilerden kesip masalara koyun.</p>
+
+    <div id="cardError" class="note note-error hidden" style="max-width:520px;margin:12px auto">
+      <span>⚠️</span><div data-i18n-html="card.errorHtml"><b>Kart verisi eksik.</b> Bu sayfayı kurulum ekranındaki
+      “Yazdırılabilir Kart” butonuyla açın.</div>
+    </div>
+
+    <div id="controls">
+      <div class="copies-row" id="copiesRow" role="group" aria-label="Sayfa başına kart">
+        <button type="button" data-n="1" data-i18n="card.copies1">1 / sayfa</button>
+        <button type="button" data-n="2" data-i18n="card.copies2">2 / sayfa</button>
+        <button type="button" data-n="4" class="active" data-i18n="card.copies4">4 / sayfa</button>
+        <button type="button" data-n="6" data-i18n="card.copies6">6 / sayfa</button>
+      </div>
+      <div style="max-width:360px;margin:14px auto 0">
+        <button type="button" class="btn btn-gold" id="printBtn">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8" rx="1"/></svg>
+          <span data-i18n="card.print">Yazdır / PDF Kaydet</span>
+        </button>
+        <a class="btn btn-ghost" id="backBtn" href="index.html" style="margin-top:10px"><span data-i18n="card.back">Kuruluma Dön</span></a>
+      </div>
+      <p class="small" style="margin-top:12px" data-i18n-html="card.tipHtml">İpucu: En iyi sonuç için bilgisayardan yazdırın ve tarayıcı
+        yazdırma ayarlarında <b>“Arka plan grafikleri”</b> seçeneğini açın.</p>
+    </div>
+  </div>
+
+  <!-- Kağıt önizleme / baskı -->
+  <div class="paper-wrap">
+    <div class="sheet copies-4" id="sheet"></div>
+  </div>
+
+  <!-- QR üretimi için gizli alan -->
+  <div id="qrGen" style="position:absolute;left:-9999px;top:-9999px"></div>
+
+  <script src="js/qrcode.min.js"></script>
+  <script src="js/i18n.js"></script>
+  <script src="js/card.js"></script>
+</body>
+</html>

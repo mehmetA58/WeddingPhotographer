@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title data-i18n="title.gallery">Düğün Fotoğraf Albümü · Galeri</title>
+  <meta name="theme-color" content="#FBF8F3" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <main class="page page-wide">
+    <div class="card">
+      <p class="eyebrow" data-i18n="gallery.eyebrow">Fotoğraf Albümü</p>
+      <h1 id="galleryTitle" class="couple" data-i18n="gallery.titleDefault">Anılarımız</h1>
+      <div class="divider"><span>❦</span></div>
+      <p class="subtitle" id="gallerySub" data-i18n="gallery.subtitleDefault">Misafirlerimizin bu güzel geceye ait paylaştığı kareler.</p>
+
+      <!-- Yapılandırma hatası -->
+      <div id="configError" class="note note-error hidden" style="margin-top:20px">
+        <span>⚠️</span>
+        <div data-i18n-html="gallery.configErrorHtml"><b>Galeri bağlantısı eksik.</b><br />
+          Bu sayfa kurulum ekranındaki <b>“Galeri Linki”</b> ile açılmalıdır.</div>
+      </div>
+
+      <!-- Araç çubuğu -->
+      <div id="toolbar" class="gallery-bar hidden">
+        <span class="small" id="countLabel" data-i18n="gallery.countLoading">Yükleniyor…</span>
+        <div class="gallery-actions">
+          <a class="btn btn-ghost hidden" id="driveFolderBtn" target="_blank" rel="noopener">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+            <span data-i18n="gallery.driveFolder">Drive Klasörü</span>
+          </a>
+          <button type="button" class="btn btn-ghost" id="refreshBtn">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            <span data-i18n="gallery.refresh">Yenile</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Durum -->
+      <div id="loading" class="gallery-loading hidden">
+        <div class="spin" style="font-size:26px;color:var(--gold)">◠</div>
+        <p class="small" data-i18n="gallery.loading">Fotoğraflar getiriliyor…</p>
+      </div>
+      <div id="empty" class="note note-info hidden">
+        <span>📷</span>
+        <div data-i18n="gallery.empty">Henüz fotoğraf yüklenmemiş. Misafirler QR'ı okutup fotoğraf paylaştıkça burada görünecek.</div>
+      </div>
+      <div id="galleryNote" class="note note-error hidden"></div>
+
+      <!-- Izgara -->
+      <div class="gallery-grid" id="grid"></div>
+
+      <p class="footer-note no-print" data-i18n="gallery.footer">Bu galeri yalnızca sizin (çiftin) görmesi içindir. Linki paylaşmayın.</p>
+    </div>
+  </main>
+
+  <!-- Lightbox -->
+  <div id="lightbox" class="lb hidden" role="dialog" aria-modal="true">
+    <button class="lb-close" id="lbClose" aria-label="Kapat">×</button>
+    <button class="lb-nav lb-prev" id="lbPrev" aria-label="Önceki">‹</button>
+    <img class="lb-img" id="lbImg" alt="" />
+    <button class="lb-nav lb-next" id="lbNext" aria-label="Sonraki">›</button>
+    <a class="lb-open" id="lbOpen" target="_blank" rel="noopener" data-i18n="gallery.openDrive">Drive'da aç ↗</a>
+  </div>
+
+  <script src="js/i18n.js"></script>
+  <script src="js/gallery.js"></script>
+</body>
+</html>

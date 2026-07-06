@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title data-i18n="title.upload">Düğün Fotoğrafları · Anılarınızı Paylaşın</title>
+  <meta name="theme-color" content="#FBF8F3" />
+  <meta name="description" content="Düğün gecesine ait fotoğraflarınızı bizimle paylaşın." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <main class="page">
+    <div class="card">
+
+      <!-- === Karşılama === -->
+      <p class="eyebrow" data-i18n="upload.eyebrow">Hoş Geldiniz</p>
+      <h1 id="coupleTitle" class="couple hidden"></h1>
+      <div class="divider"><span>❦</span></div>
+      <h2 class="welcome" id="welcomeLine" data-i18n="upload.welcomeDefault">Gelin &amp; Damat'ın Mutlu Gününe Hoş Geldiniz!</h2>
+      <p class="subtitle" data-i18n="upload.subtitle">Lütfen bu geceye ait karelerinizi bizimle paylaşın.
+        Her fotoğraf bizim için çok kıymetli.</p>
+
+      <!-- === Yapılandırma eksikse === -->
+      <div id="configError" class="note note-error hidden" style="margin-top:20px">
+        <span>⚠️</span>
+        <div data-i18n-html="upload.configErrorHtml"><b>Bağlantı ayarı bulunamadı.</b><br />
+          Bu sayfa masadaki QR kod üzerinden açılmalıdır. Lütfen QR kodu tekrar okutun.</div>
+      </div>
+
+      <!-- === Yükleme arayüzü === -->
+      <section id="uploader">
+
+        <div class="field" style="margin-top:22px">
+          <label for="guestName" data-i18n-html="upload.guestLabelHtml">Adınız <span class="hint">(isteğe bağlı)</span></label>
+          <input class="input" type="text" id="guestName" maxlength="40"
+                 placeholder="Örn. Ayşe Teyze" autocomplete="name"
+                 data-i18n-placeholder="upload.guestPlaceholder" />
+        </div>
+
+        <!-- Tıklanabilir / sürükle-bırak alanı -->
+        <div class="dropzone" id="dropzone" role="button" tabindex="0" aria-label="Fotoğraf seç" data-i18n-aria-label="upload.dropAria">
+          <svg class="dz-icon" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v13"/></svg>
+          <div class="dz-title" data-i18n="upload.dropTitle">Fotoğraf Seç / Çek</div>
+          <div class="dz-sub" data-i18n="upload.dropSub">Galerinizden seçin veya buraya sürükleyin</div>
+        </div>
+
+        <div class="btn-row" style="margin-bottom:8px">
+          <button type="button" class="btn btn-outline" id="galleryBtn">
+            <svg class="icon" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+            <span data-i18n="upload.galleryButton">Galeri</span>
+          </button>
+          <button type="button" class="btn btn-outline" id="cameraBtn">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            <span data-i18n="upload.cameraButton">Kamera</span>
+          </button>
+        </div>
+
+        <!-- Gizli girişler -->
+        <input class="hidden-input" type="file" id="galleryInput" accept="image/*" multiple />
+        <input class="hidden-input" type="file" id="cameraInput" accept="image/*" capture="environment" />
+
+        <!-- Önizlemeler -->
+        <div class="previews" id="previews"></div>
+
+        <!-- İlerleme -->
+        <div class="progress-wrap hidden" id="progressWrap">
+          <div class="progress-meta">
+            <span id="progressLabel" data-i18n="upload.progressLoading">Yükleniyor…</span>
+            <span id="progressCount">0 / 0</span>
+          </div>
+          <div class="progress"><div class="progress-fill" id="progressFill"></div></div>
+        </div>
+
+        <!-- Durum notu -->
+        <div id="statusNote" class="note note-info hidden"></div>
+
+        <!-- Yükle butonu -->
+        <button type="button" class="btn btn-gold hidden" id="uploadBtn">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+          <span id="uploadBtnText" data-i18n="upload.uploadButton">Yükle</span>
+        </button>
+      </section>
+
+      <!-- === Başarı ekranı === -->
+      <section id="successScreen" class="success hidden">
+        <div class="heart">💛</div>
+        <h2 data-i18n="upload.successTitle">Teşekkür Ederiz!</h2>
+        <p id="successText" data-i18n="upload.successText">Fotoğraflarınız bizimle güvenle paylaşıldı. Bu güzel anı ölümsüzleştirdiğiniz için minnettarız.</p>
+        <button type="button" class="btn btn-outline" id="moreBtn">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+          <span data-i18n="upload.more">Daha Fazla Fotoğraf Yükle</span>
+        </button>
+      </section>
+
+      <p class="footer-note" data-i18n="upload.footer">Fotoğraflarınız yalnızca çiftin özel albümünde saklanır.</p>
+    </div>
+  </main>
+
+  <script src="js/i18n.js"></script>
+  <script src="js/upload.js"></script>
+</body>
+</html>
