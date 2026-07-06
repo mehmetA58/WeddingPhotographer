@@ -431,6 +431,38 @@ details.advanced summary {
 details.advanced summary::-webkit-details-marker { display: none; }
 details.advanced summary::before { content: "⚙  "; }
 
+/* --- Kurulum sihirbazı --------------------------------------------------- */
+
+.wizard {
+  border: 1px solid var(--gold-light);
+  background: var(--gold-bg);
+  border-radius: var(--radius);
+  padding: 16px 16px 12px;
+  margin: 4px 0 22px;
+}
+.wizard-head { display: flex; gap: 12px; align-items: flex-start; }
+.wizard-badge {
+  flex: 0 0 auto; width: 30px; height: 30px; border-radius: 50%;
+  display: grid; place-items: center; color: #fff; font-size: 15px;
+  background: linear-gradient(180deg, var(--gold), var(--gold-dark));
+}
+.wizard-head b { font-family: var(--serif); font-size: 20px; color: var(--ink); line-height: 1.15; }
+.wizard-steps { list-style: none; margin: 10px 0 0; padding: 0; }
+.wizard-steps li {
+  display: flex; gap: 12px; padding: 12px 0;
+  border-top: 1px dashed var(--gold-light);
+}
+.wizard-steps li:first-child { border-top: none; padding-top: 4px; }
+.wz-num {
+  flex: 0 0 auto; width: 26px; height: 26px; border-radius: 50%;
+  display: grid; place-items: center; font-weight: 700; font-size: 14px;
+  background: #fff; color: var(--gold-dark); border: 1.5px solid var(--gold);
+}
+.wz-body { flex: 1; min-width: 0; }
+.wz-body > b { display: block; color: var(--ink); margin-bottom: 2px; }
+.wz-btn { width: auto; padding: 9px 16px; margin-top: 8px; font-size: 14px; }
+.wz-guide { margin: 8px 2px 2px; }
+
 /* --- Galeri ------------------------------------------------------------- */
 
 .page-wide { max-width: 900px; }

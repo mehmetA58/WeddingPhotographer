@@ -47,6 +47,26 @@
     }
   });
 
+  /* --- Sihirbaz: backend kodunu önden çek ve kopyala ------------------- */
+  var backendCode = '';
+  fetch('apps-script/Code.gs')
+    .then(function (r) { return r.ok ? r.text() : ''; })
+    .then(function (txt) { backendCode = txt; })
+    .catch(function () { /* file:// veya erişilemez → tıklamada yedeğe düşülür */ });
+
+  $('copyCodeBtn').addEventListener('click', function () {
+    var btn = $('copyCodeBtn');
+    if (backendCode) {
+      copyText(backendCode, function () {
+        btn.textContent = t('setup.wizCopied');
+        setTimeout(function () { btn.textContent = t('setup.wizCopyCode'); }, 2000);
+      });
+    } else {
+      // Kod önden çekilemediyse (ör. yerel dosya) ham dosyayı yeni sekmede aç
+      window.open('apps-script/Code.gs', '_blank');
+    }
+  });
+
   /* --- Token üret ------------------------------------------------------ */
   $('genToken').addEventListener('click', function () {
     var arr = new Uint8Array(9);
@@ -72,10 +92,10 @@
 
     fetch(api, { method: 'GET' })
       .then(function (r) { return r.text(); })
-      .then(function (t) {
+      .then(function (body) {   // NOT: parametreyi "t" yapmayın — dıştaki i18n t()'yi gölgeler
         if (done) return; done = true; clearTimeout(timer);
         var ok = false;
-        try { ok = JSON.parse(t).status === 'ready'; } catch (e) {}
+        try { ok = JSON.parse(body).status === 'ready'; } catch (e) {}
         ok ? showNote('ok', t('setup.ok'))
            : showNote('info', t('setup.unexpected'));
       })

@@ -22,6 +22,43 @@
 
       <!-- === Form === -->
       <section id="form">
+
+        <!-- Kurulum sihirbazı: Drive bağlantısını 3 adımda kolaylaştırır -->
+        <div class="wizard">
+          <div class="wizard-head">
+            <span class="wizard-badge">★</span>
+            <div>
+              <b data-i18n="setup.wizTitle">Google Drive'a bağlanmak çok kolay</b>
+              <p class="small" data-i18n="setup.wizIntro" style="margin:2px 0 0">Aşağıdaki 3 adımı yalnızca bir kez yapın (~2 dk), sonra çıkan adresi 1. kutuya yapıştırın.</p>
+            </div>
+          </div>
+          <ol class="wizard-steps">
+            <li>
+              <span class="wz-num">1</span>
+              <div class="wz-body">
+                <b data-i18n="setup.wizStep1">Apps Script'i açın</b>
+                <a class="btn btn-outline wz-btn" id="openScriptBtn" href="https://script.google.com/create" target="_blank" rel="noopener" data-i18n="setup.wizOpenScript">Apps Script'i Aç ↗</a>
+              </div>
+            </li>
+            <li>
+              <span class="wz-num">2</span>
+              <div class="wz-body">
+                <b data-i18n="setup.wizStep2">Kodu kopyalayıp yapıştırın</b>
+                <p class="small" data-i18n="setup.wizStep2Desc">Açılan projedeki tüm kodu silin, aşağıdaki butonla kopyaladığınız kodu yapıştırın ve kaydedin (💾).</p>
+                <button type="button" class="btn btn-outline wz-btn" id="copyCodeBtn" data-i18n="setup.wizCopyCode">Backend Kodunu Kopyala</button>
+              </div>
+            </li>
+            <li>
+              <span class="wz-num">3</span>
+              <div class="wz-body">
+                <b data-i18n="setup.wizStep3">Yayınlayın (Deploy)</b>
+                <p class="small" data-i18n-html="setup.wizStep3DescHtml">Sağ üstten <b>Deploy → New deployment → Web app</b>. “Execute as: <b>Me</b>”, “Who has access: <b>Anyone</b>” seçin, <b>Deploy</b>'a basın ve çıkan <b>Web App URL</b>'ini kopyalayın.</p>
+              </div>
+            </li>
+          </ol>
+          <p class="small wz-guide" data-i18n-html="setup.wizGuideHtml">Takılırsanız ekran görüntülü <a href="README.md" target="_blank" rel="noopener">kurulum rehberine</a> bakın.</p>
+        </div>
+
         <div class="field">
           <label for="apiUrl" data-i18n="setup.apiLabel">1 · Apps Script Web App URL'iniz</label>
           <input class="input" type="url" id="apiUrl" inputmode="url"

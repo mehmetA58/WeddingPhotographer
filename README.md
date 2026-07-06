@@ -58,10 +58,14 @@ Toplam süre: ~10 dakika. İki bölüm var: **(A) Siteyi yayınla**, **(B) Drive
 
 1. [github.com](https://github.com) hesabı açın → **New repository** (örn. `dugun-foto`), *Public*.
 2. Bu klasördeki tüm dosyaları repoya yükleyin (sürükle-bırak ile "Add file → Upload files").
-3. Repo → **Settings → Pages** → *Branch:* `main`, *Folder:* `/ (root)` → **Save**.
+3. Repo → **Settings → Pages** → *Build and deployment* → **Source: GitHub Actions**.
+   (Depoda hazır `.github/workflows/deploy.yml` var; her `main` push'unda site otomatik yayınlanır.
+   Dilerseniz bunun yerine *Source: Deploy from a branch → `main` / `(root)`* de seçebilirsiniz.)
 4. 1–2 dakika sonra siteniz yayında olur:
    `https://<kullanıcı-adınız>.github.io/dugun-foto/`
 5. Kurulum sayfanız: `.../dugun-foto/index.html`
+   İlk açılışta **kurulum sihirbazı** çıkar: “Apps Script'i Aç” ve “Backend Kodunu Kopyala”
+   butonlarıyla Bölüm B'yi neredeyse otomatik yaparsınız.
 
 **Seçenek 2: Netlify (daha da hızlı, sürükle-bırak)**
 
@@ -160,6 +164,11 @@ QR kartlarını masalara koyun. Küçük bir not ekleyebilirsiniz:
   Bu yüzden linki halka açık paylaşmayın; QR'ı yalnızca mekânda kullanın.
 - **Güvenlik anahtarı (token)** kullanırsanız, link sızsa bile token'sız istekler reddedilir.
 - Fotoğraflar yalnızca **sizin** Drive'ınıza gider; bu proje hiçbir yere kopya göndermez.
+- **Galeri için not:** Yüklenen her fotoğraf, galeri sayfasında küçük resim görünebilsin diye
+  “**bağlantıya sahip olan görüntüleyebilir**” yapılır. Dosya kimlikleri (ID) tahmin edilemez ve
+  galeri listesi token ile korunur; yani fotoğraflar herkese açık **listelenmez**, ama ID'yi bilen
+  görebilir. Bu davranışı istemiyorsanız `Code.gs` içindeki `setSharing(...)` satırını silin
+  (o zaman galeri küçük resimleri yüklenmez, fotoğrafları yalnızca Drive'dan görürsünüz).
 
 ---
 
