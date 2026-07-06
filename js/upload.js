@@ -267,46 +267,37 @@
     }
   }
 
-  /* --- Tek dosya yükleme (XHR, basit istek) ---------------------------- */
+  /* --- Tek dosya yükleme (fetch, no-cors) ------------------------------ */
+  // NEDEN no-cors: Apps Script /exec yanıtı çapraz-köken CORS başlığı (ACAO)
+  // döndürmez; bu yüzden NORMAL bir istekte tarayıcı YANITI okuyamaz ve
+  // "Ağ hatası" (xhr.onerror) verir — oysa istek sunucuya ulaşıp dosya
+  // KAYDEDİLİR. no-cors ile isteği göndeririz: yanıt "opaque"tur (okunamaz)
+  // ama yükleme güvenilir çalışır. Bu, Apps Script yüklemelerinin standart yolu.
+  //  • text/plain + özel olmayan header = CORS "basit istek" (preflight yok).
+  //  • Yanıtı okuyamadığımız için isteği tek kez göndeririz (mükerrer kayıt olmaz).
   function uploadOne(prepared) {
-    return new Promise(function (resolve, reject) {
-      var payload = JSON.stringify({
-        token: TOKEN,
-        guestName: (guestNameEl.value || '').trim().slice(0, 40),
-        filename: prepared.filename,
-        mimeType: prepared.mimeType,
-        data: prepared.base64
-      });
-
-      var xhr = new XMLHttpRequest();
-      xhr.open('POST', API_URL, true);
-      // ÖNEMLİ: Bunun bir CORS "basit istek"i olması şart — aksi halde tarayıcı
-      // preflight (OPTIONS) yollar ve Apps Script bunu yanıtlayamaz → yükleme çöker.
-      //  • Content-Type text/plain olmalı (application/json KULLANMAYIN).
-      //  • xhr.upload üzerine ASLA event listener eklenmez (byte-progress dahil);
-      //    upload listener'ı da preflight tetikler.
-      xhr.setRequestHeader('Content-Type', 'text/plain;charset=utf-8');
-      xhr.timeout = 120000;
-
-      xhr.onload = function () {
-        if (xhr.status >= 200 && xhr.status < 300) {
-          try {
-            var res = JSON.parse(xhr.responseText);
-            if (res && res.status === 'ok') return resolve(res);
-            var serverError = new Error(res && res.message ? res.message : 'Sunucu reddetti');
-            serverError.code = res && res.code;
-            return reject(serverError);
-          } catch (e2) {
-            // Yanıt okunamasa da 2xx geldiyse başarı say (bazı CORS senaryoları)
-            return resolve({ status: 'ok' });
-          }
-        }
-        reject(new Error('HTTP ' + xhr.status));
-      };
-      xhr.onerror = function () { reject(new Error('Ağ hatası')); };
-      xhr.ontimeout = function () { reject(new Error('Zaman aşımı')); };
-      xhr.send(payload);
+    var payload = JSON.stringify({
+      token: TOKEN,
+      guestName: (guestNameEl.value || '').trim().slice(0, 40),
+      filename: prepared.filename,
+      mimeType: prepared.mimeType,
+      data: prepared.base64
     });
+
+    var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+    var timer = ctrl ? setTimeout(function () { ctrl.abort(); }, 120000) : null;
+    var clear = function () { if (timer) clearTimeout(timer); };
+
+    return fetch(API_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: payload,
+      signal: ctrl ? ctrl.signal : undefined
+    }).then(
+      function () { clear(); return { status: 'ok' }; },          // opaque yanıt → gönderildi = başarı
+      function (err) { clear(); throw new Error('Ağ hatası: ' + (err && err.message || err)); }
+    );
   }
 
   /* --- Fotoğrafı hazırla: (opsiyonel) resize + base64 ------------------ */

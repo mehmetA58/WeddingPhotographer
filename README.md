@@ -149,7 +149,9 @@ QR kartlarını masalara koyun. Küçük bir not ekleyebilirsiniz:
 
 | Sorun | Çözüm |
 |---|---|
-| **Yükleme başarısız / CORS hatası** | İstek `text/plain` olarak gönderilir (kodda ayarlı). Web App'in **"Who has access: Anyone"** ile deploy edildiğinden emin olun. |
+| **Yükleme başarısız / CORS "Ağ hatası"** | Apps Script `/exec` yanıtı CORS başlığı döndürmediği için istek `mode:'no-cors'` ile gönderilir (kodda ayarlı) — yükleme çalışır ama tarayıcı yanıtı **okuyamaz**, bu yüzden arayüz iyimser şekilde "başarılı" gösterir. Fotoğrafların gerçekten geldiğini **Galeri** veya Drive klasöründen doğrulayın. Web App'in **"Who has access: Anyone"** ile yayınlandığından emin olun. |
+| **"0 uploaded, 1 failed" görüyordum** | Eski sürümde tarayıcı başarı yanıtını okuyamadığı için yanlışlıkla "başarısız" gösteriyordu; **fotoğraflar aslında Drive'a kaydedilmiş olabilir**. Güncel sürüm bunu düzeltir (`no-cors`). |
+| **Güvenlik anahtarı (token) uyarısı** | `no-cors` ile tarayıcı sunucu yanıtını okuyamadığından, **yanlış token** durumunda arayüz yine "başarılı" gösterir ama sunucu dosyayı **kaydetmez**. Token kullanıyorsanız yüklemeyi Galeri'den doğrulayın. |
 | **Kurulumdaki "Bağlantı Testi" doğrulanamadı** | Tarayıcı, GET yanıtını CORS nedeniyle okuyamayabilir. Bu tek başına hata değildir — QR'ı üretip **telefonla bir test fotoğrafı** yükleyin. |
 | **Kodda değişiklik yaptım, çalışmıyor** | Aynı URL'i korumak için **Deploy → Manage deployments → ✏ → Version: New version**. "New deployment" **yeni URL** üretir (QR'ı da yenilemeniz gerekir). |
 | **iPhone HEIC fotoğrafları** | Varsayılan resize açıkken tarayıcı fotoğrafı **JPEG'e** çevirir (uyumlu). Kapatırsanız (orijinal) HEIC olarak kaydolur. |
