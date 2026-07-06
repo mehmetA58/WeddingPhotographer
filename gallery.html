@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title data-i18n="title.gallery">Düğün Fotoğraf Albümü · Galeri</title>
+  <title data-i18n="title.gallery">Fotoğraf Albümü · Galeri</title>
   <meta name="theme-color" content="#FBF8F3" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -13,10 +13,11 @@
 <body>
   <main class="page page-wide">
     <div class="card">
+      <div class="event-emoji" id="eventEmoji" aria-hidden="true"></div>
       <p class="eyebrow" data-i18n="gallery.eyebrow">Fotoğraf Albümü</p>
       <h1 id="galleryTitle" class="couple" data-i18n="gallery.titleDefault">Anılarımız</h1>
       <div class="divider"><span>❦</span></div>
-      <p class="subtitle" id="gallerySub" data-i18n="gallery.subtitleDefault">Misafirlerimizin bu güzel geceye ait paylaştığı kareler.</p>
+      <p class="subtitle" id="gallerySub" data-i18n="gallery.subtitleDefault">Katılımcıların etkinliğe ait paylaştığı kareler.</p>
 
       <!-- Yapılandırma hatası -->
       <div id="configError" class="note note-error hidden" style="margin-top:20px">
@@ -47,14 +48,14 @@
       </div>
       <div id="empty" class="note note-info hidden">
         <span>📷</span>
-        <div data-i18n="gallery.empty">Henüz fotoğraf yüklenmemiş. Misafirler QR'ı okutup fotoğraf paylaştıkça burada görünecek.</div>
+        <div data-i18n="gallery.empty">Henüz fotoğraf yüklenmemiş. Katılımcılar QR'ı okutup fotoğraf paylaştıkça burada görünecek.</div>
       </div>
       <div id="galleryNote" class="note note-error hidden"></div>
 
       <!-- Izgara -->
       <div class="gallery-grid" id="grid"></div>
 
-      <p class="footer-note no-print" data-i18n="gallery.footer">Bu galeri yalnızca sizin (çiftin) görmesi içindir. Linki paylaşmayın.</p>
+      <p class="footer-note no-print" data-i18n="gallery.footer">Bu galeri yalnızca sizin görmeniz içindir. Linki paylaşmayın.</p>
     </div>
   </main>
 
@@ -68,6 +69,7 @@
   </div>
 
   <script src="js/i18n.js"></script>
+  <script src="js/events.js"></script>
   <script src="js/gallery.js"></script>
 </body>
 </html>

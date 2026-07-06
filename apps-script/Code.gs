@@ -1,7 +1,7 @@
 /****************************************************************************
- * Düğün Fotoğraf Yükleme — Google Apps Script Backend
+ * Etkinlik Fotoğraf Yükleme — Google Apps Script Backend
  * --------------------------------------------------------------------------
- * Bu betik, misafirlerden gelen fotoğrafları SİZİN Google Drive'ınızdaki
+ * Bu betik, katılımcılardan gelen fotoğrafları SİZİN Google Drive'ınızdaki
  * bir klasöre kaydeder. Sunucu gerektirmez, ücretsizdir.
  *
  * KURULUM (özet — ayrıntı için README.md):
@@ -21,7 +21,7 @@
  ****************************************************************************/
 
 // Fotoğrafların kaydedileceği klasör adı (ilk yüklemede otomatik oluşturulur).
-var DEFAULT_FOLDER_NAME = 'Düğün Fotoğrafları';
+var DEFAULT_FOLDER_NAME = 'Etkinlik Fotoğrafları';
 
 // Apps Script istek gövdesi limiti için kaba koruma.
 // Base64 veri ham dosyadan yaklasik %33 daha buyuktur; 55MB base64 ~= 40MB dosya.
@@ -37,7 +37,7 @@ function doGet(e) {
   var p = (e && e.parameter) || {};
   var action = p.action || 'ping';
   var out = (action === 'list') ? listFiles_(p)
-                                : { status: 'ready', service: 'wedding-photo-upload' };
+                                : { status: 'ready', service: 'event-photo-upload' };
   return reply_(out, p.callback);
 }
 
@@ -121,8 +121,8 @@ function doPost(e) {
     var folder = getUploadFolder_();
     var file   = folder.createFile(blob);
     try {
-      file.setDescription('WeddingPhoto yüklemesi' +
-        (body.guestName ? ' · Misafir: ' + sanitize_(body.guestName, 60) : ''));
+      file.setDescription('EventPhoto yüklemesi' +
+        (body.guestName ? ' · Katılımcı: ' + sanitize_(body.guestName, 60) : ''));
     } catch (e) {}
 
     // Galeri sayfası küçük resimleri gösterebilsin diye "bağlantıya sahip olan
@@ -252,7 +252,7 @@ function SETUP_clearToken() {
 
 /** Klasör adını değiştirmek isterseniz (yüklemeden önce çalıştırın). */
 function SETUP_setFolderName() {
-  var NAME = 'Düğün Fotoğrafları';
+  var NAME = 'Etkinlik Fotoğrafları';
   PropertiesService.getScriptProperties().setProperty('FOLDER_NAME', NAME);
   Logger.log('Klasör adı ayarlandı: ' + NAME);
 }

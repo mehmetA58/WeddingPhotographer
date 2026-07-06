@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title data-i18n="title.upload">Düğün Fotoğrafları · Anılarınızı Paylaşın</title>
+  <title data-i18n="title.upload">Fotoğraf Paylaşımı · Anılarınızı Paylaşın</title>
   <meta name="theme-color" content="#FBF8F3" />
-  <meta name="description" content="Düğün gecesine ait fotoğraflarınızı bizimle paylaşın." />
+  <meta name="description" content="Etkinliğe ait fotoğraflarınızı bizimle paylaşın." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
@@ -16,11 +16,12 @@
     <div class="card">
 
       <!-- === Karşılama === -->
+      <div class="event-emoji" id="eventEmoji" aria-hidden="true"></div>
       <p class="eyebrow" data-i18n="upload.eyebrow">Hoş Geldiniz</p>
       <h1 id="coupleTitle" class="couple hidden"></h1>
       <div class="divider"><span>❦</span></div>
-      <h2 class="welcome" id="welcomeLine" data-i18n="upload.welcomeDefault">Gelin &amp; Damat'ın Mutlu Gününe Hoş Geldiniz!</h2>
-      <p class="subtitle" data-i18n="upload.subtitle">Lütfen bu geceye ait karelerinizi bizimle paylaşın.
+      <h2 class="welcome" id="welcomeLine" data-i18n="upload.welcomeDefault">Etkinliğimize Hoş Geldiniz!</h2>
+      <p class="subtitle" id="subtitle" data-i18n="upload.subtitle">Lütfen etkinliğe ait karelerinizi bizimle paylaşın.
         Her fotoğraf bizim için çok kıymetli.</p>
 
       <!-- === Yapılandırma eksikse === -->
@@ -86,7 +87,7 @@
 
       <!-- === Başarı ekranı === -->
       <section id="successScreen" class="success hidden">
-        <div class="heart">💛</div>
+        <div class="heart" id="successEmoji">💛</div>
         <h2 data-i18n="upload.successTitle">Teşekkür Ederiz!</h2>
         <p id="successText" data-i18n="upload.successText">Fotoğraflarınız bizimle güvenle paylaşıldı. Bu güzel anı ölümsüzleştirdiğiniz için minnettarız.</p>
         <button type="button" class="btn btn-outline" id="moreBtn">
@@ -95,11 +96,12 @@
         </button>
       </section>
 
-      <p class="footer-note" data-i18n="upload.footer">Fotoğraflarınız yalnızca çiftin özel albümünde saklanır.</p>
+      <p class="footer-note" data-i18n="upload.footer">Fotoğraflarınız yalnızca özel albümde güvenle saklanır.</p>
     </div>
   </main>
 
   <script src="js/i18n.js"></script>
+  <script src="js/events.js"></script>
   <script src="js/upload.js"></script>
 </body>
 </html>

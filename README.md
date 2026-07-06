@@ -1,28 +1,31 @@
-# 💛 Düğün Fotoğraf Yükleme — QR ile Anlık Fotoğraf Toplama
+# Etkinlik Fotoğraf Yükleme — QR ile Anlık Fotoğraf Toplama
 
-Misafirleriniz masadaki **QR kodu** okutur, **giriş yapmadan** telefonlarındaki
+Katılımcılar masadaki **QR kodu** okutur, **giriş yapmadan** telefonlarındaki
 fotoğrafları seçip yükler; fotoğraflar doğrudan **sizin Google Drive'ınıza**
 kaydedilir. Sunucusuz, ücretsiz, bakım gerektirmez.
 
 ```
-📷 Misafir telefonu ──(QR)──▶ upload.html ──(base64 foto)──▶ Apps Script ──▶ Google Drive
+📷 Katılımcı telefonu ──(QR)──▶ upload.html ──(base64 foto)──▶ Apps Script ──▶ Google Drive
 ```
 
 ---
 
-## 🧩 Sistem nasıl çalışıyor? (Çok çiftli mantık)
+## 🧩 Sistem nasıl çalışıyor?
 
-Merkezî sunucu yok. Çok çiftliliği (her çiftin kendi Drive'ı) şöyle sağlıyoruz:
+Merkezî sunucu yok. Her organizasyon sahibi kendi Drive'ını şöyle bağlar:
 
-> **Her çift, `apps-script/Code.gs` dosyasını kendi Google hesabına kurar ve
+> **Organizasyon sahibi, `apps-script/Code.gs` dosyasını kendi Google hesabına kurar ve
 > "Web App" olarak yayınlar.** İşte "kendi Drive'ınızla eşleştirme" adımı budur.
 > Deploy ettiğinizde size özel bir **Web App URL'i** verilir; bu adres sizin
 > Drive'ınıza bağlıdır.
 
 Statik site (`index.html`, `upload.html`) **bir kez** yayınlanır. Kurulum sayfası
-sizin Web App URL'inizi + isimlerinizi bir linke gömüp **kişiselleştirilmiş bir
-QR** üretir. O QR'ı okutan herkes, sizin Drive'ınıza yükleme yapar. Başka bir çift
-için tek yapılacak: onların kendi Code.gs'i deploy edip kendi QR'larını üretmesi.
+sizin Web App URL'inizi + etkinlik türünü + etkinlik başlığını linke gömüp
+**kişiselleştirilmiş bir QR** üretir. O QR'ı okutan herkes, sizin Drive'ınıza
+yükleme yapar.
+
+V1 etkinlik türleri sabittir: **Gezi, Toplantı, Doğum Günü, Düğün, Nişan,
+Yıldönümü, Romantik Akşam Yemeği, Hoş Geldin Partisi, Veda Partisi**.
 
 ---
 
@@ -30,14 +33,15 @@ için tek yapılacak: onların kendi Code.gs'i deploy edip kendi QR'larını ür
 
 ```
 WeddingPhoto/
-├── index.html          # Kurulum sayfası (çift → link + QR üretir)
-├── upload.html         # Misafir yükleme sayfası (QR buraya gider)
-├── gallery.html        # Çift için özel fotoğraf galerisi
+├── index.html          # Kurulum sayfası (etkinlik → link + QR üretir)
+├── upload.html         # Katılımcı yükleme sayfası (QR buraya gider)
+├── gallery.html        # Organizasyon sahibi için özel fotoğraf galerisi
 ├── card.html           # Yazdırmaya hazır QR masa kartı
 ├── css/style.css       # Zarif krem/gold tema
 ├── js/
 │   ├── qrcode.min.js   # Yerel QR kütüphanesi (CDN yok)
 │   ├── i18n.js         # Türkçe / İngilizce dil metinleri
+│   ├── events.js       # V1 etkinlik türleri ve konsept ayarları
 │   ├── setup.js        # Kurulum mantığı
 │   ├── upload.js       # Yükleme + resize + progress
 │   ├── gallery.js      # Galeri + lightbox
@@ -56,14 +60,14 @@ Toplam süre: ~10 dakika. İki bölüm var: **(A) Siteyi yayınla**, **(B) Drive
 
 **Seçenek 1: GitHub Pages (önerilen, ücretsiz)**
 
-1. [github.com](https://github.com) hesabı açın → **New repository** (örn. `dugun-foto`), *Public*.
+1. [github.com](https://github.com) hesabı açın → **New repository** (örn. `etkinlik-foto`), *Public*.
 2. Bu klasördeki tüm dosyaları repoya yükleyin (sürükle-bırak ile "Add file → Upload files").
 3. Repo → **Settings → Pages** → *Build and deployment* → **Source: GitHub Actions**.
    (Depoda hazır `.github/workflows/deploy.yml` var; her `main` push'unda site otomatik yayınlanır.
    Dilerseniz bunun yerine *Source: Deploy from a branch → `main` / `(root)`* de seçebilirsiniz.)
 4. 1–2 dakika sonra siteniz yayında olur:
-   `https://<kullanıcı-adınız>.github.io/dugun-foto/`
-5. Kurulum sayfanız: `.../dugun-foto/index.html`
+   `https://<kullanıcı-adınız>.github.io/etkinlik-foto/`
+5. Kurulum sayfanız: `.../etkinlik-foto/index.html`
    İlk açılışta **kurulum sihirbazı** çıkar: “Apps Script'i Aç” ve “Backend Kodunu Kopyala”
    butonlarıyla Bölüm B'yi neredeyse otomatik yaparsınız.
 
@@ -78,7 +82,7 @@ Toplam süre: ~10 dakika. İki bölüm var: **(A) Siteyi yayınla**, **(B) Drive
 
 ### Bölüm B — Google Drive'ınızı bağlayın (Apps Script)
 
-> Bu adımı **düğün sahibi çift** kendi Google hesabında yapar.
+> Bu adımı **organizasyon sahibi** kendi Google hesabında yapar.
 
 1. [script.google.com](https://script.google.com) → **Yeni proje**.
 2. Soldaki `Code.gs` dosyasının içeriğini silin; `apps-script/Code.gs`
@@ -92,17 +96,17 @@ Toplam süre: ~10 dakika. İki bölüm var: **(A) Siteyi yayınla**, **(B) Drive
    - Drive klasör linkindeki ID'yi kopyalayın.
    - Apps Script'te `SETUP_setExistingFolderId` içindeki
      `'BURAYA_DRIVE_KLASOR_ID_YAPISTIRIN'` alanına yapıştırın → **Run**.
-   - Bunu yapmazsanız ilk yüklemede **"Düğün Fotoğrafları"** klasörü otomatik oluşur.
+   - Bunu yapmazsanız ilk yüklemede **"Etkinlik Fotoğrafları"** klasörü otomatik oluşur.
 5. **Deploy → New deployment** → dişli ⚙ → **Web app**:
    - **Execute as:** `Me` (kendi hesabınız)
-   - **Who has access:** `Anyone`  ← *misafirler anonim yükleyecek, bu şart*
+   - **Who has access:** `Anyone`  ← *katılımcılar anonim yükleyecek, bu şart*
    - **Deploy**.
 6. İlk kez izin istenir → hesabınızı seçin → "Advanced → Go to project (unsafe)"
    → **Allow** (kendi betiğinize Drive izni veriyorsunuz).
 7. Açılan **Web app URL**'ini kopyalayın — `https://script.google.com/macros/s/AKfyc…/exec`
 
 ✅ Artık Drive'ınız bağlı. İlk fotoğraf yüklendiğinde Drive'ınızda
-**"Düğün Fotoğrafları"** klasörü otomatik oluşur.
+**"Etkinlik Fotoğrafları"** klasörü otomatik oluşur.
 
 ---
 
@@ -110,15 +114,17 @@ Toplam süre: ~10 dakika. İki bölüm var: **(A) Siteyi yayınla**, **(B) Drive
 
 1. Yayınladığınız **`index.html`** (kurulum) sayfasını açın.
 2. **Web App URL**'inizi yapıştırın.
-3. **Çift isimlerini** girin (örn. `Ayşe & Mehmet`) — karşılama yazısında görünür.
-4. **Dil** alanından Türkçe veya English seçin. QR linki bu dili otomatik taşır.
-5. (Token kullandıysanız) *Gelişmiş ayarlar → Güvenlik anahtarı* alanına aynı token'ı girin.
-6. **"Bağlantıyı Test Et"** → yeşil onay bekleyin.
-7. **"QR Kodu Oluştur"** → QR belirir.
-8. **PNG İndir** ile tek QR görseli alın veya **Kart Yazdır (PDF)** ile
+3. **Etkinlik Türü** seçin. Karşılama ekranı, ikon ve vurgu rengi buna göre değişir.
+4. **Etkinlik Başlığı** girin (örn. `Ayşe & Mehmet`, `Kapadokya 2026`,
+   `Ayşe'nin 30. Yaşı`) — karşılama yazısında görünür.
+5. **Dil** alanından Türkçe veya English seçin. QR linki bu dili otomatik taşır.
+6. (Token kullandıysanız) *Gelişmiş ayarlar → Güvenlik anahtarı* alanına aynı token'ı girin.
+7. **"Bağlantıyı Test Et"** → yeşil onay bekleyin.
+8. **"QR Kodu Oluştur"** → QR belirir.
+9. **PNG İndir** ile tek QR görseli alın veya **Kart Yazdır (PDF)** ile
    yazdırmaya hazır masa kartını açın.
-9. **Galeri Linkini Kopyala** butonuyla çift için özel galeri linkini saklayın.
-   Bu linki misafirlerle paylaşmayın.
+10. **Galeri Linkini Kopyala** butonuyla özel galeri linkini saklayın.
+   Bu linki katılımcılarla paylaşmayın.
 
 ---
 
@@ -126,7 +132,7 @@ Toplam süre: ~10 dakika. İki bölüm var: **(A) Siteyi yayınla**, **(B) Drive
 
 QR kartlarını masalara koyun. Küçük bir not ekleyebilirsiniz:
 
-> *"Bu geceye ait karelerinizi bizimle paylaşın — QR'ı okutmanız yeterli 💛"*
+> *"Etkinliğe ait karelerinizi paylaşmak için QR'ı okutmanız yeterli."*
 
 ---
 
@@ -162,7 +168,7 @@ QR kartlarını masalara koyun. Küçük bir not ekleyebilirsiniz:
 
 ## 🔒 Güvenlik notları
 
-- Tasarım gereği giriş yok: **linke/QR'a sahip herkes yükleyebilir** (misafirler anonim).
+- Tasarım gereği giriş yok: **linke/QR'a sahip herkes yükleyebilir** (katılımcılar anonim).
   Bu yüzden linki halka açık paylaşmayın; QR'ı yalnızca mekânda kullanın.
 - **Güvenlik anahtarı (token)** kullanırsanız, link sızsa bile token'sız istekler reddedilir.
 - Fotoğraflar yalnızca **sizin** Drive'ınıza gider; bu proje hiçbir yere kopya göndermez.
@@ -176,17 +182,17 @@ QR kartlarını masalara koyun. Küçük bir not ekleyebilirsiniz:
 
 ## 💸 Maliyet & limitler
 
-- **Ücretsiz.** GitHub Pages/Netlify ve Apps Script tüketici kotaları düğün ölçeği
+- **Ücretsiz.** GitHub Pages/Netlify ve Apps Script tüketici kotaları etkinlik ölçeği
   (yüzlerce fotoğraf) için fazlasıyla yeterlidir.
 - Apps Script tek istek gövdesi **~50MB**; bu yüzden istemci tarafı resize önerilir.
 - Drive depolama, Google hesabınızın kotasına tabidir (15GB ücretsiz).
 
 ---
 
-## 🔁 Başka bir çift için
+## 🔁 Başka bir organizasyon için
 
-Statik siteyi tekrar yayınlamaya gerek yok. Yeni çift:
+Statik siteyi tekrar yayınlamaya gerek yok. Yeni organizasyon sahibi:
 1. `apps-script/Code.gs`'i **kendi** Google hesabında deploy eder (Bölüm B),
-2. Kendi Web App URL'i + isimleriyle aynı kurulum sayfasından **kendi QR'ını** üretir.
+2. Kendi Web App URL'i + etkinlik türü + başlığıyla aynı kurulum sayfasından **kendi QR'ını** üretir.
 
-Her çiftin fotoğrafları kendi Drive'ına gider. 💛
+Her organizasyonun fotoğrafları ilgili sahibin kendi Drive'ına gider.

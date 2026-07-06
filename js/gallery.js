@@ -1,8 +1,8 @@
 /* =========================================================================
-   gallery.js — Çift için fotoğraf galerisi
+   gallery.js — Etkinlik sahibi için fotoğraf galerisi
    - Apps Script'ten JSONP ile fotoğraf listesini çeker (CORS'a takılmaz)
    - Google Drive thumbnail URL'leriyle ızgara + lightbox gösterir
-   URL parametreleri: api (zorunlu), token (opsiyonel), couple (başlık)
+   URL parametreleri: api (zorunlu), token (opsiyonel), title/couple (başlık), event
    ========================================================================= */
 
 (function () {
@@ -14,17 +14,22 @@
   var params = new URLSearchParams(location.search);
   var API    = (params.get('api') || '').trim();
   var TOKEN  = (params.get('token') || '').trim();
-  var COUPLE = (params.get('couple') || '').trim();
+  var EVENT_TITLE = (params.get('title') || params.get('couple') || '').trim();
 
   var grid = $('grid');
   var driveFolderBtn = $('driveFolderBtn');
   var files = [];
   var lbIndex = 0;
 
-  if (COUPLE) {
-    $('galleryTitle').textContent = COUPLE;
-    $('gallerySub').textContent = t('gallery.subtitleCouple', { couple: COUPLE });
-    document.title = COUPLE + ' · ' + (i18n.getLang() === 'en' ? 'Photo Album' : 'Fotoğraf Albümü');
+  // Etkinlik konsepti: başlık emojisi
+  var EVENT = window.WeddingEvents ? window.WeddingEvents.get(window.WeddingEvents.getKey()) : null;
+  var eventEmojiEl = $('eventEmoji');
+  if (EVENT && eventEmojiEl) eventEmojiEl.textContent = EVENT.emoji;
+
+  if (EVENT_TITLE) {
+    $('galleryTitle').textContent = EVENT_TITLE;
+    $('gallerySub').textContent = t('gallery.subtitleTitle', { title: EVENT_TITLE });
+    document.title = EVENT_TITLE + ' · ' + (i18n.getLang() === 'en' ? 'Photo Album' : 'Fotoğraf Albümü');
   }
 
   if (!API) {

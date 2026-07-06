@@ -1,5 +1,5 @@
 /* =========================================================================
-   Düğün Fotoğraf Yükleme — Ortak zarif tema
+   Etkinlik Fotoğraf Yükleme — Ortak zarif tema
    Palet: fildişi / krem zemin, gold vurgular, antrasit metin
    Mobil öncelikli (mobile-first)
    ========================================================================= */
@@ -26,6 +26,62 @@
 
   --serif: "Cormorant Garamond", "Playfair Display", Georgia, "Times New Roman", serif;
   --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+html[data-event="engagement"] {
+  --gold: #C97C8A;
+  --gold-dark: #9F5968;
+  --gold-light: #E8BAC2;
+  --gold-bg: #FFF1F3;
+}
+
+html[data-event="anniversary"] {
+  --gold: #B89652;
+  --gold-dark: #7F6D3B;
+  --gold-light: #DCCB97;
+  --gold-bg: #FBF6E7;
+}
+
+html[data-event="birthday"] {
+  --gold: #D98658;
+  --gold-dark: #A75F38;
+  --gold-light: #F0C5A8;
+  --gold-bg: #FFF3EA;
+}
+
+html[data-event="romantic"] {
+  --gold: #B85F73;
+  --gold-dark: #8D3F52;
+  --gold-light: #E2A9B6;
+  --gold-bg: #FFF0F3;
+}
+
+html[data-event="welcome"] {
+  --gold: #6EA875;
+  --gold-dark: #4F7C55;
+  --gold-light: #B8D9BC;
+  --gold-bg: #EFF8F0;
+}
+
+html[data-event="farewell"] {
+  --gold: #8B7BB7;
+  --gold-dark: #67558E;
+  --gold-light: #C9BFE3;
+  --gold-bg: #F5F2FC;
+}
+
+html[data-event="trip"] {
+  --gold: #4F9FA3;
+  --gold-dark: #33767A;
+  --gold-light: #A9D7DA;
+  --gold-bg: #EEF9FA;
+}
+
+html[data-event="meeting"] {
+  --gold: #5F84B8;
+  --gold-dark: #405F8B;
+  --gold-light: #B4C8E4;
+  --gold-bg: #F0F5FC;
 }
 
 * { box-sizing: border-box; }
@@ -66,7 +122,7 @@ body {
   padding: 34px 26px 30px;
 }
 
-/* İnce çift altın çerçeve detayı */
+/* İnce iç altın çerçeve detayı */
 .card::after {
   content: "";
   position: absolute;
@@ -462,6 +518,48 @@ details.advanced summary::before { content: "⚙  "; }
 .wz-body > b { display: block; color: var(--ink); margin-bottom: 2px; }
 .wz-btn { width: auto; padding: 9px 16px; margin-top: 8px; font-size: 14px; }
 .wz-guide { margin: 8px 2px 2px; }
+
+/* --- Konsept kart ızgarası (etkinlik seçimi) ---------------------------- */
+
+.concept-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.concept-card {
+  -webkit-appearance: none; appearance: none;
+  cursor: pointer;
+  font-family: var(--sans);
+  background: #FDFBF7;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 12px 6px 10px;
+  text-align: center;
+  transition: border-color .15s ease, background .15s ease, transform .06s ease, box-shadow .18s ease;
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+}
+.concept-card:hover { border-color: var(--gold-light); background: var(--gold-bg); }
+.concept-card:active { transform: translateY(1px); }
+.concept-card .ce-emoji { font-size: 24px; line-height: 1; }
+.concept-card .ce-name {
+  min-height: 2.3em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  line-height: 1.15;
+}
+.concept-card.active {
+  border-color: var(--gold);
+  background: var(--gold-bg);
+  box-shadow: 0 0 0 2px rgba(198, 161, 91, 0.22);
+}
+.concept-card.active .ce-name { color: var(--gold-dark); }
+
+/* Yükleme/galeri: etkinlik emojisi (hero) */
+.event-emoji { text-align: center; font-size: 34px; line-height: 1; margin: 2px 0 8px; }
 
 /* --- Galeri ------------------------------------------------------------- */
 

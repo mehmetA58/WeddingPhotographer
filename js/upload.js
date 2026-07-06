@@ -1,6 +1,6 @@
 /* =========================================================================
-   upload.js — Misafir fotoğraf yükleme mantığı
-   - URL parametrelerinden yapılandırmayı okur (api, couple, token)
+   upload.js — Katılımcı fotoğraf yükleme mantığı
+   - URL parametrelerinden yapılandırmayı okur (api, title/couple, token, event)
    - Fotoğrafları istemcide yeniden boyutlandırır (hız + boyut limiti)
    - Apps Script'e "basit istek" (text/plain, base64) olarak SIRALI yükler
    - Tekil + toplam ilerleme çubuğu, per-dosya durum, tekrar deneme
@@ -14,7 +14,7 @@
   /* --- Yapılandırma (URL parametreleri) --------------------------------- */
   var params  = new URLSearchParams(location.search);
   var API_URL = (params.get('api') || '').trim();
-  var COUPLE  = (params.get('couple') || '').trim();
+  var EVENT_TITLE = (params.get('title') || params.get('couple') || '').trim();
   var TOKEN   = (params.get('token') || '').trim();
   var RAW     = params.get('raw') === '1';                 // resize'ı kapat
   var MAX_DIM = clamp(parseInt(params.get('maxdim'), 10) || 2560, 1200, 4096); // uzun kenar (px)
@@ -38,18 +38,32 @@
   var successScreen = $('successScreen');
   var guestNameEl = $('guestName');
 
-  /* --- Karşılama başlığını kişiselleştir ------------------------------- */
-  if (COUPLE) {
-    var parts = COUPLE.split('&');
-    if (parts.length === 2) {
+  /* --- Etkinlik konsepti + karşılamayı kişiselleştir ------------------- */
+  var EVENT_KEY = window.WeddingEvents.getKey();
+  var EVENT = window.WeddingEvents.get(EVENT_KEY);
+
+  var eventEmojiEl = $('eventEmoji');
+  var subtitleEl   = $('subtitle');
+  var successEmoji = $('successEmoji');
+  if (eventEmojiEl) eventEmojiEl.textContent = EVENT.emoji;
+  if (subtitleEl)   subtitleEl.textContent = t('event.' + EVENT_KEY + '.subtitle');
+  if (successEmoji) successEmoji.textContent = EVENT.success;
+
+  if (EVENT_TITLE) {
+    // "&" ile isim yığını yalnızca çift-temelli etkinliklerde
+    if (EVENT.names && EVENT_TITLE.indexOf('&') >= 0) {
+      var parts = EVENT_TITLE.split('&');
       coupleTitle.innerHTML =
-        esc(parts[0].trim()) + '<span class="amp">&amp;</span>' + esc(parts[1].trim());
+        esc(parts[0].trim()) + '<span class="amp">&amp;</span>' + esc(parts.slice(1).join('&').trim());
     } else {
-      coupleTitle.textContent = COUPLE;
+      coupleTitle.textContent = EVENT_TITLE;
     }
     coupleTitle.classList.remove('hidden');
-    welcomeLine.textContent = t('upload.welcomeCouple', { couple: COUPLE });
-    document.title = COUPLE + ' · ' + (i18n.getLang() === 'en' ? 'Wedding Photos' : 'Düğün Fotoğrafları');
+    welcomeLine.textContent = t('event.' + EVENT_KEY + '.welcome', { title: EVENT_TITLE });
+    document.title = EVENT_TITLE + ' · ' + t('event.' + EVENT_KEY + '.name');
+  } else {
+    welcomeLine.textContent = t('event.' + EVENT_KEY + '.welcomeDefault');
+    document.title = t('event.' + EVENT_KEY + '.name');
   }
 
   /* --- Yapılandırma yoksa dur ------------------------------------------ */
