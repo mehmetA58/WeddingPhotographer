@@ -8,12 +8,13 @@
   <meta name="description" content="Etkinliğe ait fotoğraflarınızı bizimle paylaşın." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500;1,9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500;1,9..144,600&family=Inter:wght@400;500;600&family=Caveat:wght@500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
   <main class="page">
     <div class="card">
+      <i class="mounts" aria-hidden="true"></i>
 
       <!-- === Karşılama === -->
       <div class="event-accent" aria-hidden="true"></div>
@@ -89,6 +90,7 @@
       <section id="successScreen" class="success hidden">
         <div class="heart" aria-hidden="true"></div>
         <h2 data-i18n="upload.successTitle">Teşekkür Ederiz!</h2>
+        <div class="date-stamp" id="dateStamp" aria-hidden="true"></div>
         <p id="successText" data-i18n="upload.successText">Fotoğraflarınız bizimle güvenle paylaşıldı. Bu güzel anı ölümsüzleştirdiğiniz için minnettarız.</p>
         <button type="button" class="btn btn-outline" id="moreBtn">
           <svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></svg>

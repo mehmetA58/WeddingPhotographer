@@ -63,6 +63,7 @@
       var card = document.createElement('div');
       card.className = 'pcard';
       card.innerHTML =
+        '<i class="mounts" aria-hidden="true"></i>' +
         '<div class="pc-eyebrow">' + esc(t('card.pcEyebrow')) + '</div>' +
         '<div class="pc-couple">' + coupleHtml + '</div>' +
         '<div class="pc-orn" aria-hidden="true"></div>' +

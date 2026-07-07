@@ -45,6 +45,15 @@
   var subtitleEl = $('subtitle');
   if (subtitleEl) subtitleEl.textContent = t('event.' + EVENT_KEY + '.subtitle');
 
+  // Film tarih damgası ('26 07 07) — başarı ekranındaki analog dokunuş
+  var dateStampEl = $('dateStamp');
+  if (dateStampEl) {
+    var now = new Date();
+    var pad2 = function (n) { return ('0' + n).slice(-2); };
+    dateStampEl.textContent = '’' + String(now.getFullYear()).slice(2) +
+      ' ' + pad2(now.getMonth() + 1) + ' ' + pad2(now.getDate());
+  }
+
   if (EVENT_TITLE) {
     // "&" ile isim yığını yalnızca çift-temelli etkinliklerde
     if (EVENT.names && EVENT_TITLE.indexOf('&') >= 0) {

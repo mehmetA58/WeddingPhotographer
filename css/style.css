@@ -29,6 +29,9 @@
 
   --serif: "Fraunces", "Cormorant Garamond", Georgia, "Times New Roman", serif;
   --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --hand: "Caveat", "Comic Sans MS", cursive;
+  --mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+  --stamp: #E8A33D;
 }
 
 /* Etkinliğe göre konsept: vurgu paleti + sayfa zemin tonu.
@@ -179,6 +182,26 @@ body::before {
   opacity: .38;
   border: 1px solid rgba(168, 132, 78, .28);
   border-radius: calc(var(--radius) - 4px);
+}
+
+/* --- İmza: albüm köşe cepleri (photo-mount corners) ----------------------
+   Sayfa/kart, albüme köşe cepleriyle takılmış bir fotoğraf gibi durur.
+   Renk --corner-c üzerinden etkinlik vurgusunu izler. Dekoratiftir;
+   HTML'de <i class="mounts" aria-hidden="true"></i> olarak eklenir. */
+.mounts {
+  position: absolute;
+  inset: 5px;
+  pointer-events: none;
+  z-index: 1;
+  opacity: .5;
+  background-image:
+    linear-gradient(135deg, var(--corner-c) 50%, transparent 50.5%),
+    linear-gradient(225deg, var(--corner-c) 50%, transparent 50.5%),
+    linear-gradient(45deg,  var(--corner-c) 50%, transparent 50.5%),
+    linear-gradient(315deg, var(--corner-c) 50%, transparent 50.5%);
+  background-size: var(--corner-len) var(--corner-len);
+  background-position: top left, top right, bottom left, bottom right;
+  background-repeat: no-repeat;
 }
 
 /* --- Tipografi ---------------------------------------------------------- */
@@ -401,6 +424,14 @@ h2.section {
   border: 1px solid var(--line);
 }
 .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/* Polaroid "banyo" efekti: yeni eklenen kare soluk başlar, netleşir */
+@keyframes develop {
+  from { filter: sepia(.55) contrast(.8) brightness(1.14) saturate(.55); }
+  to   { filter: none; }
+}
+.thumb img,
+.g-cell img { animation: develop 1.4s ease-out both; }
 .thumb .badge {
   position: absolute;
   right: 6px; bottom: 6px;
@@ -449,19 +480,22 @@ h2.section {
   overflow: hidden;
   border: 1px solid var(--line);
 }
+/* Film şeridi: dolan çubuk, üst/alt kenarında perfore delik izleri taşır */
 .progress-fill {
   position: relative;
   height: 100%;
   width: 0%;
-  background: var(--gold-dark);
+  background-color: var(--gold-dark);
+  background-image:
+    repeating-linear-gradient(90deg, rgba(255, 253, 246, .45) 0 3px, transparent 3px 9px),
+    repeating-linear-gradient(90deg, rgba(255, 253, 246, .45) 0 3px, transparent 3px 9px);
+  background-size: 100% 2px, 100% 2px;
+  background-position: 2px 1px, 2px calc(100% - 3px);
+  background-repeat: no-repeat;
   border-radius: 999px;
   transition: width .25s ease;
   overflow: hidden;
 }
-.progress-fill::after {
-  content: none;
-}
-@keyframes shimmer { to { transform: translateX(100%); } }
 
 /* --- Bildirim / durum --------------------------------------------------- */
 
@@ -510,9 +544,20 @@ h2.section {
 .success h2 { font-family: var(--serif); font-size: 30px; margin: 14px 0 6px; font-weight: 600; }
 .success p { color: var(--ink-soft); margin: 0 auto 18px; max-width: 32ch; }
 
+/* Film tarih damgası: analog makinelerin turuncu tarih baskısı ('26 07 07) */
+.date-stamp {
+  font-family: var(--mono);
+  font-size: 13px;
+  letter-spacing: .12em;
+  color: var(--stamp);
+  text-shadow: 0 0 7px rgba(232, 163, 61, .6);
+  margin: 2px 0 10px;
+}
+
 /* --- Kurulum: QR sonucu ------------------------------------------------- */
 
 .qr-card {
+  position: relative;
   text-align: center;
   border: 1px solid var(--line);
   border-radius: var(--radius);
@@ -1003,6 +1048,16 @@ details.advanced summary::before {
   opacity: 0.45;
   cursor: not-allowed;
   pointer-events: none;
+}
+
+/* --- Hareket azaltma ----------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .thumb img,
+  .g-cell img,
+  .success .heart,
+  .spin { animation: none !important; }
+  .progress-fill { transition: none; }
 }
 
 /* --- Yazdırma ----------------------------------------------------------- */
