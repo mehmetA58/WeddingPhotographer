@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title data-i18n="title.slideshow">Canlı Sunum · Fotoğraf Duvarı</title>
+  <meta name="theme-color" content="#1C1916" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500;1,9..144,600&family=Inter:wght@400;500;600&family=Caveat:wght@500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body class="stage-body">
+
+  <main class="stage" id="stage">
+    <!-- Çapraz geçiş için iki polaroid katmanı -->
+    <div class="pol-layer" id="layerA"></div>
+    <div class="pol-layer" id="layerB"></div>
+
+    <!-- Anı Defteri not kartı -->
+    <div class="note-slide hidden" id="noteSlide"></div>
+
+    <!-- Boş durum: ortada büyük QR -->
+    <div class="stage-empty hidden" id="stageEmpty">
+      <p class="stage-empty-title" data-i18n="slideshow.emptyTitle">İlk kareyi sen paylaş!</p>
+      <div class="stage-empty-qr" id="emptyQr"></div>
+      <p class="stage-empty-sub" data-i18n="slideshow.emptySub">QR'ı okut, fotoğrafın saniyeler içinde bu ekranda belirsin.</p>
+    </div>
+
+    <!-- Yapılandırma / bağlantı hatası -->
+    <div class="stage-error hidden" id="stageError"></div>
+  </main>
+
+  <!-- Alt bant: başlık + canlı sayaç -->
+  <footer class="stage-bar" id="stageBar">
+    <div class="stage-title" id="stageTitle"></div>
+    <div class="stage-count" id="stageCount"></div>
+  </footer>
+
+  <!-- Köşe QR: "sen de paylaş" -->
+  <aside class="stage-qr hidden" id="stageQrBox" aria-hidden="true">
+    <div class="stage-qr-holder" id="stageQr"></div>
+    <div class="stage-qr-cta" data-i18n="slideshow.share">Fotoğraflarını paylaş</div>
+  </aside>
+
+  <div class="stage-hint" id="stageHint" data-i18n="slideshow.hint">Tam ekran için tıklayın</div>
+
+  <script src="js/qrcode.min.js"></script>
+  <script src="js/i18n.js"></script>
+  <script src="js/events.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/slideshow.js"></script>
+</body>
+</html>

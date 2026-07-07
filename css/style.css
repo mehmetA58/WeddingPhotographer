@@ -1050,14 +1050,216 @@ details.advanced summary::before {
   pointer-events: none;
 }
 
+/* --- Canlı Sunum Ekranı (slideshow.html) --------------------------------- */
+
+/* Koyu "masa örtüsü" zemini; polaroidler üzerine bırakılır */
+body.stage-body {
+  background: radial-gradient(120% 110% at 50% 0%, #2A231C 0%, #17120D 72%);
+  overflow: hidden;
+  cursor: pointer;
+}
+body.stage-body::before { opacity: .2; }
+
+.stage { position: fixed; inset: 0 0 64px; }
+
+.pol-layer {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 4vh 4vw;
+  opacity: 0;
+  transition: opacity .9s ease;
+  pointer-events: none;
+}
+.pol-layer.visible { opacity: 1; }
+
+.polaroid {
+  position: relative;
+  margin: 0;
+  background: #FDFCF8;
+  padding: 14px 14px 10px;
+  border-radius: 4px;
+  box-shadow: 0 26px 80px rgba(0, 0, 0, .6), 0 4px 16px rgba(0, 0, 0, .45);
+  transform: rotate(var(--rot, 0deg));
+}
+.polaroid .pol-img-slot img {
+  display: block;
+  max-width: min(84vw, 1400px);
+  max-height: 64vh;
+  border-radius: 2px;
+  background: #101010;
+}
+.pol-cap {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  padding: 8px 4px 2px;
+  min-height: 30px;
+}
+.pol-guest { font-family: var(--hand); font-size: 27px; line-height: 1; color: #4A4238; }
+.pol-task  { font-family: var(--hand); font-size: 20px; line-height: 1; color: #93866F; }
+.pol-cap .date-stamp { margin: 0 0 0 auto; }
+
+.pol-new {
+  position: absolute;
+  top: -13px;
+  right: -11px;
+  background: var(--gold);
+  color: #fff;
+  font: 600 12px/1 var(--sans);
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  padding: 8px 13px;
+  border-radius: 999px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, .45);
+}
+
+/* Yeni kare: masaya bırakılıp yerine oturur */
+@keyframes place {
+  0%   { opacity: 0; transform: rotate(var(--rot, 0deg)) scale(1.14) translateY(-5vh); }
+  62%  { opacity: 1; transform: rotate(var(--rot, 0deg)) scale(.985) translateY(.6vh); }
+  100% { opacity: 1; transform: rotate(var(--rot, 0deg)) scale(1) translateY(0); }
+}
+.polaroid.is-new { animation: place .9s cubic-bezier(.2, .8, .3, 1.05) both; }
+
+/* Alt bant: başlık + canlı sayaç */
+.stage-bar {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  color: #EFE9DF;
+}
+.stage-title { font-family: var(--serif); font-weight: 500; font-size: 24px; letter-spacing: .01em; }
+.stage-count { font: 500 14px var(--sans); color: #B4A995; letter-spacing: .08em; }
+
+/* Köşe QR: "sen de paylaş" */
+.stage-qr {
+  position: fixed;
+  right: 18px;
+  bottom: 78px;
+  width: 128px;
+  background: #FDFCF8;
+  padding: 12px 12px 8px;
+  border-radius: 6px;
+  text-align: center;
+  box-shadow: 0 16px 44px rgba(0, 0, 0, .5);
+  transform: rotate(1.6deg);
+}
+.stage-qr .stage-qr-holder canvas,
+.stage-qr .stage-qr-holder img { width: 104px; height: 104px; display: block; margin: 0 auto; }
+.stage-qr-cta { font-family: var(--hand); font-size: 17px; line-height: 1.08; color: #4A4238; margin-top: 6px; }
+
+/* Boş durum: ortada büyük QR */
+.stage-empty {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 20px;
+  text-align: center;
+  padding: 24px;
+}
+.stage-empty-title { font-family: var(--serif); font-size: clamp(26px, 4vw, 42px); color: #F2ECE1; margin: 0; }
+.stage-empty-sub   { font: 400 16px/1.5 var(--sans); color: #B4A995; margin: 0; max-width: 44ch; }
+.stage-empty-qr:not(:empty) {
+  background: #FDFCF8;
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, .55);
+}
+.stage-empty-qr canvas, .stage-empty-qr img { display: block; width: 208px; height: 208px; }
+
+/* Not kartı sahnesi */
+.note-slide {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 6vh 6vw;
+}
+
+/* Anı Defteri not kartı (sunum + galeri + yükleme ortak) */
+.note-card {
+  position: relative;
+  background:
+    repeating-linear-gradient(0deg, rgba(80, 58, 36, .03) 0 1px, transparent 1px 9px),
+    #FDFCF8;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 18px 20px 12px;
+  box-shadow: var(--shadow-sm);
+}
+.note-card .note-text {
+  font-family: var(--hand);
+  font-size: 24px;
+  line-height: 1.3;
+  color: #443C32;
+  margin: 0 0 6px;
+  overflow-wrap: break-word;
+}
+.note-card .note-by {
+  font-family: var(--hand);
+  font-size: 19px;
+  color: #93866F;
+  text-align: right;
+  margin: 0;
+}
+.note-card-lg {
+  max-width: min(78vw, 760px);
+  padding: 34px 38px 22px;
+  border: none;
+  box-shadow: 0 26px 80px rgba(0, 0, 0, .6);
+  transform: rotate(-1.2deg);
+}
+.note-card-lg .note-text { font-size: clamp(26px, 3.4vw, 40px); }
+.note-card-lg .note-by   { font-size: clamp(19px, 2.2vw, 26px); }
+
+/* İpucu ve bağlantı durumu */
+.stage-hint {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  font: 500 13px var(--sans);
+  color: #CFC5B4;
+  background: rgba(255, 253, 246, .08);
+  border: 1px solid rgba(255, 253, 246, .16);
+  padding: 8px 13px;
+  border-radius: 999px;
+  animation: hintFade 8s ease forwards;
+  pointer-events: none;
+}
+@keyframes hintFade { 0%, 75% { opacity: .9; } 100% { opacity: 0; visibility: hidden; } }
+
+.stage-error {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 86vw;
+  font: 500 14px/1.45 var(--sans);
+  color: #F0CFC7;
+  background: rgba(64, 38, 32, .92);
+  border: 1px solid rgba(240, 207, 199, .25);
+  padding: 10px 16px;
+  border-radius: 10px;
+}
+
 /* --- Hareket azaltma ----------------------------------------------------- */
 
 @media (prefers-reduced-motion: reduce) {
   .thumb img,
   .g-cell img,
   .success .heart,
+  .polaroid.is-new,
   .spin { animation: none !important; }
   .progress-fill { transition: none; }
+  .pol-layer { transition: opacity .01s linear; }
 }
 
 /* --- Yazdırma ----------------------------------------------------------- */

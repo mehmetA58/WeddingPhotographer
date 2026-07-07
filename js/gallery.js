@@ -10,6 +10,7 @@
   var $ = function (id) { return document.getElementById(id); };
   var i18n = window.WeddingI18n || { getLang: function () { return 'tr'; }, t: function (key) { return key; } };
   var t = function (key, vars) { return i18n.t(key, vars); };
+  var thumb = window.WeddingApi.thumb;
 
   var params = new URLSearchParams(location.search);
   var API    = (params.get('api') || '').trim();
@@ -42,10 +43,7 @@
     hide('empty'); hide('galleryNote');
     grid.innerHTML = '';
 
-    var url = API + (API.indexOf('?') >= 0 ? '&' : '?') +
-      'action=list&max=1000' + (TOKEN ? '&token=' + encodeURIComponent(TOKEN) : '');
-
-    jsonp(url).then(function (data) {
+    window.WeddingApi.list(API, { max: 1000, token: TOKEN }).then(function (data) {
       hide('loading');
       if (!data || data.status !== 'ok') {
         if (data && data.code === 'invalid_token') return fail(t('gallery.invalidToken'));
@@ -125,23 +123,6 @@
   });
 
   /* --- Yardımcılar ----------------------------------------------------- */
-  // Google Drive küçük resim servisi (dosya "bağlantıya sahip olan görüntüler"
-  // olduğu için token gerektirmeden <img>'de yüklenir).
-  function thumb(id, w) {
-    return 'https://drive.google.com/thumbnail?id=' + id + '&sz=w' + w;
-  }
-  function jsonp(url) {
-    return new Promise(function (resolve, reject) {
-      var cb = '__gcb_' + Math.random().toString(36).slice(2);
-      var s = document.createElement('script');
-      var timer = setTimeout(function () { cleanup(); reject(new Error('Zaman aşımı')); }, 20000);
-      function cleanup() { clearTimeout(timer); try { delete window[cb]; } catch (e) { window[cb] = undefined; } if (s.parentNode) s.parentNode.removeChild(s); }
-      window[cb] = function (data) { cleanup(); resolve(data); };
-      s.onerror = function () { cleanup(); reject(new Error('Betik hatası')); };
-      s.src = url + '&callback=' + cb;
-      document.head.appendChild(s);
-    });
-  }
   function fail(msg) {
     var n = $('galleryNote');
     n.innerHTML = '';

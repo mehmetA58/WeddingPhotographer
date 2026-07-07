@@ -14,6 +14,7 @@
       'title.upload': 'Fotoğraf Paylaşımı · Anılarınızı Paylaşın',
       'title.gallery': 'Fotoğraf Albümü · Galeri',
       'title.card': 'Yazdırılabilir QR Kart',
+      'title.slideshow': 'Canlı Sunum',
 
       'setup.eyebrow': 'Kurulum · Yalnızca Sizin İçin',
       'setup.brandHtml': 'Etkinlik<span class="amp">Fotoğraf</span>Albümü',
@@ -52,6 +53,11 @@
       'setup.gallerySubtitleHtml': 'Yüklenen tüm fotoğrafları görmek için bu <b>özel</b> linki <b>yalnızca siz</b> kullanın. Katılımcılarla paylaşmayın.',
       'setup.openGallery': 'Galeriyi Aç',
       'setup.copyGallery': 'Galeri Linkini Kopyala',
+      'setup.slideshowTitle': 'Canlı Sunum Ekranı',
+      'setup.slideshowSubtitleHtml': 'Mekandaki <b>TV veya projeksiyona</b> bu linki açın: yüklenen fotoğraflar saniyeler içinde ekranda belirir, köşedeki QR misafirleri paylaşmaya çağırır. Link özeldir, katılımcılarla paylaşmayın.',
+      'setup.openSlideshow': 'Sunum Ekranını Aç',
+      'setup.copySlideshow': 'Sunum Linkini Kopyala',
+      'setup.copySlideshowOk': 'Sunum linki kopyalandı.',
       'setup.edit': 'Ayarları Düzenle',
       'setup.footer': 'Sunucusuz & ücretsiz · Fotoğraflar yalnızca sizin Google Drive\'ınıza kaydedilir.',
       'setup.albumTitle': 'Etkinlik Fotoğraf Albümü',
@@ -192,7 +198,16 @@
       'card.defaultTitle': 'Etkinliğimiz',
       'card.qrFail': 'QR üretilemedi',
       'card.pcCta': 'Anılarınızı bizimle paylaşın',
-      'card.pcSub': 'Fotoğraflarınızı yüklemek için QR kodu telefonunuzla okutun'
+      'card.pcSub': 'Fotoğraflarınızı yüklemek için QR kodu telefonunuzla okutun',
+
+      'slideshow.share': 'Fotoğraflarını paylaş',
+      'slideshow.emptyTitle': 'İlk kareyi sen paylaş!',
+      'slideshow.emptySub': 'QR\'ı telefonunla okut; fotoğrafın saniyeler içinde bu ekranda belirsin.',
+      'slideshow.hint': 'Tam ekran için tıklayın',
+      'slideshow.count': '{count} kare',
+      'slideshow.new': 'Yeni',
+      'slideshow.connError': 'Bağlantı bekleniyor… Ekran otomatik olarak yeniden denenecek.',
+      'slideshow.configErrorHtml': '<b>Sunum bağlantısı eksik.</b> Bu sayfayı kurulum ekranındaki “Sunum Ekranı” linkiyle açın.'
     },
 
     en: {
@@ -200,6 +215,7 @@
       'title.upload': 'Photo Sharing · Share Your Moments',
       'title.gallery': 'Photo Album · Gallery',
       'title.card': 'Printable QR Card',
+      'title.slideshow': 'Live Show',
 
       'setup.eyebrow': 'Setup · Host Only',
       'setup.brandHtml': 'Event<span class="amp">Photo</span>Album',
@@ -238,6 +254,11 @@
       'setup.gallerySubtitleHtml': 'Use this <b>private</b> link to view every uploaded photo. Keep it for hosts only.',
       'setup.openGallery': 'Open Gallery',
       'setup.copyGallery': 'Copy Gallery Link',
+      'setup.slideshowTitle': 'Live Photo Wall',
+      'setup.slideshowSubtitleHtml': 'Open this link on the venue <b>TV or projector</b>: uploaded photos appear on screen within seconds, and the corner QR invites guests to share. The link is private — do not share it with guests.',
+      'setup.openSlideshow': 'Open Live Wall',
+      'setup.copySlideshow': 'Copy Live Wall Link',
+      'setup.copySlideshowOk': 'Live wall link copied.',
       'setup.edit': 'Edit Settings',
       'setup.footer': 'Serverless & free · Photos are saved only to your Google Drive.',
       'setup.albumTitle': 'Event Photo Album',
@@ -378,7 +399,16 @@
       'card.defaultTitle': 'Our Event',
       'card.qrFail': 'QR could not be created',
       'card.pcCta': 'Share your memories with us',
-      'card.pcSub': 'Scan the QR code with your phone to upload photos'
+      'card.pcSub': 'Scan the QR code with your phone to upload photos',
+
+      'slideshow.share': 'Share your photos',
+      'slideshow.emptyTitle': 'Share the first photo!',
+      'slideshow.emptySub': 'Scan the QR with your phone; your photo will appear on this screen within seconds.',
+      'slideshow.hint': 'Click for fullscreen',
+      'slideshow.count': '{count} photos',
+      'slideshow.new': 'New',
+      'slideshow.connError': 'Waiting for connection… The screen will retry automatically.',
+      'slideshow.configErrorHtml': '<b>Live wall link is missing.</b> Open this page from the “Live Wall” link on the setup screen.'
     }
   };
 

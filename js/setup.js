@@ -56,8 +56,9 @@
   var LS_KEY     = 'weddingUploadSetup';
   var LS_GSETUP  = 'weddingGSetup';
 
-  var currentLink    = '';
-  var currentGallery = '';
+  var currentLink      = '';
+  var currentGallery   = '';
+  var currentSlideshow = '';
 
   /* Internal state ------------------------------------------------------ */
   var accessToken    = null;
@@ -528,6 +529,16 @@
     if (token)  gurl.searchParams.set('token', token);
     currentGallery = gurl.toString();
 
+    // Canlı sunum ekranı (TV/projeksiyon): liste + köşe QR için yükleme linki
+    var surl = new URL('slideshow.html', location.href);
+    surl.searchParams.set('api', api);
+    surl.searchParams.set('lang', lang);
+    surl.searchParams.set('event', currentEvent);
+    if (eventTitle) surl.searchParams.set('title', eventTitle);
+    if (token)  surl.searchParams.set('token', token);
+    surl.searchParams.set('qr', currentLink);
+    currentSlideshow = surl.toString();
+
     var curl = new URL('card.html', location.href);
     curl.searchParams.set('data', currentLink);
     curl.searchParams.set('lang', lang);
@@ -556,6 +567,8 @@
     $('cardBtn').href = curl.toString();
     $('galleryOpenBtn').href = currentGallery;
     $('galleryLinkText').textContent = currentGallery;
+    $('slideshowOpenBtn').href = currentSlideshow;
+    $('slideshowLinkText').textContent = currentSlideshow;
 
     formSec.classList.add('hidden');
     resultSec.classList.remove('hidden');
@@ -585,6 +598,12 @@
   $('copyGalleryBtn').addEventListener('click', function () {
     copyText(currentGallery, function () {
       showNoteResult('ok', t('setup.copyGalleryOk'), $('galleryLinkText'));
+    });
+  });
+
+  $('copySlideshowBtn').addEventListener('click', function () {
+    copyText(currentSlideshow, function () {
+      showNoteResult('ok', t('setup.copySlideshowOk'), $('slideshowLinkText'));
     });
   });
 
