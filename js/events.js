@@ -1,7 +1,8 @@
 /* =========================================================================
    events.js — Etkinlik türü yapılandırması (v1)
-   Ortak sade yapı korunur; etkinliğe göre EMOJİ + METİN + AKSAN RENK
+   Ortak sade yapı korunur; etkinliğe göre METİN + AKSAN RENGİ + ZEMİN TONU
    değişir. Metinler js/i18n.js içindeki 'event.<key>.*' anahtarlarındadır.
+   Renkler css/style.css içindeki html[data-event="<key>"] bloklarındadır.
    URL parametresi: ?event=<key>  (yoksa varsayılan: wedding)
    ========================================================================= */
 
@@ -12,15 +13,15 @@
   //  names: true  → başlıkta "&" ile isim yığını (Ayşe & Mehmet) gösterilir.
   //  V1 kapsamı: kullanıcı tarafından istenen sabit etkinlik türleri.
   var EVENTS = [
-    { key: 'wedding',     emoji: '💍', success: '💛', names: true  },
-    { key: 'engagement',  emoji: '💍', success: '💐', names: true  },
-    { key: 'anniversary', emoji: '🥂', success: '🥂', names: true  },
-    { key: 'birthday',    emoji: '🎂', success: '🎉', names: false },
-    { key: 'romantic',    emoji: '🕯️', success: '❤️', names: false },
-    { key: 'welcome',     emoji: '🎉', success: '🎉', names: false },
-    { key: 'farewell',    emoji: '👋', success: '💫', names: false },
-    { key: 'trip',        emoji: '✈️', success: '📸', names: false },
-    { key: 'meeting',     emoji: '🤝', success: '✅', names: false }
+    { key: 'wedding',     names: true  },
+    { key: 'engagement',  names: true  },
+    { key: 'anniversary', names: true  },
+    { key: 'birthday',    names: false },
+    { key: 'romantic',    names: false },
+    { key: 'welcome',     names: false },
+    { key: 'farewell',    names: false },
+    { key: 'trip',        names: false },
+    { key: 'meeting',     names: false }
   ];
 
   var DEFAULT_KEY = 'wedding';
@@ -39,7 +40,19 @@
   function apply(key) {
     var event = get(key);
     document.documentElement.setAttribute('data-event', event.key);
+    syncThemeColor();
     return event;
+  }
+
+  // Tarayıcı çubuğu rengini etkinliğin zemin tonuyla eşitle.
+  // Stylesheet henüz yüklenmemişse --cream boş döner; sessizce geç.
+  function syncThemeColor() {
+    try {
+      var cream = getComputedStyle(document.documentElement).getPropertyValue('--cream').trim();
+      if (!cream) return;
+      var meta = document.querySelector('meta[name="theme-color"]');
+      if (meta) meta.setAttribute('content', cream);
+    } catch (e) {}
   }
 
   apply(getKey());

@@ -32,6 +32,7 @@
 
   var eventTitleEl      = $('eventTitle');
   var eventTitleLabel   = $('eventTitleLabel');
+  var manualApiEl       = $('manualApi');
   var tokenEl           = $('token');
   var rawEl             = $('rawMode');
   var langEl            = $('languageSelect');
@@ -79,6 +80,9 @@
     if (gsaved.apiUrl)    deploymentUrl = gsaved.apiUrl;
     if (gsaved.folderId)  folderId      = gsaved.folderId;
     if (gsaved.token)     securityToken = gsaved.token;
+
+    // Daha önce elle girilen Web App URL'i geri getir (OAuth kurulumu yoksa)
+    if (!deploymentUrl && saved.api) manualApiEl.value = saved.api;
   } catch (e) {}
 
   window.WeddingEvents.apply(currentEvent);
@@ -88,6 +92,23 @@
   if (deploymentUrl) {
     showSetupComplete();
   }
+
+  /* =====================================================================
+     Manuel Web App URL ("Google ile Bağlan" alternatifi)
+     Alan doluysa QR üretiminde OAuth kurulumuna gerek kalmaz; elle girilen
+     adres önceliklidir (kullanıcı bilinçli olarak farklı bir deploy girebilir).
+     ===================================================================== */
+  function manualApiUrl() {
+    var v = (manualApiEl.value || '').trim();
+    return /^https:\/\/\S+$/i.test(v) ? v : '';
+  }
+
+  function updateGenerateState() {
+    generateBtn.disabled = !(manualApiUrl() || deploymentUrl);
+  }
+
+  manualApiEl.addEventListener('input', updateGenerateState);
+  updateGenerateState();
 
   langEl.addEventListener('change', function () {
     i18n.setLang(langEl.value);
@@ -114,14 +135,13 @@
       card.setAttribute('aria-checked', ev.key === currentEvent ? 'true' : 'false');
       card.title = name;
       card.dataset.key = ev.key;
-      var emojiEl = document.createElement('span');
-      emojiEl.className = 'ce-emoji';
-      emojiEl.setAttribute('aria-hidden', 'true');
-      emojiEl.textContent = ev.emoji;
+      var accentEl = document.createElement('span');
+      accentEl.className = 'ce-accent';
+      accentEl.setAttribute('aria-hidden', 'true');
       var nameEl = document.createElement('span');
       nameEl.className = 'ce-name';
       nameEl.textContent = name;
-      card.appendChild(emojiEl);
+      card.appendChild(accentEl);
       card.appendChild(nameEl);
       card.addEventListener('click', function () { selectEvent(ev.key); });
       conceptGrid.appendChild(card);
@@ -174,7 +194,7 @@
       return;
     }
     if (GOOGLE_CLIENT_ID === 'BURAYA_GOOGLE_CLIENT_ID_YAZIN') {
-      showNote('error', 'Lütfen <b>setup.js</b> dosyasındaki <code>GOOGLE_CLIENT_ID</code> değerini Google Cloud Console\'dan aldığınız Client ID ile değiştirin.');
+      showNote('info', 'Otomatik kurulum ("Google ile Bağlan") için <b>js/setup.js</b> içindeki <code>GOOGLE_CLIENT_ID</code> değerini ayarlayın (README, Bölüm B · Yol 1). Alternatif: Apps Script\'i kendiniz yayınlayıp Web App URL\'inizi <b>Gelişmiş ayarlar</b>dan girin.');
       return;
     }
     try {
@@ -476,14 +496,14 @@
     accessToken = null;
     setupComplete.classList.add('hidden');
     googleNotAuthed.classList.remove('hidden');
-    generateBtn.disabled = true;
+    updateGenerateState();
   });
 
   /* =====================================================================
      QR oluştur (apiUrl deploymentUrl'den alınır)
      ===================================================================== */
   generateBtn.addEventListener('click', function () {
-    var api = deploymentUrl;
+    var api = manualApiUrl() || deploymentUrl;
     var eventTitle = eventTitleEl.value.trim();
     var token = tokenEl.value.trim() || securityToken;
     var raw = rawEl.checked;
@@ -530,7 +550,7 @@
       correctLevel: QRCode.CorrectLevel.L
     });
 
-    qrCaption.textContent = window.WeddingEvents.get(currentEvent).emoji + ' ' + (eventTitle || t('setup.albumTitle'));
+    qrCaption.textContent = eventTitle || t('setup.albumTitle');
     linkText.textContent = currentLink;
     previewBtn.href = currentLink;
     $('cardBtn').href = curl.toString();
@@ -586,7 +606,9 @@
 
   function showNote(type, html) {
     noteEl.className = 'note note-' + type;
-    noteEl.innerHTML = html;
+    // Metni tek bir sarmalayıcıya koy: .note flex olduğundan aksi halde
+    // her inline eleman (<b>, <code>) ayrı bir flex öğesi olup satırı bozar.
+    noteEl.innerHTML = '<span aria-hidden="true"></span><div>' + html + '</div>';
     noteEl.classList.remove('hidden');
   }
 

@@ -4,10 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title data-i18n="title.setup">Etkinlik Fotoğraf QR · Kurulum</title>
-  <meta name="theme-color" content="#FBF8F3" />
+  <meta name="theme-color" content="#FAF5EC" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500;1,9..144,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/style.css" />
   <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
@@ -17,7 +17,7 @@
 
       <p class="eyebrow" data-i18n="setup.eyebrow">Kurulum · Yalnızca Sizin İçin</p>
       <h1 class="couple" data-i18n-html="setup.brandHtml">Etkinlik<span class="amp">Fotoğraf</span>Albümü</h1>
-      <div class="divider"><span>❦</span></div>
+      <div class="divider"><span></span></div>
       <p class="subtitle" data-i18n-html="setup.subtitleHtml">Kendi Google Drive'ınıza bağlı bir <b>QR kod</b> oluşturun.
         Katılımcılar bu QR'ı okutup fotoğraflarını doğrudan Drive'ınıza yükleyecek.</p>
 
@@ -28,7 +28,7 @@
         <section class="google-section" id="googleSection">
           <div id="googleNotAuthed">
             <div class="google-card">
-              <div class="google-icon">🔗</div>
+              <div class="google-icon" aria-hidden="true"></div>
               <h2 data-i18n="setup.googleTitle">Google Drive'a Bağlan</h2>
               <p class="small" data-i18n="setup.googleDesc">
                 Fotoğraflar otomatik olarak Google Drive'ınıza kaydedilecek.
@@ -45,17 +45,17 @@
             <div class="deploy-card">
               <h2 data-i18n="setup.deployTitle">Kurulum yapılıyor…</h2>
               <div class="deploy-steps">
-                <div class="deploy-step" data-step="folder">📁 <span data-i18n="setup.deployFolder">Drive klasörü oluşturuluyor</span></div>
-                <div class="deploy-step" data-step="project">⚙️ <span data-i18n="setup.deployProject">Apps Script projesi oluşturuluyor</span></div>
-                <div class="deploy-step" data-step="deploy">🚀 <span data-i18n="setup.deployDeploy">Web App yayınlanıyor</span></div>
-                <div class="deploy-step" data-step="auth">🔐 <span data-i18n="setup.deployAuth">Drive izni bekleniyor</span></div>
-                <div class="deploy-step" data-step="done">✅ <span data-i18n="setup.deployDone">Kurulum tamamlandı</span></div>
+                <div class="deploy-step" data-step="folder"><span data-i18n="setup.deployFolder">Drive klasörü oluşturuluyor</span></div>
+                <div class="deploy-step" data-step="project"><span data-i18n="setup.deployProject">Apps Script projesi oluşturuluyor</span></div>
+                <div class="deploy-step" data-step="deploy"><span data-i18n="setup.deployDeploy">Web App yayınlanıyor</span></div>
+                <div class="deploy-step" data-step="auth"><span data-i18n="setup.deployAuth">Drive izni bekleniyor</span></div>
+                <div class="deploy-step" data-step="done"><span data-i18n="setup.deployDone">Kurulum tamamlandı</span></div>
               </div>
             </div>
           </div>
           <div id="setupComplete" class="hidden">
             <div class="google-card success">
-              <div class="success-icon">✅</div>
+              <div class="success-icon" aria-hidden="true"></div>
               <h2 data-i18n="setup.completeTitle">Google Drive Bağlantısı Hazır</h2>
               <p class="small" data-i18n="setup.completeDesc">Apps Script projeniz oluşturuldu ve Drive klasörünüz hazır. Şimdi etkinlik ayarlarını yapabilirsiniz.</p>
               <button type="button" class="btn btn-ghost" id="reconnectBtn" data-i18n="setup.reconnect">Yeniden Bağlan</button>
@@ -64,12 +64,12 @@
         </section>
 
         <div class="field">
-          <label id="eventLabel" data-i18n="setup.eventLabel">2 · Etkinlik Türü</label>
+          <label id="eventLabel" data-i18n="setup.eventLabel">1 · Etkinlik Türü</label>
           <div class="concept-grid" id="conceptGrid" role="radiogroup" aria-label="Etkinlik türü"></div>
         </div>
 
         <div class="field">
-          <label for="eventTitle" id="eventTitleLabel">3 · Etkinlik Başlığı</label>
+          <label for="eventTitle" id="eventTitleLabel">2 · Etkinlik Başlığı</label>
           <input class="input" type="text" id="eventTitle" maxlength="70"
                  placeholder="Örn. Ayşe & Mehmet" />
         </div>
@@ -85,13 +85,20 @@
         <details class="advanced">
           <summary data-i18n="setup.advanced">Gelişmiş ayarlar (isteğe bağlı)</summary>
           <div class="field" style="margin-top:12px">
+            <label for="manualApi" data-i18n-html="setup.manualApiLabelHtml">Web App URL (manuel bağlantı)
+              <span class="hint">— "Google ile Bağlan" kullanmadan kendi yayınladığınız Apps Script adresi</span></label>
+            <input class="input" type="url" id="manualApi" inputmode="url" autocomplete="off" spellcheck="false"
+                   placeholder="https://script.google.com/macros/s/…/exec" data-i18n-placeholder="setup.manualApiPlaceholder" />
+            <p class="small" style="margin:6px 2px 0" data-i18n="setup.manualApiHelp">Code.gs'i kendiniz yayınladıysanız (README Bölüm B) Web App URL'ini buraya yapıştırın; Google ile bağlanmak gerekmez.</p>
+          </div>
+          <div class="field">
             <label for="token" data-i18n-html="setup.tokenLabelHtml">Güvenlik anahtarı (token)
               <span class="hint">— linkiniz sızsa bile yabancı yüklemeleri engeller</span></label>
             <div style="display:flex; gap:8px">
               <input class="input" type="text" id="token" placeholder="(boş bırakılabilir)" data-i18n-placeholder="setup.tokenPlaceholder" />
               <button type="button" class="btn btn-ghost" id="genToken" style="width:auto; padding:0 16px" data-i18n="setup.generateToken">Üret</button>
             </div>
-            <p class="small" style="margin:6px 2px 0" data-i18n-html="setup.tokenHelpHtml">Bu anahtarı Apps Script'te de <code>TOKEN</code> olarak ayarlayın (rehbere bakın).</p>
+            <p class="small" style="margin:6px 2px 0" data-i18n-html="setup.tokenHelpHtml">Bu anahtar otomatik yapılandırıldı.</p>
           </div>
           <div class="field">
             <label><input type="checkbox" id="rawMode" /> <span data-i18n-html="setup.rawLabelHtml">Orijinal çözünürlükte yükle
@@ -109,7 +116,7 @@
 
       <!-- === Sonuç === -->
       <section id="result" class="hidden">
-        <div class="divider" style="margin-top:26px"><span>❦</span></div>
+        <div class="divider" style="margin-top:26px"><span></span></div>
         <h2 class="section center" data-i18n="setup.resultTitle">QR Kodunuz Hazır</h2>
         <p class="subtitle no-print" data-i18n="setup.resultSubtitle">Aşağıdaki QR'ı indirip masalara yerleştirin veya bu kartı doğrudan yazdırın.</p>
 
@@ -141,7 +148,7 @@
           <p class="qr-link" id="linkText"></p>
 
           <!-- Etkinlik sahibi için özel galeri -->
-          <div class="divider" style="margin-top:24px"><span>❦</span></div>
+          <div class="divider" style="margin-top:24px"><span></span></div>
           <h2 class="section center" style="font-size:21px" data-i18n="setup.galleryTitle">Özel Galeri</h2>
           <p class="subtitle" data-i18n-html="setup.gallerySubtitleHtml">Yüklenen tüm fotoğrafları görmek için bu <b>özel</b> linki
             <b>yalnızca siz</b> kullanın. Katılımcılarla paylaşmayın.</p>

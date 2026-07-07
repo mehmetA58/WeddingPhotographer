@@ -16,7 +16,6 @@
   var params = new URLSearchParams(location.search);
   var DATA   = (params.get('data') || '').trim();
   var EVENT_TITLE = (params.get('title') || params.get('couple') || '').trim();
-  var EVENT = window.WeddingEvents ? window.WeddingEvents.get(window.WeddingEvents.getKey()) : null;
 
   var sheet = $('sheet');
   var copies = 4;
@@ -66,7 +65,7 @@
       card.innerHTML =
         '<div class="pc-eyebrow">' + esc(t('card.pcEyebrow')) + '</div>' +
         '<div class="pc-couple">' + coupleHtml + '</div>' +
-        '<div class="pc-orn">' + (EVENT ? EVENT.emoji : '❦') + '</div>' +
+        '<div class="pc-orn" aria-hidden="true"></div>' +
         (qrDataUrl ? '<img class="pc-qr" src="' + qrDataUrl + '" alt="QR" />'
                    : '<div class="pc-sub">' + esc(t('card.qrFail')) + '</div>') +
         '<div class="pc-cta">' + esc(t('card.pcCta')) + '</div>' +

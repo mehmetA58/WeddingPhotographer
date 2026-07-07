@@ -21,11 +21,6 @@
   var files = [];
   var lbIndex = 0;
 
-  // Etkinlik konsepti: başlık emojisi
-  var EVENT = window.WeddingEvents ? window.WeddingEvents.get(window.WeddingEvents.getKey()) : null;
-  var eventEmojiEl = $('eventEmoji');
-  if (EVENT && eventEmojiEl) eventEmojiEl.textContent = EVENT.emoji;
-
   if (EVENT_TITLE) {
     $('galleryTitle').textContent = EVENT_TITLE;
     $('gallerySub').textContent = t('gallery.subtitleTitle', { title: EVENT_TITLE });
@@ -152,7 +147,7 @@
     n.innerHTML = '';
     var icon = document.createElement('span');
     var text = document.createElement('div');
-    icon.textContent = '⚠️';
+    icon.setAttribute('aria-hidden', 'true');
     text.textContent = msg;
     n.appendChild(icon);
     n.appendChild(text);

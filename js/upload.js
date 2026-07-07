@@ -42,12 +42,8 @@
   var EVENT_KEY = window.WeddingEvents.getKey();
   var EVENT = window.WeddingEvents.get(EVENT_KEY);
 
-  var eventEmojiEl = $('eventEmoji');
-  var subtitleEl   = $('subtitle');
-  var successEmoji = $('successEmoji');
-  if (eventEmojiEl) eventEmojiEl.textContent = EVENT.emoji;
-  if (subtitleEl)   subtitleEl.textContent = t('event.' + EVENT_KEY + '.subtitle');
-  if (successEmoji) successEmoji.textContent = EVENT.success;
+  var subtitleEl = $('subtitle');
+  if (subtitleEl) subtitleEl.textContent = t('event.' + EVENT_KEY + '.subtitle');
 
   if (EVENT_TITLE) {
     // "&" ile isim yığını yalnızca çift-temelli etkinliklerde
@@ -176,7 +172,7 @@
       b.innerHTML = '<span class="spin">◠</span>';
     } else if (status === 'done') {
       item.el.classList.add('is-done');
-      b.textContent = '✓';
+      b.textContent = '';
     } else if (status === 'error') {
       b.textContent = '!';
     } else {
