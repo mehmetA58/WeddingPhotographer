@@ -68,8 +68,6 @@ Toplam süre: ~10 dakika. İki bölüm var: **(A) Siteyi yayınla**, **(B) Drive
 4. 1–2 dakika sonra siteniz yayında olur:
    `https://<kullanıcı-adınız>.github.io/etkinlik-foto/`
 5. Kurulum sayfanız: `.../etkinlik-foto/index.html`
-   İlk açılışta **kurulum sihirbazı** çıkar: “Apps Script'i Aç” ve “Backend Kodunu Kopyala”
-   butonlarıyla Bölüm B'yi neredeyse otomatik yaparsınız.
 
 **Seçenek 2: Netlify (daha da hızlı, sürükle-bırak)**
 
@@ -83,6 +81,31 @@ Toplam süre: ~10 dakika. İki bölüm var: **(A) Siteyi yayınla**, **(B) Drive
 ### Bölüm B — Google Drive'ınızı bağlayın (Apps Script)
 
 > Bu adımı **organizasyon sahibi** kendi Google hesabında yapar.
+> İki yol var; **birini** seçmeniz yeterli.
+
+#### Yol 1 — "Google ile Bağlan" (otomatik kurulum)
+
+Kurulum sayfasındaki **"Google ile Bağlan"** butonu; Drive klasörünü, Apps Script
+projesini ve Web App yayınını sizin adınıza otomatik oluşturur. Bunun çalışması için
+**siteyi yayınlayan kişinin** bir kez OAuth istemcisi tanımlaması gerekir:
+
+1. [console.cloud.google.com](https://console.cloud.google.com) → yeni bir proje oluşturun.
+2. **APIs & Services → Library** → şu ikisini etkinleştirin: **Apps Script API** ve **Google Drive API**.
+3. **APIs & Services → OAuth consent screen** → *External* → uygulama adını girin;
+   kendi e-postanızı **Test users** listesine ekleyin.
+4. **APIs & Services → Credentials → Create Credentials → OAuth client ID** → *Web application*.
+   **Authorized JavaScript origins** alanına sitenizin adresini ekleyin
+   (örn. `https://<kullanıcı-adınız>.github.io`; yerelde denemek için `http://localhost:8000`).
+5. Oluşan **Client ID**'yi `js/setup.js` başındaki `GOOGLE_CLIENT_ID` değerine yapıştırın
+   ve siteyi yeniden yayınlayın.
+6. Organizasyon sahibi ayrıca [script.google.com/home/usersettings](https://script.google.com/home/usersettings)
+   adresinden **Google Apps Script API** iznini **Açık** konuma getirmelidir
+   (kapalıysa proje oluşturma `403` hatası verir).
+
+Artık kurulum sayfasında **"Google ile Bağlan"** → izinleri onaylayın → kurulum
+adımları (klasör, proje, yayın, token) otomatik tamamlanır. Yol 2'ye gerek kalmaz.
+
+#### Yol 2 — Manuel kurulum (Cloud Console gerektirmez)
 
 1. [script.google.com](https://script.google.com) → **Yeni proje**.
 2. Soldaki `Code.gs` dosyasının içeriğini silin; `apps-script/Code.gs`
@@ -104,6 +127,7 @@ Toplam süre: ~10 dakika. İki bölüm var: **(A) Siteyi yayınla**, **(B) Drive
 6. İlk kez izin istenir → hesabınızı seçin → "Advanced → Go to project (unsafe)"
    → **Allow** (kendi betiğinize Drive izni veriyorsunuz).
 7. Açılan **Web app URL**'ini kopyalayın — `https://script.google.com/macros/s/AKfyc…/exec`
+8. Kurulum sayfasında **Gelişmiş ayarlar → Web App URL (manuel bağlantı)** alanına bu adresi yapıştırın.
 
 ✅ Artık Drive'ınız bağlı. İlk fotoğraf yüklendiğinde Drive'ınızda
 **"Etkinlik Fotoğrafları"** klasörü otomatik oluşur.
@@ -112,18 +136,20 @@ Toplam süre: ~10 dakika. İki bölüm var: **(A) Siteyi yayınla**, **(B) Drive
 
 ### Bölüm C — QR kodunuzu oluşturun
 
-1. Yayınladığınız **`index.html`** (kurulum) sayfasını açın.
-2. **Web App URL**'inizi yapıştırın.
-3. **Etkinlik Türü** seçin. Karşılama ekranı, ikon ve vurgu rengi buna göre değişir.
-4. **Etkinlik Başlığı** girin (örn. `Ayşe & Mehmet`, `Kapadokya 2026`,
+1. Yayınladığınız **`index.html`** (kurulum) sayfasını açın ve Bölüm B'deki
+   yollardan biriyle Drive'ınızı bağlayın (Yol 1: **"Google ile Bağlan"** ·
+   Yol 2: **Gelişmiş ayarlar → Web App URL**).
+2. **Etkinlik Türü** seçin. Karşılama metni, vurgu rengi ve sayfa zemin tonu
+   buna göre değişir.
+3. **Etkinlik Başlığı** girin (örn. `Ayşe & Mehmet`, `Kapadokya 2026`,
    `Ayşe'nin 30. Yaşı`) — karşılama yazısında görünür.
-5. **Dil** alanından Türkçe veya English seçin. QR linki bu dili otomatik taşır.
-6. (Token kullandıysanız) *Gelişmiş ayarlar → Güvenlik anahtarı* alanına aynı token'ı girin.
-7. **"Bağlantıyı Test Et"** → yeşil onay bekleyin.
-8. **"QR Kodu Oluştur"** → QR belirir.
-9. **PNG İndir** ile tek QR görseli alın veya **Kart Yazdır (PDF)** ile
+4. **Dil** alanından Türkçe veya English seçin. QR linki bu dili otomatik taşır.
+5. (Yol 2 + token kullandıysanız) *Gelişmiş ayarlar → Güvenlik anahtarı* alanına
+   Apps Script'te ayarladığınız token'ı girin. (Yol 1'de token otomatik yapılandırılır.)
+6. **"QR Kodu Oluştur"** → QR belirir.
+7. **PNG İndir** ile tek QR görseli alın veya **Kart Yazdır (PDF)** ile
    yazdırmaya hazır masa kartını açın.
-10. **Galeri Linkini Kopyala** butonuyla özel galeri linkini saklayın.
+8. **Galeri Linkini Kopyala** butonuyla özel galeri linkini saklayın.
    Bu linki katılımcılarla paylaşmayın.
 
 ---
@@ -138,8 +164,9 @@ QR kartlarını masalara koyun. Küçük bir not ekleyebilirsiniz:
 
 ## ✅ Doğrulama / Test
 
-- **Bağlantı testi:** Kurulum sayfasındaki "Bağlantıyı Test Et" başarı vermeli.
-  (CORS uyarısı görürseniz sorun değil — aşağıdaki nota bakın, telefonla test edin.)
+- **Konsept kontrolü:** Kurulumda farklı etkinlik türleri seçtikçe karşılama metni,
+  vurgu rengi ve sayfa zemin tonu değişmeli; **"Yükleme Sayfasını Önizle"** ile
+  katılımcının göreceği ekranı kontrol edin.
 - **Uçtan uca:** Telefonunuzla QR'ı okutun → 2–3 fotoğraf seçin → ilerleme çubuğu
   dolmalı → "Teşekkür Ederiz" ekranı gelmeli → **Drive klasörünüzde** zaman
   damgalı dosyalar görünmeli.
@@ -158,7 +185,7 @@ QR kartlarını masalara koyun. Küçük bir not ekleyebilirsiniz:
 | **Yükleme başarısız / CORS "Ağ hatası"** | Apps Script `/exec` yanıtı CORS başlığı döndürmediği için istek `mode:'no-cors'` ile gönderilir (kodda ayarlı) — yükleme çalışır ama tarayıcı yanıtı **okuyamaz**, bu yüzden arayüz iyimser şekilde "başarılı" gösterir. Fotoğrafların gerçekten geldiğini **Galeri** veya Drive klasöründen doğrulayın. Web App'in **"Who has access: Anyone"** ile yayınlandığından emin olun. |
 | **"0 uploaded, 1 failed" görüyordum** | Eski sürümde tarayıcı başarı yanıtını okuyamadığı için yanlışlıkla "başarısız" gösteriyordu; **fotoğraflar aslında Drive'a kaydedilmiş olabilir**. Güncel sürüm bunu düzeltir (`no-cors`). |
 | **Güvenlik anahtarı (token) uyarısı** | `no-cors` ile tarayıcı sunucu yanıtını okuyamadığından, **yanlış token** durumunda arayüz yine "başarılı" gösterir ama sunucu dosyayı **kaydetmez**. Token kullanıyorsanız yüklemeyi Galeri'den doğrulayın. |
-| **Kurulumdaki "Bağlantı Testi" doğrulanamadı** | Tarayıcı, GET yanıtını CORS nedeniyle okuyamayabilir. Bu tek başına hata değildir — QR'ı üretip **telefonla bir test fotoğrafı** yükleyin. |
+| **"Google ile Bağlan" hata veriyor (403 / yetki)** | [script.google.com/home/usersettings](https://script.google.com/home/usersettings)'ten **Google Apps Script API**'yi açın; Cloud Console'da **Apps Script API + Drive API**'nin etkin ve sitenizin **Authorized JavaScript origins** listesinde olduğundan emin olun. Alternatif: Bölüm B · Yol 2 (manuel) ile Web App URL'inizi *Gelişmiş ayarlar*'dan girin. |
 | **Kodda değişiklik yaptım, çalışmıyor** | Aynı URL'i korumak için **Deploy → Manage deployments → ✏ → Version: New version**. "New deployment" **yeni URL** üretir (QR'ı da yenilemeniz gerekir). |
 | **iPhone HEIC fotoğrafları** | Varsayılan resize açıkken tarayıcı fotoğrafı **JPEG'e** çevirir (uyumlu). Kapatırsanız (orijinal) HEIC olarak kaydolur. |
 | **Çok büyük fotoğraf / yavaş** | Resize varsayılan açık (~2560px). Orijinal kalite isterseniz kurulumda *"Orijinal çözünürlükte yükle"*yi işaretleyin (daha yavaş, ~40MB/dosya sınırı). |
