@@ -107,22 +107,29 @@
       message: msg.slice(0, 400)
     };
 
-    if (window.EventPhotoApi && window.EventPhotoApi.jsonp) {
-      return window.EventPhotoApi.jsonp(buildNoteUrl(payload), 20000);
+    // Fotoğrafların kanıtlanmış yolu: no-cors POST (yanıt okunamaz ama
+    // istek sunucuya ulaşır; Code.gs doPost type=note'u kaydeder).
+    function postFallback() {
+      return fetch(API_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({
+          type: 'note',
+          token: payload.token,
+          guestName: payload.guestName,
+          message: payload.message
+        })
+      }).then(function () { return { status: 'ok', opaque: true }; });
     }
 
-    // Eski sayfa önbelleğinde api.js yoksa son çare olarak eski gönderim yolu.
-    return fetch(API_URL, {
-      method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({
-        type: 'note',
-        token: payload.token,
-        guestName: payload.guestName,
-        message: payload.message
-      })
-    }).then(function () { return { status: 'ok', opaque: true }; });
+    if (window.EventPhotoApi && window.EventPhotoApi.jsonp) {
+      // Önce JSONP: sonucu okunabilir (ör. geçersiz token görünür). Ama betik
+      // yüklenemezse ("Betik hatası" — eski deploy, erişim ayarı, engelleyici…)
+      // not kaybolmasın diye POST yoluna otomatik düşülür.
+      return window.EventPhotoApi.jsonp(buildNoteUrl(payload), 20000).catch(postFallback);
+    }
+    return postFallback();
   }
 
   function buildNoteUrl(payload) {
@@ -367,11 +374,14 @@
       busy = false;
       if (!err || !err.handled) {
         progressWrap.classList.add('hidden');
-        // Fotolar yüklendi ama not gitmedi: kullanıcıya durumu net söyle —
-        // "Gönder"e tekrar basılırsa yalnızca not yeniden denenir (kuyruk boş).
-        showSendError(err && err.noteStage && hadPhotos
-          ? t('upload.noteFailAfterPhotos')
-          : ((err && err.message) || t('upload.noteFail')));
+        // Misafire yalnızca insan dilinde mesaj göster: sunucudan gelen anlamlı
+        // yanıtlar (err.code taşır, ör. geçersiz token) aynen; "Betik hatası" /
+        // "Zaman aşımı" gibi iç mesajlar genel metne çevrilir.
+        var human;
+        if (err && err.noteStage && hadPhotos) human = t('upload.noteFailAfterPhotos');
+        else if (err && err.code && err.message) human = err.message;
+        else human = t('upload.noteFail');
+        showSendError(human);
       }
       syncControls();
     });
