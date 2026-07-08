@@ -50,5 +50,6 @@
     return { guest: guest.trim(), task: task.trim() };
   }
 
-  window.WeddingApi = { jsonp: jsonp, list: list, thumb: thumb, parseMeta: parseMeta };
+  window.EventPhotoApi = { jsonp: jsonp, list: list, thumb: thumb, parseMeta: parseMeta };
+  window.WeddingApi = window.EventPhotoApi;
 })();

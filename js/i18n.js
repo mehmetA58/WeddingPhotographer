@@ -6,19 +6,20 @@
 (function () {
   'use strict';
 
-  var STORAGE_KEY = 'weddingUploadLang';
+  var STORAGE_KEY = 'eventPhotoLang';
+  var LEGACY_STORAGE_KEY = 'weddingUploadLang';
 
   var DICT = {
     tr: {
-      'title.setup': 'Etkinlik Fotoğraf QR · Kurulum',
-      'title.upload': 'Fotoğraf Paylaşımı · Anılarınızı Paylaşın',
-      'title.gallery': 'Fotoğraf Albümü · Galeri',
-      'title.card': 'Yazdırılabilir QR Kart',
-      'title.slideshow': 'Canlı Sunum',
+      'title.setup': 'EventPhoto · Kurulum',
+      'title.upload': 'EventPhoto · Fotoğraf Paylaşımı',
+      'title.gallery': 'EventPhoto · Galeri',
+      'title.card': 'EventPhoto · QR Kart',
+      'title.slideshow': 'EventPhoto · Canlı Sunum',
 
-      'setup.eyebrow': 'Kurulum · Yalnızca Sizin İçin',
-      'setup.brandHtml': 'Etkinlik<span class="amp">Fotoğraf</span>Albümü',
-      'setup.subtitleHtml': 'Kendi Google Drive\'ınıza bağlı bir <b>QR kod</b> oluşturun. Katılımcılar bu QR\'ı okutup fotoğraflarını doğrudan Drive\'ınıza yükleyecek.',
+      'setup.eyebrow': 'EventPhoto · Etkinlik Sahibi',
+      'setup.brandHtml': 'EventPhoto<span class="amp">ortak</span>Albüm',
+      'setup.subtitleHtml': 'Her etkinlik için kendi Google Drive\'ınıza bağlı bir <b>QR albüm</b> oluşturun. Katılımcılar QR\'ı okutup fotoğraflarını doğrudan Drive\'ınıza yükler.',
       'setup.googleTitle': 'Google Drive\'a Bağlan',
       'setup.googleDesc': 'Fotoğraflar otomatik olarak Google Drive\'ınıza kaydedilecek. Apps Script projesi sizin için otomatik oluşturulup yayınlanacak.',
       'setup.googleSignIn': 'Google ile Bağlan',
@@ -60,8 +61,8 @@
       'setup.copySlideshow': 'Sunum Linkini Kopyala',
       'setup.copySlideshowOk': 'Sunum linki kopyalandı.',
       'setup.edit': 'Ayarları Düzenle',
-      'setup.footer': 'Sunucusuz & ücretsiz · Fotoğraflar yalnızca sizin Google Drive\'ınıza kaydedilir.',
-      'setup.albumTitle': 'Etkinlik Fotoğraf Albümü',
+      'setup.footer': 'EventPhoto sunucusuz & ücretsizdir · Fotoğraflar yalnızca sizin Google Drive\'ınıza kaydedilir.',
+      'setup.albumTitle': 'EventPhoto Etkinlik Albümü',
       'setup.needAuth': 'Önce Google ile bağlanın veya Gelişmiş ayarlar\'dan Web App URL\'inizi girin.',
       'setup.deployError': 'Kurulum sırasında hata oluştu: {msg}',
       'setup.deployRetry': 'Tekrar Dene',
@@ -263,15 +264,15 @@
     },
 
     en: {
-      'title.setup': 'Event Photo QR · Setup',
-      'title.upload': 'Photo Sharing · Share Your Moments',
-      'title.gallery': 'Photo Album · Gallery',
-      'title.card': 'Printable QR Card',
-      'title.slideshow': 'Live Show',
+      'title.setup': 'EventPhoto · Setup',
+      'title.upload': 'EventPhoto · Photo Sharing',
+      'title.gallery': 'EventPhoto · Gallery',
+      'title.card': 'EventPhoto · QR Card',
+      'title.slideshow': 'EventPhoto · Live Wall',
 
-      'setup.eyebrow': 'Setup · Host Only',
-      'setup.brandHtml': 'Event<span class="amp">Photo</span>Album',
-      'setup.subtitleHtml': 'Create a <b>QR code</b> connected to your own Google Drive. Participants scan it and upload photos directly to your Drive.',
+      'setup.eyebrow': 'EventPhoto · Host Setup',
+      'setup.brandHtml': 'EventPhoto<span class="amp">shared</span>Album',
+      'setup.subtitleHtml': 'Create a <b>QR album</b> connected to your own Google Drive for any event. Participants scan the QR and upload photos directly to your Drive.',
       'setup.googleTitle': 'Connect Google Drive',
       'setup.googleDesc': 'Photos will be saved to your Google Drive automatically. An Apps Script project will be created and deployed for you.',
       'setup.googleSignIn': 'Sign in with Google',
@@ -313,8 +314,8 @@
       'setup.copySlideshow': 'Copy Live Wall Link',
       'setup.copySlideshowOk': 'Live wall link copied.',
       'setup.edit': 'Edit Settings',
-      'setup.footer': 'Serverless & free · Photos are saved only to your Google Drive.',
-      'setup.albumTitle': 'Event Photo Album',
+      'setup.footer': 'EventPhoto is serverless & free · Photos are saved only to your Google Drive.',
+      'setup.albumTitle': 'EventPhoto Event Album',
       'setup.needAuth': 'Connect with Google first, or paste your Web App URL under Advanced settings.',
       'setup.deployError': 'Setup error: {msg}',
       'setup.deployRetry': 'Retry',
@@ -516,7 +517,7 @@
     }
   };
 
-  var currentLang = normalize(getParam('lang') || safeGet(STORAGE_KEY) || 'tr');
+  var currentLang = normalize(getParam('lang') || safeGet(STORAGE_KEY) || safeGet(LEGACY_STORAGE_KEY) || 'tr');
 
   function getParam(name) {
     try { return new URLSearchParams(location.search).get(name); }
@@ -578,12 +579,13 @@
     apply(document);
   }
 
-  window.WeddingI18n = {
+  window.EventPhotoI18n = {
     apply: apply,
     getLang: function () { return currentLang; },
     setLang: setLang,
     t: t
   };
+  window.WeddingI18n = window.EventPhotoI18n;
 
   apply(document);
 })();

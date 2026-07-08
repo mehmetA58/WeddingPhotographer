@@ -8,7 +8,7 @@
 
 (function () {
   'use strict';
-  var i18n = window.WeddingI18n || { getLang: function () { return 'tr'; }, t: function (key) { return key; } };
+  var i18n = window.EventPhotoI18n || { getLang: function () { return 'tr'; }, t: function (key) { return key; } };
   var t = function (key, vars) { return i18n.t(key, vars); };
 
   /* --- Yapılandırma (URL parametreleri) --------------------------------- */
@@ -39,8 +39,8 @@
   var guestNameEl = $('guestName');
 
   /* --- Etkinlik konsepti + karşılamayı kişiselleştir ------------------- */
-  var EVENT_KEY = window.WeddingEvents.getKey();
-  var EVENT = window.WeddingEvents.get(EVENT_KEY);
+  var EVENT_KEY = window.EventPhotoEvents.getKey();
+  var EVENT = window.EventPhotoEvents.get(EVENT_KEY);
 
   var subtitleEl = $('subtitle');
   if (subtitleEl) subtitleEl.textContent = t('event.' + EVENT_KEY + '.subtitle');
@@ -65,10 +65,10 @@
     }
     coupleTitle.classList.remove('hidden');
     welcomeLine.textContent = t('event.' + EVENT_KEY + '.welcome', { title: EVENT_TITLE });
-    document.title = EVENT_TITLE + ' · ' + t('event.' + EVENT_KEY + '.name');
+    document.title = EVENT_TITLE + ' · EventPhoto';
   } else {
     welcomeLine.textContent = t('event.' + EVENT_KEY + '.welcomeDefault');
-    document.title = t('event.' + EVENT_KEY + '.name');
+    document.title = t('event.' + EVENT_KEY + '.name') + ' · EventPhoto';
   }
 
   /* --- Yapılandırma yoksa dur ------------------------------------------ */

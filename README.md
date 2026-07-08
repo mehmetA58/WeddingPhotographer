@@ -1,8 +1,10 @@
-# Etkinlik Fotoğraf Yükleme — QR ile Anlık Fotoğraf Toplama
+# EventPhoto — QR ile Ortak Etkinlik Fotoğraf Albümü
 
-Katılımcılar masadaki **QR kodu** okutur, **giriş yapmadan** telefonlarındaki
-fotoğrafları seçip yükler; fotoğraflar doğrudan **sizin Google Drive'ınıza**
-kaydedilir. Sunucusuz, ücretsiz, bakım gerektirmez.
+EventPhoto, düğünden geziye, toplantıdan doğum gününe kadar her etkinlik için
+QR ile çalışan ortak bir fotoğraf albümüdür. Katılımcılar masadaki **QR kodu**
+okutur, **giriş yapmadan** telefonlarındaki fotoğrafları seçip yükler;
+fotoğraflar doğrudan **sizin Google Drive'ınıza** kaydedilir. Sunucusuz,
+ücretsiz, bakım gerektirmez.
 
 ```
 📷 Katılımcı telefonu ──(QR)──▶ upload.html ──(base64 foto)──▶ Apps Script ──▶ Google Drive
@@ -47,7 +49,7 @@ Yıldönümü, Romantik Akşam Yemeği, Hoş Geldin Partisi, Veda Partisi**.
 ## 📁 Dosya yapısı
 
 ```
-WeddingPhoto/
+EventPhoto/
 ├── index.html          # Kurulum sayfası (etkinlik → link + QR üretir)
 ├── upload.html         # Katılımcı yükleme sayfası (QR buraya gider)
 ├── gallery.html        # Organizasyon sahibi için özel fotoğraf galerisi
@@ -65,8 +67,28 @@ WeddingPhoto/
 │   ├── slideshow.js    # Canlı sunum: polaroid duvarı + not kartları
 │   └── card.js         # PDF/yazdırma kartı
 ├── apps-script/Code.gs # Google Apps Script backend (Drive'a kaydeder)
+├── docs/
+│   ├── openapi.yaml    # Apps Script API için OpenAPI/Swagger sözleşmesi
+│   └── swagger.html    # Swagger UI ile okunabilir API dokümanı
 └── README.md           # Bu dosya
 ```
+
+---
+
+## 📘 API / Swagger dokümanı
+
+Apps Script backend sözleşmesi `docs/openapi.yaml` içinde OpenAPI 3.0 formatında
+tanımlıdır. Tarayıcıdan görüntülemek için `docs/swagger.html` dosyasını açın.
+
+GitHub Pages yayındaysa doküman şu adreste olur:
+
+```text
+https://<kullanıcı-adınız>.github.io/<repo-adı>/docs/swagger.html
+```
+
+Not: Fotoğraf yükleme akışı Apps Script CORS kısıtları nedeniyle `no-cors`
+kullanır; bu yüzden Swagger gerçek JSON yanıtını belgeler, fakat tarayıcıdaki
+misafir arayüzü yükleme yanıtını okuyamaz.
 
 ---
 
@@ -90,7 +112,7 @@ Toplam süre: ~10 dakika. İki bölüm var: **(A) Siteyi yayınla**, **(B) Drive
 **Seçenek 2: Netlify (daha da hızlı, sürükle-bırak)**
 
 1. [app.netlify.com/drop](https://app.netlify.com/drop) adresine gidin.
-2. `WeddingPhoto` klasörünü olduğu gibi tarayıcıya sürükleyin → anında yayınlanır.
+2. `EventPhoto` klasörünü olduğu gibi tarayıcıya sürükleyin → anında yayınlanır.
 
 > İki seçenek de HTTPS sağlar (kamera erişimi için zorunlu).
 

@@ -8,9 +8,9 @@
 (function () {
   'use strict';
   var $ = function (id) { return document.getElementById(id); };
-  var i18n = window.WeddingI18n || { getLang: function () { return 'tr'; }, t: function (key) { return key; } };
+  var i18n = window.EventPhotoI18n || { getLang: function () { return 'tr'; }, t: function (key) { return key; } };
   var t = function (key, vars) { return i18n.t(key, vars); };
-  var thumb = window.WeddingApi.thumb;
+  var thumb = window.EventPhotoApi.thumb;
 
   var params = new URLSearchParams(location.search);
   var API    = (params.get('api') || '').trim();
@@ -25,7 +25,7 @@
   if (EVENT_TITLE) {
     $('galleryTitle').textContent = EVENT_TITLE;
     $('gallerySub').textContent = t('gallery.subtitleTitle', { title: EVENT_TITLE });
-    document.title = EVENT_TITLE + ' · ' + (i18n.getLang() === 'en' ? 'Photo Album' : 'Fotoğraf Albümü');
+    document.title = EVENT_TITLE + ' · EventPhoto';
   }
 
   if (!API) {
@@ -43,7 +43,7 @@
     hide('empty'); hide('galleryNote');
     grid.innerHTML = '';
 
-    window.WeddingApi.list(API, { max: 1000, token: TOKEN, notes: true }).then(function (data) {
+    window.EventPhotoApi.list(API, { max: 1000, token: TOKEN, notes: true }).then(function (data) {
       hide('loading');
       if (!data || data.status !== 'ok') {
         if (data && data.code === 'invalid_token') return fail(t('gallery.invalidToken'));
@@ -135,7 +135,7 @@
     lbOpen.href = 'https://drive.google.com/file/d/' + f.id + '/view';
 
     // Altyazı: misafir adı + görev (dosya description'ından)
-    var meta = window.WeddingApi.parseMeta(f.d);
+    var meta = window.EventPhotoApi.parseMeta(f.d);
     var cap = $('lbCap');
     cap.textContent = meta.guest + (meta.guest && meta.task ? ' · ' : '') + meta.task;
     cap.style.display = (meta.guest || meta.task) ? '' : 'none';

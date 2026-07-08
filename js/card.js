@@ -10,7 +10,7 @@
 (function () {
   'use strict';
   var $ = function (id) { return document.getElementById(id); };
-  var i18n = window.WeddingI18n || { t: function (key) { return key; } };
+  var i18n = window.EventPhotoI18n || { t: function (key) { return key; } };
   var t = function (key, vars) { return i18n.t(key, vars); };
 
   var params = new URLSearchParams(location.search);

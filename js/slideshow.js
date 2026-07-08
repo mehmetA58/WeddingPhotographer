@@ -11,9 +11,9 @@
 (function () {
   'use strict';
   var $ = function (id) { return document.getElementById(id); };
-  var i18n = window.WeddingI18n || { getLang: function () { return 'tr'; }, t: function (key) { return key; } };
+  var i18n = window.EventPhotoI18n || { getLang: function () { return 'tr'; }, t: function (key) { return key; } };
   var t = function (key, vars) { return i18n.t(key, vars); };
-  var Api = window.WeddingApi;
+  var Api = window.EventPhotoApi;
 
   var params  = new URLSearchParams(location.search);
   var API     = (params.get('api') || '').trim();
@@ -31,7 +31,7 @@
     return Math.min(max, Math.max(min, v));
   }
 
-  var EVENT_KEY = window.WeddingEvents.getKey();
+  var EVENT_KEY = window.EventPhotoEvents.getKey();
 
   /* --- DOM --------------------------------------------------------------- */
   var layers     = [$('layerA'), $('layerB')];
@@ -45,7 +45,7 @@
   /* --- Başlık ------------------------------------------------------------ */
   var barTitle = TITLE || t('event.' + EVENT_KEY + '.name');
   stageTitle.textContent = barTitle;
-  document.title = barTitle + ' · ' + t('title.slideshow');
+  document.title = barTitle + ' · EventPhoto';
 
   /* --- Yapılandırma eksikse dur ------------------------------------------ */
   if (!API) {

@@ -1,0 +1,326 @@
+openapi: 3.0.3
+info:
+  title: EventPhoto Apps Script API
+  version: 1.0.0
+  description: |
+    API contract for the EventPhoto static web app.
+
+    The backend is a Google Apps Script Web App deployed as `/exec`.
+    Browser uploads are sent with `fetch(..., { mode: "no-cors" })`, so the
+    frontend treats a sent request as success because the response is opaque.
+    GET list calls may use JSONP by passing `callback`.
+servers:
+  - url: https://script.google.com/macros/s/{deploymentId}/exec
+    description: Google Apps Script Web App deployment URL
+    variables:
+      deploymentId:
+        default: YOUR_DEPLOYMENT_ID
+        description: Apps Script deployment id from the Web App URL
+tags:
+  - name: Health
+  - name: Setup
+  - name: Gallery
+  - name: Upload
+paths:
+  /:
+    get:
+      tags:
+        - Health
+        - Setup
+        - Gallery
+      summary: Ping, setup, or list files
+      description: |
+        Multipurpose Apps Script GET endpoint.
+
+        - No `action` or `action=ping` returns service status.
+        - `action=setup` stores token and Drive folder settings in Script Properties and returns HTML.
+        - `action=list` returns gallery data, optionally wrapped as JSONP when `callback` is supplied.
+      parameters:
+        - name: action
+          in: query
+          schema:
+            type: string
+            enum: [ping, setup, list]
+            default: ping
+          description: Endpoint mode.
+        - name: callback
+          in: query
+          schema:
+            type: string
+            pattern: '^[A-Za-z_$][0-9A-Za-z_$]*(\.[A-Za-z_$][0-9A-Za-z_$]*)*$'
+          description: Optional JSONP callback name for GET JSON responses.
+        - name: token
+          in: query
+          schema:
+            type: string
+          description: Shared event token. Required for `list` when TOKEN is configured; saved during `setup` when provided.
+        - name: folderId
+          in: query
+          schema:
+            type: string
+          description: Drive folder id saved during `setup`.
+        - name: folderName
+          in: query
+          schema:
+            type: string
+            default: Etkinlik Fotoğrafları
+          description: Drive folder name saved during `setup`.
+        - name: max
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 1000
+            default: 500
+          description: Maximum number of image files returned for `action=list`.
+        - name: notes
+          in: query
+          schema:
+            type: string
+            enum: ["1"]
+          description: Set to `1` to include guest-book notes in `action=list`.
+      responses:
+        "200":
+          description: Response depends on `action`.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/PingResponse"
+                  - $ref: "#/components/schemas/ListResponse"
+                  - $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                ping:
+                  summary: Ping response
+                  value:
+                    status: ready
+                    service: eventphoto-api
+                list:
+                  summary: Gallery response
+                  value:
+                    status: ok
+                    count: 2
+                    folderId: 1abcDriveFolder
+                    folderUrl: https://drive.google.com/drive/folders/1abcDriveFolder
+                    files:
+                      - id: 1abcFile
+                        name: 2026-07-08_20-15-10_Ayse_IMG-001_1234.jpg
+                        t: 1783530910000
+                        createdAt: "2026-07-08T17:15:10.000Z"
+                        size: 2459012
+                        d: "EventPhoto · Katılımcı: Ayşe · Görev: Dans pistinden bir kare"
+                    notes:
+                      - g: Ayşe
+                        m: Bu gece çok güzeldi.
+                        t: 1783530915000
+            application/javascript:
+              schema:
+                type: string
+              example: __gcb_ab12({"status":"ok","count":0,"files":[]})
+            text/html:
+              schema:
+                type: string
+              example: "<!DOCTYPE html><html><body>Kurulum Başarılı</body></html>"
+    post:
+      tags:
+        - Upload
+      summary: Upload a photo or save a guest-book note
+      description: |
+        Accepts `text/plain` containing a JSON object. This avoids CORS preflight
+        for Apps Script. The actual Apps Script response is JSON, but the browser
+        upload flow uses `no-cors`, so client JavaScript cannot read it.
+      requestBody:
+        required: true
+        content:
+          text/plain:
+            schema:
+              oneOf:
+                - $ref: "#/components/schemas/UploadPhotoRequest"
+                - $ref: "#/components/schemas/SaveNoteRequest"
+            examples:
+              uploadPhoto:
+                summary: Photo upload payload
+                value: |
+                  {
+                    "token": "shared-event-token",
+                    "guestName": "Ayşe",
+                    "task": "Dans pistinden bir kare",
+                    "filename": "IMG_001.jpg",
+                    "mimeType": "image/jpeg",
+                    "data": "/9j/4AAQSkZJRgABAQ..."
+                  }
+              saveNote:
+                summary: Guest-book note payload
+                value: |
+                  {
+                    "type": "note",
+                    "token": "shared-event-token",
+                    "guestName": "Ayşe",
+                    "message": "Bu gece çok güzeldi."
+                  }
+      responses:
+        "200":
+          description: JSON response from Apps Script.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/UploadPhotoResponse"
+                  - $ref: "#/components/schemas/SaveNoteResponse"
+                  - $ref: "#/components/schemas/ErrorResponse"
+              examples:
+                uploaded:
+                  value:
+                    status: ok
+                    fileId: 1abcFile
+                    name: 2026-07-08_20-15-10_Ayse_IMG-001_1234.jpg
+                note:
+                  value:
+                    status: ok
+                    type: note
+                invalidToken:
+                  value:
+                    status: error
+                    code: invalid_token
+                    message: Geçersiz güvenlik anahtarı
+components:
+  schemas:
+    PingResponse:
+      type: object
+      required: [status, service]
+      properties:
+        status:
+          type: string
+          example: ready
+        service:
+          type: string
+          example: eventphoto-api
+    ListResponse:
+      type: object
+      required: [status, count, files]
+      properties:
+        status:
+          type: string
+          enum: [ok]
+        count:
+          type: integer
+          description: Total image count before `max` slicing.
+        folderId:
+          type: string
+        folderUrl:
+          type: string
+          format: uri
+        files:
+          type: array
+          items:
+            $ref: "#/components/schemas/GalleryFile"
+        notes:
+          type: array
+          items:
+            $ref: "#/components/schemas/GuestNote"
+    GalleryFile:
+      type: object
+      required: [id, name, t, createdAt, size]
+      properties:
+        id:
+          type: string
+          description: Google Drive file id.
+        name:
+          type: string
+        t:
+          type: integer
+          format: int64
+          description: Creation timestamp in milliseconds.
+        createdAt:
+          type: string
+          description: ISO string when available from Apps Script.
+        size:
+          type: integer
+          format: int64
+          description: File size in bytes.
+        d:
+          type: string
+          description: Drive file description containing guest/task metadata.
+    GuestNote:
+      type: object
+      properties:
+        g:
+          type: string
+          description: Guest name.
+        m:
+          type: string
+          description: Note message.
+        t:
+          type: integer
+          format: int64
+          description: Creation timestamp in milliseconds.
+    UploadPhotoRequest:
+      type: object
+      required: [filename, mimeType, data]
+      properties:
+        token:
+          type: string
+        guestName:
+          type: string
+          maxLength: 40
+        task:
+          type: string
+          maxLength: 60
+        filename:
+          type: string
+        mimeType:
+          type: string
+          pattern: "^image/"
+          example: image/jpeg
+        data:
+          type: string
+          format: byte
+          description: Base64 file data without the `data:*/*;base64,` prefix.
+    SaveNoteRequest:
+      type: object
+      required: [type, message]
+      properties:
+        type:
+          type: string
+          enum: [note]
+        token:
+          type: string
+        guestName:
+          type: string
+          maxLength: 40
+        message:
+          type: string
+          maxLength: 500
+    UploadPhotoResponse:
+      type: object
+      required: [status, fileId, name]
+      properties:
+        status:
+          type: string
+          enum: [ok]
+        fileId:
+          type: string
+        name:
+          type: string
+    SaveNoteResponse:
+      type: object
+      required: [status, type]
+      properties:
+        status:
+          type: string
+          enum: [ok]
+        type:
+          type: string
+          enum: [note]
+    ErrorResponse:
+      type: object
+      required: [status, message]
+      properties:
+        status:
+          type: string
+          enum: [error]
+        code:
+          type: string
+          example: invalid_token
+        message:
+          type: string

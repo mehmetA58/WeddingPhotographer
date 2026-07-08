@@ -1,5 +1,5 @@
 /****************************************************************************
- * Etkinlik Fotoğraf Yükleme — Google Apps Script Backend
+ * EventPhoto — Google Apps Script Backend
  * --------------------------------------------------------------------------
  * Bu betik, katılımcılardan gelen fotoğrafları SİZİN Google Drive'ınızdaki
  * bir klasöre kaydeder. Sunucu gerektirmez, ücretsizdir.
@@ -33,7 +33,7 @@ function doGet(e) {
   }
 
   var out = (action === 'list') ? listFiles_(p)
-                                : { status: 'ready', service: 'event-photo-upload' };
+                                : { status: 'ready', service: 'eventphoto-api' };
   return reply_(out, p.callback);
 }
 
@@ -327,5 +327,4 @@ function reply_(obj, callback) {
 function isValidCallback_(callback) {
   return /^[A-Za-z_$][0-9A-Za-z_$]*(\.[A-Za-z_$][0-9A-Za-z_$]*)*$/.test(String(callback || ''));
 }
-
 

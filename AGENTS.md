@@ -2,19 +2,22 @@
 
 ## Project Structure & Module Organization
 
-This repository is a static event photo-upload web app with a Google Apps Script backend.
+This repository is EventPhoto, a static event photo-upload web app with a Google Apps Script backend.
 
 - `index.html` is the setup page for event hosts.
 - `upload.html` is the participant-facing upload page.
 - `gallery.html` is the private gallery page.
+- `slideshow.html` is the live photo wall for venue displays.
 - `card.html` renders printable QR table cards.
 - `css/style.css` contains the shared responsive theme and event accent colors.
 - `js/` contains browser logic:
-  - `setup.js`, `upload.js`, `gallery.js`, `card.js`
+  - `setup.js`, `upload.js`, `gallery.js`, `slideshow.js`, `card.js`
+  - `api.js` for Apps Script JSONP/list helpers
   - `i18n.js` for Turkish/English copy
   - `events.js` for supported event types
   - `qrcode.min.js` vendored QR library
 - `apps-script/Code.gs` is copied into Google Apps Script for Drive storage.
+- `docs/openapi.yaml` and `docs/swagger.html` document the Apps Script API.
 - `.github/workflows/deploy.yml` publishes the static site with GitHub Pages.
 
 ## Build, Test, and Development Commands
@@ -31,7 +34,9 @@ Validate JavaScript syntax before committing:
 node --check js/setup.js
 node --check js/upload.js
 node --check js/gallery.js
+node --check js/slideshow.js
 node --check js/card.js
+node --check js/api.js
 node --check js/i18n.js
 node --check js/events.js
 cp apps-script/Code.gs /tmp/code-check.js && node --check /tmp/code-check.js
@@ -49,6 +54,7 @@ No automated test framework is configured. For changes, run the syntax checks ab
 - event type and language are preserved in generated URLs
 - upload page accepts multiple images and shows progress
 - gallery loads through Apps Script JSONP
+- live slideshow loads photos/notes and displays the QR prompt
 - printable QR cards render correctly
 
 ## Commit & Pull Request Guidelines

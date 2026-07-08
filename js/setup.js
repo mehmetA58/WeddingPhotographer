@@ -27,7 +27,7 @@
      DOM / i18n
      ===================================================================== */
   var $ = function (id) { return document.getElementById(id); };
-  var i18n = window.WeddingI18n || { getLang: function () { return 'tr'; }, setLang: function () {}, t: function (key) { return key; } };
+  var i18n = window.EventPhotoI18n || { getLang: function () { return 'tr'; }, setLang: function () {}, t: function (key) { return key; } };
   var t = function (key, vars) { return i18n.t(key, vars); };
 
   var eventTitleEl      = $('eventTitle');
@@ -54,8 +54,10 @@
   var generateBtn       = $('generateBtn');
   var reconnectBtn      = $('reconnectBtn');
 
-  var LS_KEY     = 'weddingUploadSetup';
-  var LS_GSETUP  = 'weddingGSetup';
+  var LS_KEY            = 'eventPhotoSetup';
+  var LS_GSETUP         = 'eventPhotoGoogleSetup';
+  var LEGACY_LS_KEY     = 'weddingUploadSetup';
+  var LEGACY_LS_GSETUP  = 'weddingGSetup';
 
   var currentLink      = '';
   var currentGallery   = '';
@@ -70,16 +72,16 @@
   /* =====================================================================
      Kayıtlı ayarları geri yükle
      ===================================================================== */
-  var currentEvent = window.WeddingEvents.getKey ? window.WeddingEvents.getKey() : window.WeddingEvents.DEFAULT_KEY;
+  var currentEvent = window.EventPhotoEvents.getKey ? window.EventPhotoEvents.getKey() : window.EventPhotoEvents.DEFAULT_KEY;
   try {
-    var saved = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
+    var saved = JSON.parse(localStorage.getItem(LS_KEY) || localStorage.getItem(LEGACY_LS_KEY) || '{}');
     if (saved.title || saved.couple) eventTitleEl.value = saved.title || saved.couple;
     if (saved.token)   tokenEl.value  = saved.token;
     if (saved.raw)     rawEl.checked  = true;
     if (saved.noTasks) noTasksEl.checked = true;
-    if (saved.event && window.WeddingEvents.has(saved.event)) currentEvent = saved.event;
+    if (saved.event && window.EventPhotoEvents.has(saved.event)) currentEvent = saved.event;
 
-    var gsaved = JSON.parse(localStorage.getItem(LS_GSETUP) || '{}');
+    var gsaved = JSON.parse(localStorage.getItem(LS_GSETUP) || localStorage.getItem(LEGACY_LS_GSETUP) || '{}');
     if (gsaved.apiUrl)    deploymentUrl = gsaved.apiUrl;
     if (gsaved.folderId)  folderId      = gsaved.folderId;
     if (gsaved.token)     securityToken = gsaved.token;
@@ -88,7 +90,7 @@
     if (!deploymentUrl && saved.api) manualApiEl.value = saved.api;
   } catch (e) {}
 
-  window.WeddingEvents.apply(currentEvent);
+  window.EventPhotoEvents.apply(currentEvent);
   langEl.value = i18n.getLang();
 
   // Setup tamamlanmışsa UI'ı güncelle
@@ -129,7 +131,7 @@
   function buildConceptGrid() {
     conceptGrid.innerHTML = '';
     conceptGrid.setAttribute('aria-label', t('setup.eventLabel').replace(/^\d+\s*·\s*/, ''));
-    window.WeddingEvents.LIST.forEach(function (ev) {
+    window.EventPhotoEvents.LIST.forEach(function (ev) {
       var name = t('event.' + ev.key + '.name');
       var card = document.createElement('button');
       card.type = 'button';
@@ -153,7 +155,7 @@
 
   function selectEvent(key) {
     currentEvent = key;
-    window.WeddingEvents.apply(key);
+    window.EventPhotoEvents.apply(key);
     Array.prototype.forEach.call(conceptGrid.children, function (c) {
       var on = c.dataset.key === key;
       c.classList.toggle('active', on);
@@ -493,6 +495,7 @@
 
   reconnectBtn.addEventListener('click', function () {
     try { localStorage.removeItem(LS_GSETUP); } catch (e) {}
+    try { localStorage.removeItem(LEGACY_LS_GSETUP); } catch (e) {}
     deploymentUrl = '';
     folderId = '';
     securityToken = '';

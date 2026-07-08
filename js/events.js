@@ -59,7 +59,7 @@
 
   apply(getKey());
 
-  window.WeddingEvents = {
+  window.EventPhotoEvents = {
     LIST: EVENTS,
     DEFAULT_KEY: DEFAULT_KEY,
     get: get,
@@ -67,4 +67,5 @@
     getKey: getKey,
     apply: apply
   };
+  window.WeddingEvents = window.EventPhotoEvents;
 })();
