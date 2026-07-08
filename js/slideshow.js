@@ -24,7 +24,7 @@
   // ?poll= ve ?slide= (ms) ile ayarlanabilir; varsayılanlar etkinlik için dengeli
   var POLL_MS    = clamp(parseInt(params.get('poll'), 10)  || 20000, 4000, 120000);
   var SLIDE_MS   = clamp(parseInt(params.get('slide'), 10) || 8000,  2000, 60000);
-  var NOTE_EVERY = 5;     // kaç fotoğrafta bir not kartı
+  var NOTE_EVERY = 3;     // kaç fotoğrafta bir not kartı
 
   function clamp(v, min, max) {
     if (isNaN(v)) return min;
@@ -72,8 +72,10 @@
 
   /* --- Durum -------------------------------------------------------------- */
   var known = {};        // görülen dosya id'leri
+  var knownNotes = {};   // görülen not imzaları
   var photos = [];       // dönüş listesi (yeni → eski)
   var freshQueue = [];   // yeni gelenler (öncelikli, kronolojik)
+  var freshNotesQueue = [];
   var notes = [];        // { g, m, t }
   var active = 0;        // görünür katman
   var rotIdx = 0;
@@ -81,20 +83,16 @@
   var noteIdx = 0;
   var firstLoad = true;
   var slideTimer = null;
-  var pollCount = 0;
 
   /* --- Liste döngüsü ------------------------------------------------------ */
   function poll() {
-    var wantNotes = (pollCount % 3 === 0); // notlar 60 sn'de bir yeter
-    pollCount++;
-
-    Api.list(API, { max: 200, token: TOKEN, notes: wantNotes }).then(function (data) {
+    Api.list(API, { max: 200, token: TOKEN, notes: true }).then(function (data) {
       if (!data || data.status !== 'ok') {
         showConnError(data && data.code === 'invalid_token' ? t('gallery.invalidToken') : t('slideshow.connError'));
         return;
       }
       hideConnError();
-      if (data.notes) notes = data.notes;
+      var freshNotes = syncNotes(data.notes || []);
 
       var files = data.files || [];
       var total = data.count || files.length;
@@ -115,15 +113,17 @@
 
       if (firstLoad) {
         firstLoad = false;
-        if (photos.length) { hideEmpty(); advance(); }
+        if (photos.length || notes.length) { hideEmpty(); advance(); }
         else showEmpty();
-      } else if (fresh.length) {
+      } else if (fresh.length || freshNotes.length) {
         // sunucu yeni → eski verir; kuyruk kronolojik aksın
         fresh.reverse();
         freshQueue = freshQueue.concat(fresh);
+        freshNotes.reverse();
+        freshNotesQueue = freshNotesQueue.concat(freshNotes);
         hideEmpty();
         if (!slideTimer) advance();
-      } else if (!photos.length && !freshQueue.length) {
+      } else if (!photos.length && !freshQueue.length && !notes.length && !freshNotesQueue.length) {
         showEmpty();
       }
     }).catch(function () {
@@ -142,6 +142,11 @@
     if (freshQueue.length) {
       item = freshQueue.shift();
       isNew = true;
+    } else if (freshNotesQueue.length) {
+      showNote(freshNotesQueue.shift(), true);
+      sinceNote = 0;
+      slideTimer = setTimeout(advance, SLIDE_MS);
+      return;
     } else if (notes.length && sinceNote >= NOTE_EVERY) {
       showNote();
       sinceNote = 0;
@@ -152,7 +157,16 @@
       rotIdx++;
     }
 
-    if (!item) { showEmpty(); return; }
+    if (!item) {
+      if (notes.length) {
+        hideEmpty();
+        showNote();
+        slideTimer = setTimeout(advance, SLIDE_MS);
+      } else {
+        showEmpty();
+      }
+      return;
+    }
     sinceNote++;
 
     showPhoto(item, isNew, function () {
@@ -194,15 +208,33 @@
   }
 
   /* --- Not kartı ----------------------------------------------------------- */
-  function showNote() {
-    var n = notes[noteIdx % notes.length];
-    noteIdx++;
+  function syncNotes(incoming) {
+    notes = incoming.filter(function (n) { return n && n.m; });
+    var fresh = [];
+    notes.forEach(function (n) {
+      var key = noteKey(n);
+      if (knownNotes[key]) return;
+      knownNotes[key] = true;
+      if (!firstLoad) fresh.push(n);
+    });
+    return fresh;
+  }
+
+  function noteKey(n) {
+    return String(n.t || '') + '|' + String(n.g || '') + '|' + String(n.m || '');
+  }
+
+  function showNote(note, isNew) {
+    var n = note || notes[noteIdx % notes.length];
+    if (!note) noteIdx++;
     if (!n || !n.m) return;
     noteSlide.innerHTML =
       '<div class="note-card note-card-lg">' +
+        (isNew ? '<span class="pol-new">' + esc(t('slideshow.new')) + '</span>' : '') +
         '<p class="note-text">' + esc(n.m) + '</p>' +
         (n.g ? '<p class="note-by">— ' + esc(n.g) + '</p>' : '') +
       '</div>';
+    hideEmpty();
     layers[active].classList.remove('visible');
     noteSlide.classList.remove('hidden');
   }
