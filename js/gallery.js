@@ -106,6 +106,12 @@
     if (!f) return;
     lbImg.src = thumb(f.id, 1600);
     lbOpen.href = 'https://drive.google.com/file/d/' + f.id + '/view';
+
+    // Altyazı: misafir adı + görev (dosya description'ından)
+    var meta = window.WeddingApi.parseMeta(f.d);
+    var cap = $('lbCap');
+    cap.textContent = meta.guest + (meta.guest && meta.task ? ' · ' : '') + meta.task;
+    cap.style.display = (meta.guest || meta.task) ? '' : 'none';
   }
   function nav(d) {
     lbIndex = (lbIndex + d + files.length) % files.length;

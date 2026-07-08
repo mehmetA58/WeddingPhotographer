@@ -11,17 +11,19 @@
 
   // Sıra, kurulum sayfasındaki kart ızgarasının sırasıdır.
   //  names: true  → başlıkta "&" ile isim yığını (Ayşe & Mehmet) gösterilir.
+  //  tasks: yükleme sayfasındaki fotoğraf görevi önerileri; metinleri
+  //         i18n.js'te 'task.<key>.<slug>' anahtarlarındadır (?tasks=0 kapatır).
   //  V1 kapsamı: kullanıcı tarafından istenen sabit etkinlik türleri.
   var EVENTS = [
-    { key: 'wedding',     names: true  },
-    { key: 'engagement',  names: true  },
-    { key: 'anniversary', names: true  },
-    { key: 'birthday',    names: false },
-    { key: 'romantic',    names: false },
-    { key: 'welcome',     names: false },
-    { key: 'farewell',    names: false },
-    { key: 'trip',        names: false },
-    { key: 'meeting',     names: false }
+    { key: 'wedding',     names: true,  tasks: ['selfie', 'dance', 'table', 'style', 'toast', 'laugh'] },
+    { key: 'engagement',  names: true,  tasks: ['ring', 'couple', 'family', 'sweet', 'laugh'] },
+    { key: 'anniversary', names: true,  tasks: ['couple', 'toast', 'cake', 'friends', 'memory'] },
+    { key: 'birthday',    names: false, tasks: ['cake', 'gift', 'group', 'funny', 'decor'] },
+    { key: 'romantic',    names: false, tasks: ['table', 'cheers', 'couple', 'detail'] },
+    { key: 'welcome',     names: false, tasks: ['greet', 'hug', 'group', 'smile'] },
+    { key: 'farewell',    names: false, tasks: ['hug', 'group', 'memory', 'smile'] },
+    { key: 'trip',        names: false, tasks: ['view', 'group', 'food', 'candid', 'funny'] },
+    { key: 'meeting',     names: false, tasks: ['team', 'stage', 'coffee', 'detail'] }
   ];
 
   var DEFAULT_KEY = 'wedding';

@@ -78,6 +78,35 @@
     return;
   }
 
+  /* --- Fotoğraf görevleri (öneri çipleri) -------------------------------- */
+  var selectedTask = '';
+  var taskField = $('taskField');
+  var taskChips = $('taskChips');
+  var TASKS = (params.get('tasks') === '0') ? [] : (EVENT.tasks || []);
+
+  if (!TASKS.length) {
+    taskField.classList.add('hidden');
+  } else {
+    TASKS.forEach(function (slug) {
+      var text = t('task.' + EVENT_KEY + '.' + slug);
+      var chip = document.createElement('button');
+      chip.type = 'button';
+      chip.className = 'task-chip';
+      chip.textContent = text;
+      chip.setAttribute('aria-pressed', 'false');
+      chip.addEventListener('click', function () {
+        var on = selectedTask !== text;      // aynı çipe basmak seçimi kaldırır
+        selectedTask = on ? text : '';
+        Array.prototype.forEach.call(taskChips.children, function (c) {
+          var active = on && c === chip;
+          c.classList.toggle('active', active);
+          c.setAttribute('aria-pressed', active ? 'true' : 'false');
+        });
+      });
+      taskChips.appendChild(chip);
+    });
+  }
+
   /* --- Durum ----------------------------------------------------------- */
   var items = [];        // { id, file, url, status, el, badge }
   var seen = {};         // tekrar seçilen dosyaları ele
@@ -298,6 +327,7 @@
     var payload = JSON.stringify({
       token: TOKEN,
       guestName: (guestNameEl.value || '').trim().slice(0, 40),
+      task: selectedTask.slice(0, 60),
       filename: prepared.filename,
       mimeType: prepared.mimeType,
       data: prepared.base64

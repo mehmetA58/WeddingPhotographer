@@ -91,12 +91,15 @@ function listFiles_(p) {
     var f = it.next();
     if (String(f.getMimeType() || '').indexOf('image/') !== 0) continue;
     var created = f.getDateCreated();
+    var desc = '';
+    try { desc = f.getDescription() || ''; } catch (e) {}
     arr.push({
       id: f.getId(),
       name: f.getName(),
       t: created.getTime(),
       createdAt: created.toISOString ? created.toISOString() : String(created),
-      size: f.getSize()
+      size: f.getSize(),
+      d: desc
     });
   }
   arr.sort(function (a, b) { return b.t - a.t; });
@@ -145,14 +148,13 @@ function doPost(e) {
 
     // 3) Çöz ve kaydet
     var bytes = Utilities.base64Decode(body.data);
-    var name  = buildFileName_(body.filename, body.guestName, mime);
+    var name  = buildFileName_(body.filename, body.guestName, mime, body.task);
     var blob  = Utilities.newBlob(bytes, mime, name);
 
     var folder = getUploadFolder_();
     var file   = folder.createFile(blob);
     try {
-      file.setDescription('EventPhoto yüklemesi' +
-        (body.guestName ? ' · Katılımcı: ' + sanitize_(body.guestName, 60) : ''));
+      file.setDescription(buildDescription_(body.guestName, body.task));
     } catch (e) {}
 
     // Galeri sayfası küçük resimleri gösterebilsin diye "bağlantıya sahip olan
@@ -194,8 +196,8 @@ function getUploadFolder_() {
   }
 }
 
-/** yyyy-MM-dd_HH-mm-ss_[isim]_[orijinal]_[rastgele].uzantı biçiminde ad. */
-function buildFileName_(filename, guestName, mime) {
+/** yyyy-MM-dd_HH-mm-ss_[isim]_[görev]_[orijinal]_[rastgele].uzantı biçiminde ad. */
+function buildFileName_(filename, guestName, mime, task) {
   var tz = Session.getScriptTimeZone() || 'Europe/Istanbul';
   var ts = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd_HH-mm-ss');
   var rand = Math.floor(Math.random() * 9000 + 1000); // aynı saniyedeki çakışmayı önle
@@ -204,12 +206,32 @@ function buildFileName_(filename, guestName, mime) {
   var guest = sanitize_(guestName, 30);
   if (guest) parts.push(guest);
 
+  var taskPart = sanitize_(task, 24);
+  if (taskPart) parts.push(taskPart);
+
   var base = sanitize_(stripExt_(filename), 24);
   if (base) parts.push(base);
 
   parts.push(rand);
   var ext = extFromMime_(mime) || extFromName_(filename) || 'jpg';
   return parts.join('_') + '.' + ext;
+}
+
+/** "EventPhoto · Katılımcı: X · Görev: Y" — galeri/sunum altyazıları
+ *  bu alanı okur (js/api.js parseMeta). '·' ayıracı metinden temizlenir. */
+function buildDescription_(guestName, task) {
+  var parts = ['EventPhoto'];
+  var guest = descClean_(guestName, 60);
+  if (guest) parts.push('Katılımcı: ' + guest);
+  var t = descClean_(task, 80);
+  if (t) parts.push('Görev: ' + t);
+  return parts.join(' · ');
+}
+
+function descClean_(s, max) {
+  s = String(s || '').replace(/[·\r\n]/g, ' ').replace(/\s+/g, ' ').trim();
+  if (max && s.length > max) s = s.slice(0, max);
+  return s;
 }
 
 function sanitize_(s, max) {

@@ -35,6 +35,7 @@
   var manualApiEl       = $('manualApi');
   var tokenEl           = $('token');
   var rawEl             = $('rawMode');
+  var noTasksEl         = $('noTasks');
   var langEl            = $('languageSelect');
   var noteEl            = $('setupNote');
 
@@ -73,8 +74,9 @@
   try {
     var saved = JSON.parse(localStorage.getItem(LS_KEY) || '{}');
     if (saved.title || saved.couple) eventTitleEl.value = saved.title || saved.couple;
-    if (saved.token)  tokenEl.value  = saved.token;
-    if (saved.raw)    rawEl.checked  = true;
+    if (saved.token)   tokenEl.value  = saved.token;
+    if (saved.raw)     rawEl.checked  = true;
+    if (saved.noTasks) noTasksEl.checked = true;
     if (saved.event && window.WeddingEvents.has(saved.event)) currentEvent = saved.event;
 
     var gsaved = JSON.parse(localStorage.getItem(LS_GSETUP) || '{}');
@@ -519,6 +521,7 @@
     if (eventTitle) url.searchParams.set('title', eventTitle);
     if (token)  url.searchParams.set('token', token);
     if (raw)    url.searchParams.set('raw', '1');
+    if (noTasksEl.checked) url.searchParams.set('tasks', '0');
     currentLink = url.toString();
 
     var gurl = new URL('gallery.html', location.href);
@@ -547,7 +550,8 @@
 
     try {
       localStorage.setItem(LS_KEY, JSON.stringify({
-        api: api, title: eventTitle, token: token, raw: raw, lang: lang, event: currentEvent
+        api: api, title: eventTitle, token: token, raw: raw, lang: lang,
+        event: currentEvent, noTasks: noTasksEl.checked
       }));
     } catch (e) {}
 
