@@ -29,6 +29,21 @@ Yıldönümü, Romantik Akşam Yemeği, Hoş Geldin Partisi, Veda Partisi**.
 
 ---
 
+## ✨ Öne çıkanlar
+
+- **Canlı Sunum Ekranı** — kurulumdaki özel linki mekandaki **TV/projeksiyona** açın;
+  yüklenen kareler saniyeler içinde "masaya bırakılan polaroid" olarak ekranda belirir,
+  köşedeki QR misafirleri paylaşmaya çağırır. Tıklama tam ekran yapar, ekran uyumaz.
+- **Fotoğraf Görevleri** — misafirlere etkinliğe özel eğlenceli görev önerileri sunulur
+  ("Dans pistinden bir kare", "Yerel bir lezzet"…); seçilen görev fotoğrafın altyazısı olur.
+  İstemezseniz kurulumda *Gelişmiş ayarlar → Fotoğraf görevlerini kapat*.
+- **Anı Defteri** — misafirler fotoğrafın yanına kısa bir tebrik notu bırakabilir; notlar
+  sunum ekranında el yazısı kartlar olarak döner ve Drive'a `.txt` hatıra olarak kaydedilir.
+- **Canlı Albüm tasarımı** — albüm köşe cepleri, polaroid "banyo" efekti, film tarih damgası;
+  karşılama metni, vurgu rengi ve zemin tonu seçilen etkinliğe göre değişir.
+
+---
+
 ## 📁 Dosya yapısı
 
 ```
@@ -36,15 +51,18 @@ WeddingPhoto/
 ├── index.html          # Kurulum sayfası (etkinlik → link + QR üretir)
 ├── upload.html         # Katılımcı yükleme sayfası (QR buraya gider)
 ├── gallery.html        # Organizasyon sahibi için özel fotoğraf galerisi
+├── slideshow.html      # Canlı sunum ekranı (mekandaki TV/projeksiyon)
 ├── card.html           # Yazdırmaya hazır QR masa kartı
-├── css/style.css       # Zarif krem/gold tema
+├── css/style.css       # "Canlı Albüm" teması (etkinliğe göre renklenir)
 ├── js/
 │   ├── qrcode.min.js   # Yerel QR kütüphanesi (CDN yok)
 │   ├── i18n.js         # Türkçe / İngilizce dil metinleri
-│   ├── events.js       # V1 etkinlik türleri ve konsept ayarları
+│   ├── events.js       # V1 etkinlik türleri, konsept + görev tanımları
+│   ├── api.js          # Apps Script liste/JSONP ortak yardımcıları
 │   ├── setup.js        # Kurulum mantığı
-│   ├── upload.js       # Yükleme + resize + progress
-│   ├── gallery.js      # Galeri + lightbox
+│   ├── upload.js       # Yükleme + resize + progress + görev/not
+│   ├── gallery.js      # Galeri + lightbox + Anı Defteri
+│   ├── slideshow.js    # Canlı sunum: polaroid duvarı + not kartları
 │   └── card.js         # PDF/yazdırma kartı
 ├── apps-script/Code.gs # Google Apps Script backend (Drive'a kaydeder)
 └── README.md           # Bu dosya
@@ -151,6 +169,11 @@ adımları (klasör, proje, yayın, token) otomatik tamamlanır. Yol 2'ye gerek 
    yazdırmaya hazır masa kartını açın.
 8. **Galeri Linkini Kopyala** butonuyla özel galeri linkini saklayın.
    Bu linki katılımcılarla paylaşmayın.
+9. **Sunum Linkini Kopyala** ile canlı sunum ekranı linkini alın. Etkinlik günü
+   mekandaki TV/projeksiyona bağlı bir tarayıcıda açın ve tıklayarak tam ekran yapın.
+   Bu link de galeri gibi **özeldir** — yalnızca ekranda gösterin, dağıtmayın.
+   (İnce ayar: linke `&slide=6000` eklerseniz kare süresi 6 sn olur,
+   `&poll=10000` liste tazelemeyi 10 sn'ye indirir.)
 
 ---
 
@@ -173,6 +196,11 @@ QR kartlarını masalara koyun. Küçük bir not ekleyebilirsiniz:
 - **Çoklu + kamera:** Hem galeriden çoklu seçim hem "Kamera" ile anlık çekim çalışmalı.
 - **Galeri:** Kurulum ekranındaki **Galeri Linki** açıldığında yüklenen fotoğraflar
   ızgarada görünmeli; isterseniz **Drive Klasörü** butonuyla dosyaları Drive'da açın.
+- **Canlı sunum:** Sunum linkini bilgisayarda açın, telefonla bir fotoğraf yükleyin →
+  kare ~20 sn içinde **"Yeni"** rozetiyle ekranda belirmeli; sayaç artmalı.
+- **Görev + not:** Yüklemede bir görev seçin → Drive'daki dosya adında ve galeri
+  lightbox altyazısında görev görünmeli. Bir not bırakın → Drive klasöründe
+  `Not_*.txt` oluşmalı, galerideki **Anı Defteri** bölümünde ve sunumda görünmeli.
 - **QR kart:** **Kart Yazdır (PDF)** sayfasında sayfa başına 1/2/4/6 kart seçip
   tarayıcıdan "PDF olarak kaydet" diyebilirsiniz.
 
@@ -187,6 +215,7 @@ QR kartlarını masalara koyun. Küçük bir not ekleyebilirsiniz:
 | **Güvenlik anahtarı (token) uyarısı** | `no-cors` ile tarayıcı sunucu yanıtını okuyamadığından, **yanlış token** durumunda arayüz yine "başarılı" gösterir ama sunucu dosyayı **kaydetmez**. Token kullanıyorsanız yüklemeyi Galeri'den doğrulayın. |
 | **"Google ile Bağlan" hata veriyor (403 / yetki)** | [script.google.com/home/usersettings](https://script.google.com/home/usersettings)'ten **Google Apps Script API**'yi açın; Cloud Console'da **Apps Script API + Drive API**'nin etkin ve sitenizin **Authorized JavaScript origins** listesinde olduğundan emin olun. Alternatif: Bölüm B · Yol 2 (manuel) ile Web App URL'inizi *Gelişmiş ayarlar*'dan girin. |
 | **Kodda değişiklik yaptım, çalışmıyor** | Aynı URL'i korumak için **Deploy → Manage deployments → ✏ → Version: New version**. "New deployment" **yeni URL** üretir (QR'ı da yenilemeniz gerekir). |
+| **Görev/not/sunum altyazısı çalışmıyor** | Apps Script projeniz eski sürüm `Code.gs` ile yayınlanmış olabilir. Güncel `apps-script/Code.gs` içeriğini projeye yapıştırıp **Deploy → Manage deployments → ✏ → Version: New version** deyin (URL aynı kalır). Eski sürümde fotoğraf yükleme çalışmaya devam eder; yalnızca yeni özellikler eksik kalır. |
 | **iPhone HEIC fotoğrafları** | Varsayılan resize açıkken tarayıcı fotoğrafı **JPEG'e** çevirir (uyumlu). Kapatırsanız (orijinal) HEIC olarak kaydolur. |
 | **Çok büyük fotoğraf / yavaş** | Resize varsayılan açık (~2560px). Orijinal kalite isterseniz kurulumda *"Orijinal çözünürlükte yükle"*yi işaretleyin (daha yavaş, ~40MB/dosya sınırı). |
 | **QR okunmuyor** | Daha büyük yazdırın; link uzun olduğu için QR yoğun olabilir. İsim/token kısaldıkça QR sadeleşir. |
