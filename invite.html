@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title data-i18n="title.invite">Davetiye</title>
+  <meta name="theme-color" content="#F3EDE2" />
+  <meta name="description" content="Etkinlik davetiyesi — sunucusuz, ücretsiz, linkin içinde yaşar." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500;1,9..144,600&family=Inter:wght@400;500;600&family=Caveat:wght@500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <main class="page">
+
+    <!-- ==================== GÖRÜNTÜLEME MODU ==================== -->
+    <section id="inviteView" class="hidden">
+
+      <!-- Zarf: davetiye dokunuşla açılır -->
+      <div class="envelope" id="envelope" role="button" tabindex="0"
+           aria-label="Davetiyeyi aç" data-i18n-aria-label="invite.openHint">
+        <div class="env-back" aria-hidden="true"></div>
+        <div class="env-front" aria-hidden="true"></div>
+        <div class="env-flap" aria-hidden="true"></div>
+        <div class="env-seal" id="envSeal" aria-hidden="true"></div>
+        <div class="env-to" id="envTo" aria-hidden="true"></div>
+        <div class="env-hint" data-i18n="invite.openHint">Davetiyeyi açmak için dokunun</div>
+      </div>
+
+      <!-- Davetiye kartı (zarf açılınca görünür) -->
+      <div class="card invite-card hidden" id="inviteCard"></div>
+
+      <p class="footer-note no-print" style="margin-top:18px">
+        <a id="makeOwnLink" href="invite.html" data-i18n="invite.makeOwn">Siz de ücretsiz davetiye oluşturun</a>
+      </p>
+    </section>
+
+    <!-- Bozuk link -->
+    <div id="inviteError" class="note note-error hidden" style="margin-top:40px">
+      <span aria-hidden="true"></span>
+      <div data-i18n-html="invite.errorHtml"><b>Davetiye linki hatalı görünüyor.</b>
+        Linkin tamamının kopyalandığından emin olun.</div>
+    </div>
+
+    <!-- ==================== OLUŞTURUCU MODU ==================== -->
+    <section id="inviteBuilder" class="hidden">
+      <div class="card">
+        <i class="mounts" aria-hidden="true"></i>
+
+        <p class="eyebrow" data-i18n="invite.builderEyebrow">Davetiye · Sunucusuz &amp; Ücretsiz</p>
+        <h1 class="couple" data-i18n-html="invite.brandHtml">Etkinlik<span class="amp">Davetiyesi</span></h1>
+        <div class="divider"><span></span></div>
+        <p class="subtitle" data-i18n-html="invite.builderSubtitleHtml">Alanları doldurun, davetiyeniz anında aşağıda şekillensin.
+          Link olarak paylaşın veya <b>PNG</b> indirin — davetiye <b>linkin içinde</b> yaşar, sunucu ve üyelik gerektirmez.</p>
+
+        <div class="field">
+          <label data-i18n="invite.eventLabel">1 · Etkinlik Türü</label>
+          <div class="concept-grid" id="invConceptGrid" role="radiogroup" aria-label="Etkinlik türü"></div>
+        </div>
+
+        <div class="field">
+          <label for="invTitleIn" id="invTitleLabel">2 · Başlık</label>
+          <input class="input" type="text" id="invTitleIn" maxlength="70" />
+        </div>
+
+        <div class="field">
+          <label data-i18n="invite.dateLabel">3 · Tarih &amp; Saat</label>
+          <div class="inv-dt-row">
+            <input class="input" type="date" id="invDateIn" />
+            <input class="input" type="time" id="invTimeIn" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="invVenueIn" data-i18n-html="invite.venueLabelHtml">4 · Mekan <span class="hint">(isteğe bağlı)</span></label>
+          <input class="input" type="text" id="invVenueIn" maxlength="70"
+                 placeholder="Örn. Beyaz Bahçe Kır Bahçesi" data-i18n-placeholder="invite.venuePlaceholder" />
+          <input class="input" type="text" id="invAddrIn" maxlength="120" style="margin-top:8px"
+                 placeholder="Açık adres veya ilçe/şehir (isteğe bağlı)" data-i18n-placeholder="invite.addrPlaceholder" />
+        </div>
+
+        <div class="field">
+          <label for="invMsgIn" data-i18n-html="invite.msgLabelHtml">5 · Davet Mesajı <span class="hint">(davetiyede el yazısıyla görünür)</span></label>
+          <textarea class="input note-input" id="invMsgIn" maxlength="240" rows="2"
+                    placeholder="Örn. Bu özel günümüzü sizinle paylaşmak bizi çok mutlu eder."
+                    data-i18n-placeholder="invite.msgPlaceholder"></textarea>
+        </div>
+
+        <div class="field">
+          <label for="invPhoneIn" data-i18n-html="invite.phoneLabelHtml">LCV — WhatsApp numarası <span class="hint">(isteğe bağlı)</span></label>
+          <input class="input" type="tel" id="invPhoneIn" maxlength="20"
+                 placeholder="Örn. 90 5xx xxx xx xx" data-i18n-placeholder="invite.phonePlaceholder" />
+        </div>
+
+        <div class="field">
+          <label for="invLangSel" data-i18n="invite.langLabel">6 · Dil</label>
+          <select class="input" id="invLangSel">
+            <option value="tr">Türkçe</option>
+            <option value="en">English</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Canlı önizleme -->
+      <h2 class="section center inv-preview-label" data-i18n="invite.previewLabel">Önizleme</h2>
+      <div class="card invite-card inv-preview" id="previewCard"></div>
+
+      <!-- Paylaşım -->
+      <div class="stack" style="margin-top:16px">
+        <div id="invShareNote" class="note note-info hidden"></div>
+        <div class="btn-row">
+          <button type="button" class="btn btn-gold" id="invCopyBtn">
+            <svg class="icon" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            <span data-i18n="invite.copyLink">Davetiye Linkini Kopyala</span>
+          </button>
+          <a class="btn btn-outline" id="invWaBtn" href="#" target="_blank" rel="noopener">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M21 11.5a8.5 8.5 0 0 1-12.4 7.5L3 21l2-5.4A8.5 8.5 0 1 1 21 11.5z"/></svg>
+            <span data-i18n="invite.waShare">WhatsApp'ta Paylaş</span>
+          </a>
+        </div>
+        <div class="btn-row">
+          <button type="button" class="btn btn-outline" id="invPngBtn">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/></svg>
+            <span data-i18n="invite.pngDownload">PNG İndir</span>
+          </button>
+          <a class="btn btn-ghost" id="invOpenBtn" href="#" target="_blank" rel="noopener">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
+            <span data-i18n="invite.openPreview">Davetiyeyi Yeni Sekmede Aç</span>
+          </a>
+        </div>
+        <p class="qr-link" id="invLinkText"></p>
+      </div>
+
+      <p class="footer-note"><a href="index.html" data-i18n="card.back">Kuruluma Dön</a></p>
+    </section>
+
+  </main>
+
+  <script src="js/i18n.js"></script>
+  <script src="js/events.js"></script>
+  <script src="js/invite.js"></script>
+</body>
+</html>
