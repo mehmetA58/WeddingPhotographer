@@ -33,6 +33,11 @@ Yıldönümü, Romantik Akşam Yemeği, Hoş Geldin Partisi, Veda Partisi**.
 
 ## ✨ Öne çıkanlar
 
+- **Davetiye** — `invite.html` ile zarif bir dijital davetiye oluşturun: tarih, mekan,
+  el yazısı mesaj, geri sayım. Davetli linki açınca **mühürlü zarf** belirir, dokununca
+  davetiye çıkar. Link/WhatsApp/PNG olarak paylaşılır; **Takvime Ekle** (.ics),
+  **Haritada Aç** ve **LCV (WhatsApp)** butonları hazır. Google bağlantısı gerektirmez —
+  davetiye verisi linkin içinde yaşar.
 - **Canlı Sunum Ekranı** — kurulumdaki özel linki mekandaki **TV/projeksiyona** açın;
   yüklenen kareler saniyeler içinde "masaya bırakılan polaroid" olarak ekranda belirir,
   köşedeki QR misafirleri paylaşmaya çağırır. Tıklama tam ekran yapar, ekran uyumaz.
@@ -54,6 +59,7 @@ EventPhoto/
 ├── upload.html         # Katılımcı yükleme sayfası (QR buraya gider)
 ├── gallery.html        # Organizasyon sahibi için özel fotoğraf galerisi
 ├── slideshow.html      # Canlı sunum ekranı (mekandaki TV/projeksiyon)
+├── invite.html         # Davetiye oluşturucu + davetli görünümü (zarf)
 ├── card.html           # Yazdırmaya hazır QR masa kartı
 ├── css/style.css       # "Canlı Albüm" teması (etkinliğe göre renklenir)
 ├── js/
@@ -65,6 +71,7 @@ EventPhoto/
 │   ├── upload.js       # Yükleme + resize + progress + görev/not
 │   ├── gallery.js      # Galeri + lightbox + Anı Defteri
 │   ├── slideshow.js    # Canlı sunum: polaroid duvarı + not kartları
+│   ├── invite.js       # Davetiye: link-içi veri, zarf, ICS, PNG çizimi
 │   └── card.js         # PDF/yazdırma kartı
 ├── apps-script/Code.gs # Google Apps Script backend (Drive'a kaydeder)
 ├── docs/
@@ -204,6 +211,24 @@ adımları (klasör, proje, yayın, token) otomatik tamamlanır. Yol 2'ye gerek 
 QR kartlarını masalara koyun. Küçük bir not ekleyebilirsiniz:
 
 > *"Etkinliğe ait karelerinizi paylaşmak için QR'ı okutmanız yeterli."*
+
+---
+
+## ✉️ Davetiye — oluştur, paylaş
+
+1. `invite.html` sayfasını açın (kurulum sayfasındaki **Davetiye Oluştur** butonu
+   da buraya gelir). **Google bağlantısı gerekmez.**
+2. Etkinlik türünü seçin; başlık, tarih/saat, mekan, el yazısı mesaj ve isteğe bağlı
+   **LCV WhatsApp numarası** girin. Önizleme her tuşta güncellenir.
+3. Paylaşın:
+   - **Davetiye Linkini Kopyala** / **WhatsApp'ta Paylaş** — davetli linki açınca
+     mühürlü zarfı görür, dokununca davetiye çıkar; **Takvime Ekle (.ics)**,
+     **Haritada Aç** ve **LCV** butonları davetlinin ekranındadır.
+   - **PNG İndir** — 1080×1620 görsel davetiye (WhatsApp/Instagram'da paylaşmak için).
+4. Nasıl çalışır? Davetiye verisi sunucuya değil, linkin `#d=` bölümüne yazılır.
+   Link kimde varsa davetiyeyi görür; **fotoğraf yükleme linki/token'ı davetiyeye
+   asla eklenmez** (davetiye ileri paylaşılsa bile albüm adresiniz sızmaz).
+   Düzenlemek için oluşturucuda alanları değiştirip yeni linki paylaşmanız yeterli.
 
 ---
 
