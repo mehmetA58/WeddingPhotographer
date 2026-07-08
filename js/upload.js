@@ -83,35 +83,45 @@
   var noteText = $('noteText');
   var noteBtn  = $('noteBtn');
   var noteDone = $('noteDone');
+  var noteStatus = $('noteStatus');
+  var noteNameField = $('noteNameField');
+  var noteGuestNameEl = $('noteGuestName');
 
-  noteBtn.addEventListener('click', function () {
-    var msg = (noteText.value || '').trim();
-    if (!msg) { noteText.focus(); return; }
-    noteBtn.disabled = true;
+  noteBtn.addEventListener('click', startSendFlow);
 
-    // Fotoğraf yüklemeyle aynı no-cors "basit istek" yolu (bkz. uploadOne)
-    fetch(API_URL, {
+  function sendNote(msg, guestName) {
+    var payload = {
+      token: TOKEN,
+      guestName: String(guestName || '').trim().slice(0, 40),
+      message: msg.slice(0, 400)
+    };
+
+    if (window.EventPhotoApi && window.EventPhotoApi.jsonp) {
+      return window.EventPhotoApi.jsonp(buildNoteUrl(payload), 20000);
+    }
+
+    // Eski sayfa önbelleğinde api.js yoksa son çare olarak eski gönderim yolu.
+    return fetch(API_URL, {
       method: 'POST',
       mode: 'no-cors',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       body: JSON.stringify({
         type: 'note',
-        token: TOKEN,
-        guestName: (guestNameEl.value || '').trim().slice(0, 40),
-        message: msg.slice(0, 400)
+        token: payload.token,
+        guestName: payload.guestName,
+        message: payload.message
       })
-    }).then(function () {
-      noteText.value = '';
-      noteDone.classList.remove('hidden');
-      setTimeout(function () {
-        noteDone.classList.add('hidden');
-        noteBtn.disabled = false;
-      }, 3000);
-    }, function () {
-      noteBtn.disabled = false;
-      showNote('error', t('upload.noteFail'));
-    });
-  });
+    }).then(function () { return { status: 'ok', opaque: true }; });
+  }
+
+  function buildNoteUrl(payload) {
+    var url = new URL(API_URL, location.href);
+    url.searchParams.set('action', 'note');
+    if (payload.token) url.searchParams.set('token', payload.token);
+    if (payload.guestName) url.searchParams.set('guestName', payload.guestName);
+    url.searchParams.set('message', payload.message);
+    return url.toString();
+  }
 
   /* --- Fotoğraf görevleri (öneri çipleri) -------------------------------- */
   var selectedTask = '';
@@ -174,7 +184,7 @@
   });
 
   $('moreBtn').addEventListener('click', reset);
-  uploadBtn.addEventListener('click', startUpload);
+  uploadBtn.addEventListener('click', startSendFlow);
 
   /* --- Dosya ekleme ---------------------------------------------------- */
   function addFiles(fileList) {
@@ -255,28 +265,101 @@
 
   /* --- Buton/başlık durumunu güncelle ---------------------------------- */
   function syncControls() {
-    var pending = items.filter(function (x) { return x.status === 'pending' || x.status === 'error'; });
-    var hasError = items.some(function (x) { return x.status === 'error'; });
-    if (items.length === 0) {
-      uploadBtn.classList.add('hidden');
-      return;
-    }
-    uploadBtn.classList.remove('hidden');
-    uploadBtn.disabled = busy || pending.length === 0;
-    uploadBtnText.textContent = hasError
-      ? t('upload.retryFailed', { count: pending.length })
-      : (pending.length > 1 ? t('upload.uploadMany', { count: pending.length }) : t('upload.uploadButton'));
+    uploadBtn.classList.add('hidden');
+    uploadBtn.disabled = true;
+    uploadBtnText.textContent = t('upload.uploadButton');
+    noteBtn.disabled = busy;
   }
 
-  /* --- Yüklemeyi başlat (sıralı) --------------------------------------- */
-  function startUpload() {
+  /* --- Ortak gönderim: fotoğraf + opsiyonel not ------------------------- */
+  function startSendFlow() {
     if (busy) return;
     var queue = items.filter(function (x) { return x.status === 'pending' || x.status === 'error'; });
-    if (queue.length === 0) return;
+    var msg = (noteText.value || '').trim();
+    if (queue.length === 0 && !msg) {
+      showSendError(t('upload.emptySend'));
+      noteText.focus();
+      return;
+    }
+
+    var guestName = requireGuestName();
+    if (!guestName) return;
 
     busy = true;
+    noteBtn.disabled = true;
     uploadBtn.disabled = true;
     hideNote();
+    hideNoteStatus();
+    noteDone.classList.add('hidden');
+
+    var hadPhotos = queue.length > 0;
+    var noteMessage = msg;
+    var uploadPromise = hadPhotos ? uploadQueue(queue) : Promise.resolve({ total: 0, failed: 0, errorCode: '' });
+
+    uploadPromise.then(function (result) {
+      if (result.failed) {
+        showUploadFailure(result.total, result.failed, result.errorCode);
+        var handled = new Error('upload_failed');
+        handled.handled = true;
+        throw handled;
+      }
+      if (noteMessage) {
+        if (hadPhotos) progressLabel.textContent = t('upload.sendingNote');
+        return sendNote(noteMessage, guestName);
+      }
+      return null;
+    }).then(function (data) {
+      if (data && data.status !== 'ok') {
+        var err = new Error(data.message || t('upload.noteFail'));
+        err.code = data.code;
+        throw err;
+      }
+      if (noteMessage) {
+        noteText.value = '';
+        noteDone.classList.remove('hidden');
+        setTimeout(function () { noteDone.classList.add('hidden'); }, 3000);
+      }
+      if (hadPhotos) showSuccessScreen();
+      busy = false;
+      syncControls();
+    }).catch(function (err) {
+      busy = false;
+      if (!err || !err.handled) {
+        showSendError((err && err.message) || t('upload.noteFail'));
+      }
+      syncControls();
+    });
+  }
+
+  function requireGuestName() {
+    var el = getActiveGuestNameEl();
+    var name = (el.value || '').trim();
+    if (!name) {
+      showSendError(t('upload.nameRequired'));
+      el.focus();
+      return '';
+    }
+    guestNameEl.value = name;
+    if (noteGuestNameEl) noteGuestNameEl.value = name;
+    return name.slice(0, 40);
+  }
+
+  function getActiveGuestNameEl() {
+    if (uploader.classList.contains('hidden') && noteNameField && !noteNameField.classList.contains('hidden')) {
+      return noteGuestNameEl;
+    }
+    return guestNameEl;
+  }
+
+  function setGuestbookNameField(visible) {
+    if (!noteNameField || !noteGuestNameEl) return;
+    noteNameField.classList.toggle('hidden', !visible);
+    if (visible && !noteGuestNameEl.value && guestNameEl.value) {
+      noteGuestNameEl.value = guestNameEl.value;
+    }
+  }
+
+  function uploadQueue(queue) {
     progressWrap.classList.remove('hidden');
 
     var total = queue.length;
@@ -288,32 +371,34 @@
     progressFill.style.width = '0%';
     progressCount.textContent = '0 / ' + total;
 
-    (function next(idx) {
-      if (idx >= queue.length) {
-        finishUpload(total, failed, lastErrorCode);
-        return;
-      }
-      var item = queue[idx];
-      setStatus(item, 'uploading');
-      progressLabel.textContent = t('upload.preparing');
-      trickleSlot(idx, total);   // bu dosya için çubuğu yavaşça ilerlet
+    return new Promise(function (resolve) {
+      (function next(idx) {
+        if (idx >= queue.length) {
+          resolve({ total: total, failed: failed, errorCode: lastErrorCode });
+          return;
+        }
+        var item = queue[idx];
+        setStatus(item, 'uploading');
+        progressLabel.textContent = t('upload.preparing');
+        trickleSlot(idx, total);   // bu dosya için çubuğu yavaşça ilerlet
 
-      prepareBlob(item.file).then(function (prepared) {
-        progressLabel.textContent = t('upload.uploading');
-        return uploadOne(prepared);
-      }).then(function () {
-        setStatus(item, 'done');
-        doneCount++;
-      }).catch(function (err) {
-        setStatus(item, 'error');
-        failed++;
-        if (err && err.code) lastErrorCode = err.code;
-        console.error('Yükleme hatası:', err);
-      }).then(function () {           // her iki durumda da slotu tamamla ve devam et
-        settleSlot(idx, total, doneCount);
-        next(idx + 1);
-      });
-    })(0);
+        prepareBlob(item.file).then(function (prepared) {
+          progressLabel.textContent = t('upload.uploading');
+          return uploadOne(prepared);
+        }).then(function () {
+          setStatus(item, 'done');
+          doneCount++;
+        }).catch(function (err) {
+          setStatus(item, 'error');
+          failed++;
+          if (err && err.code) lastErrorCode = err.code;
+          console.error('Yükleme hatası:', err);
+        }).then(function () {           // her iki durumda da slotu tamamla ve devam et
+          settleSlot(idx, total, doneCount);
+          next(idx + 1);
+        });
+      })(0);
+    });
   }
 
   /* Byte düzeyinde ilerleme Apps Script CORS'u ile mümkün olmadığından (upload
@@ -330,24 +415,22 @@
     progressCount.textContent = doneCount + ' / ' + total;
   }
 
-  function finishUpload(total, failed, errorCode) {
-    busy = false;
+  function showUploadFailure(total, failed, errorCode) {
     var ok = total - failed;
-    if (failed === 0) {
-      // Tümü başarılı → teşekkür ekranı
-      progressFill.style.width = '100%';
-      setTimeout(function () {
-        uploader.classList.add('hidden');
-        successScreen.classList.remove('hidden');
-        successScreen.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }, 400);
-    } else {
-      progressWrap.classList.add('hidden');
-      showNote('error', errorCode === 'invalid_token'
-        ? t('upload.invalidTokenHtml')
-        : t('upload.partialErrorHtml', { ok: ok, failed: failed }));
-      syncControls();
-    }
+    progressWrap.classList.add('hidden');
+    showNote('error', errorCode === 'invalid_token'
+      ? t('upload.invalidTokenHtml')
+      : t('upload.partialErrorHtml', { ok: ok, failed: failed }));
+  }
+
+  function showSuccessScreen() {
+    progressFill.style.width = '100%';
+    setTimeout(function () {
+      uploader.classList.add('hidden');
+      successScreen.classList.remove('hidden');
+      setGuestbookNameField(true);
+      successScreen.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 400);
   }
 
   /* --- Tek dosya yükleme (fetch, no-cors) ------------------------------ */
@@ -465,6 +548,9 @@
     progressWrap.classList.add('hidden');
     progressFill.style.width = '0%';
     hideNote();
+    hideNoteStatus();
+    noteDone.classList.add('hidden');
+    setGuestbookNameField(false);
     successScreen.classList.add('hidden');
     uploader.classList.remove('hidden');
     syncControls();
@@ -478,6 +564,17 @@
     statusNote.classList.remove('hidden');
   }
   function hideNote() { statusNote.classList.add('hidden'); }
+  function showSendError(message) {
+    var html = '<span aria-hidden="true"></span><div>' + esc(message) + '</div>';
+    if (uploader.classList.contains('hidden')) {
+      noteStatus.className = 'note note-error';
+      noteStatus.innerHTML = html;
+      noteStatus.classList.remove('hidden');
+    } else {
+      showNote('error', html);
+    }
+  }
+  function hideNoteStatus() { noteStatus.classList.add('hidden'); }
   function ensureJpg(name) { return name.replace(/\.[^.]+$/, '') + '.jpg'; }
   function isImageFile(file) {
     return (file.type && file.type.indexOf('image/') === 0) ||

@@ -21,6 +21,7 @@ var MAX_BASE64_CHARS = 55 * 1024 * 1024;
  * GET uç noktası. Üç iş görür:
  *   - action yok / 'ping'  → sağlık kontrolü
  *   - action = 'list'      → galeri için fotoğraf listesi (token korumalı)
+ *   - action = 'note'      → Anı Defteri notu kaydı (JSONP ile sonucu okunur)
  *   - action = 'setup'     → otomatik kurulum (TOKEN, folder ID vb. kaydeder)
  * `callback` parametresi verilirse JSONP döner.
  */
@@ -30,6 +31,9 @@ function doGet(e) {
 
   if (action === 'setup') {
     return handleSetup_(p);
+  }
+  if (action === 'note') {
+    return reply_(saveNoteData_(p), p.callback);
   }
 
   var out = (action === 'list') ? listFiles_(p)
@@ -74,16 +78,14 @@ function handleSetup_(p) {
 /** Galeri: klasördeki görselleri (yeni → eski) döndürür. */
 function listFiles_(p) {
   var props = PropertiesService.getScriptProperties();
-  var required = props.getProperty('TOKEN');
-  if (required && String(p.token || '') !== required) {
-    return { status: 'error', code: 'invalid_token', message: 'Geçersiz güvenlik anahtarı' };
-  }
+  var tokenErr = tokenError_(p.token);
+  if (tokenErr) return tokenErr;
   var id = props.getProperty('ROOT_FOLDER_ID');
-  if (!id) return { status: 'ok', count: 0, files: [] }; // henüz yükleme yok
+  if (!id) return emptyList_(p); // henüz yükleme yok
 
   var folder;
   try { folder = DriveApp.getFolderById(id); }
-  catch (e) { return { status: 'ok', count: 0, files: [] }; }
+  catch (e) { return emptyList_(p); }
 
   var arr = [];
   var it = folder.getFiles();
@@ -117,31 +119,68 @@ function listFiles_(p) {
   return out;
 }
 
+function emptyList_(p) {
+  var out = { status: 'ok', count: 0, files: [] };
+  if (p.notes === '1') out.notes = listNotes_();
+  return out;
+}
+
+function tokenError_(token) {
+  var required = PropertiesService.getScriptProperties().getProperty('TOKEN');
+  if (required && String(token || '') !== required) {
+    return { status: 'error', code: 'invalid_token', message: 'Geçersiz güvenlik anahtarı' };
+  }
+  return null;
+}
+
 /**
  * Anı Defteri notunu kaydeder. Çift kayıt yapılır:
  *  (a) Script Properties (NOTE_*) — sunum/galeri anlık okur, Drive'a gitmez
  *  (b) Drive'a Not_*.txt — ev sahibine kalıcı hatıra (paylaşıma açılmaz)
  */
-function saveNote_(body) {
+function saveNoteData_(body) {
+  var tokenErr = tokenError_(body.token);
+  if (tokenErr) return tokenErr;
+
   var msg = String(body.message || '').replace(/\s+/g, ' ').trim().slice(0, 500);
-  if (!msg) return json_({ status: 'error', message: 'Boş not' });
+  if (!msg) return { status: 'error', code: 'empty_note', message: 'Boş not' };
   var guest = descClean_(body.guestName, 40);
   var now = Date.now();
+  var savedProps = false;
+  var savedDrive = false;
+  var fileId = '';
 
   try {
     var key = 'NOTE_' + now + '_' + Math.floor(Math.random() * 9000 + 1000);
     PropertiesService.getScriptProperties()
       .setProperty(key, JSON.stringify({ g: guest, m: msg, t: now }));
+    savedProps = true;
   } catch (e) {}
 
   try {
     var tz = Session.getScriptTimeZone() || 'Europe/Istanbul';
     var ts = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd_HH-mm-ss');
     var name = 'Not_' + ts + (guest ? '_' + sanitize_(guest, 30) : '') + '.txt';
-    getUploadFolder_().createFile(name, (guest ? guest + ':\n' : '') + msg, 'text/plain');
+    var file = getUploadFolder_().createFile(name, (guest ? guest + ':\n' : '') + msg, 'text/plain');
+    savedDrive = true;
+    try { fileId = file.getId(); } catch (e3) {}
   } catch (e2) {}
 
-  return json_({ status: 'ok', type: 'note' });
+  if (!savedProps && !savedDrive) {
+    return { status: 'error', code: 'note_save_failed', message: 'Not kaydedilemedi' };
+  }
+
+  return {
+    status: 'ok',
+    type: 'note',
+    savedProperties: savedProps,
+    savedDrive: savedDrive,
+    fileId: fileId
+  };
+}
+
+function saveNote_(body) {
+  return json_(saveNoteData_(body));
 }
 
 /** Kayıtlı notları yeniden eskiye döndürür (en fazla 50). */
@@ -171,16 +210,14 @@ function doPost(e) {
 
     var body = JSON.parse(e.postData.contents);
 
-    // 1) Token doğrulaması (ayarlandıysa)
-    var required = PropertiesService.getScriptProperties().getProperty('TOKEN');
-    if (required && String(body.token || '') !== required) {
-      return json_({ status: 'error', code: 'invalid_token', message: 'Geçersiz güvenlik anahtarı' });
-    }
-
-    // 1b) Anı Defteri notu (fotoğraf değil)
+    // 1) Anı Defteri notu (fotoğraf değil)
     if (body.type === 'note') {
       return saveNote_(body);
     }
+
+    // 1b) Token doğrulaması (ayarlandıysa)
+    var tokenErr = tokenError_(body.token);
+    if (tokenErr) return json_(tokenErr);
 
     // 2) Tür ve veri kontrolü
     var mime = String(body.mimeType || '');
@@ -327,4 +364,3 @@ function reply_(obj, callback) {
 function isValidCallback_(callback) {
   return /^[A-Za-z_$][0-9A-Za-z_$]*(\.[A-Za-z_$][0-9A-Za-z_$]*)*$/.test(String(callback || ''));
 }
-

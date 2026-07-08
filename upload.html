@@ -36,10 +36,10 @@
       <section id="uploader">
 
         <div class="field" style="margin-top:22px">
-          <label for="guestName" data-i18n-html="upload.guestLabelHtml">Adınız <span class="hint">(isteğe bağlı)</span></label>
+          <label for="guestName" data-i18n-html="upload.guestLabelHtml">Adınız</label>
           <input class="input" type="text" id="guestName" maxlength="40"
                  placeholder="Örn. Ayşe Teyze" autocomplete="name"
-                 data-i18n-placeholder="upload.guestPlaceholder" />
+                 data-i18n-placeholder="upload.guestPlaceholder" required />
         </div>
 
         <!-- Fotoğraf görevleri: etkinliğe özel eğlenceli öneri çipleri -->
@@ -85,10 +85,10 @@
         <!-- Durum notu -->
         <div id="statusNote" class="note note-info hidden"></div>
 
-        <!-- Yükle butonu -->
+        <!-- Eski yükle butonu: akış artık Guest Book altındaki Send butonunda birleşir. -->
         <button type="button" class="btn btn-gold hidden" id="uploadBtn">
           <svg class="icon" viewBox="0 0 24 24"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
-          <span id="uploadBtnText" data-i18n="upload.uploadButton">Yükle</span>
+          <span id="uploadBtnText" data-i18n="upload.uploadButton">Gönder</span>
         </button>
       </section>
 
@@ -109,13 +109,20 @@
         <div class="divider"><span></span></div>
         <h2 class="section center" style="font-size:22px" data-i18n="upload.noteTitle">Anı Defteri</h2>
         <p class="subtitle" data-i18n="upload.noteSub">Fotoğrafın yanına bir de not bırakın — sunum ekranında ve albümde yerini alır.</p>
+        <div class="field hidden" id="noteNameField">
+          <label for="noteGuestName" data-i18n-html="upload.guestLabelHtml">Adınız</label>
+          <input class="input" type="text" id="noteGuestName" maxlength="40"
+                 placeholder="Örn. Ayşe Teyze" autocomplete="name"
+                 data-i18n-placeholder="upload.guestPlaceholder" required />
+        </div>
         <textarea class="input note-input" id="noteText" maxlength="400" rows="3"
                   placeholder="Örn. Nice mutlu senelere! Bu gece harikaydı…"
                   data-i18n-placeholder="upload.notePlaceholder"></textarea>
         <button type="button" class="btn btn-outline" id="noteBtn" style="margin-top:10px">
           <svg class="icon" viewBox="0 0 24 24"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4z"/></svg>
-          <span data-i18n="upload.noteSend">Notu Gönder</span>
+          <span data-i18n="upload.noteSend">Gönder</span>
         </button>
+        <div id="noteStatus" class="note note-error hidden"></div>
         <p class="small center hidden" id="noteDone" style="margin-top:10px" data-i18n="upload.noteThanks">Notunuz iletildi. Teşekkürler!</p>
       </section>
 
@@ -125,6 +132,7 @@
 
   <script src="js/i18n.js"></script>
   <script src="js/events.js"></script>
+  <script src="js/api.js"></script>
   <script src="js/upload.js"></script>
 </body>
 </html>

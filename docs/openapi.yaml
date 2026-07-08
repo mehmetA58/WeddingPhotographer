@@ -35,12 +35,13 @@ paths:
         - No `action` or `action=ping` returns service status.
         - `action=setup` stores token and Drive folder settings in Script Properties and returns HTML.
         - `action=list` returns gallery data, optionally wrapped as JSONP when `callback` is supplied.
+        - `action=note` saves a guest-book note and returns a readable JSON/JSONP result.
       parameters:
         - name: action
           in: query
           schema:
             type: string
-            enum: [ping, setup, list]
+            enum: [ping, setup, list, note]
             default: ping
           description: Endpoint mode.
         - name: callback
@@ -79,6 +80,18 @@ paths:
             type: string
             enum: ["1"]
           description: Set to `1` to include guest-book notes in `action=list`.
+        - name: guestName
+          in: query
+          schema:
+            type: string
+            maxLength: 40
+          description: Guest name for `action=note`.
+        - name: message
+          in: query
+          schema:
+            type: string
+            maxLength: 500
+          description: Guest-book note text for `action=note`.
       responses:
         "200":
           description: Response depends on `action`.
@@ -88,6 +101,7 @@ paths:
                 oneOf:
                   - $ref: "#/components/schemas/PingResponse"
                   - $ref: "#/components/schemas/ListResponse"
+                  - $ref: "#/components/schemas/SaveNoteResponse"
                   - $ref: "#/components/schemas/ErrorResponse"
               examples:
                 ping:
@@ -113,6 +127,14 @@ paths:
                       - g: Ayşe
                         m: Bu gece çok güzeldi.
                         t: 1783530915000
+                note:
+                  summary: Guest-book note response
+                  value:
+                    status: ok
+                    type: note
+                    savedProperties: true
+                    savedDrive: true
+                    fileId: 1abcNoteFile
             application/javascript:
               schema:
                 type: string
@@ -312,6 +334,15 @@ components:
         type:
           type: string
           enum: [note]
+        savedProperties:
+          type: boolean
+          description: Whether the note was stored in Script Properties for gallery/live wall listing.
+        savedDrive:
+          type: boolean
+          description: Whether the note was also written to Drive as a `Not_*.txt` keepsake.
+        fileId:
+          type: string
+          description: Drive file id for the note text file when available.
     ErrorResponse:
       type: object
       required: [status, message]
