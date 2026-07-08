@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500;1,9..144,600&family=Inter:wght@400;500;600&family=Caveat:wght@500;600&display=swap" rel="stylesheet" />
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
@@ -83,7 +84,7 @@
         </div>
 
         <!-- Durum notu -->
-        <div id="statusNote" class="note note-info hidden"></div>
+        <div id="statusNote" class="note note-info hidden" role="status" aria-live="polite"></div>
 
         <!-- Eski yükle butonu: akış artık Guest Book altındaki Send butonunda birleşir. -->
         <button type="button" class="btn btn-gold hidden" id="uploadBtn">
@@ -122,13 +123,25 @@
           <svg class="icon" viewBox="0 0 24 24"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4z"/></svg>
           <span data-i18n="upload.noteSend">Gönder</span>
         </button>
-        <div id="noteStatus" class="note note-error hidden"></div>
-        <p class="small center hidden" id="noteDone" style="margin-top:10px" data-i18n="upload.noteThanks">Notunuz iletildi. Teşekkürler!</p>
+        <div id="noteStatus" class="note note-error hidden" role="status" aria-live="polite"></div>
+        <p class="small center hidden" id="noteDone" style="margin-top:10px" role="status" data-i18n="upload.noteThanks">Notunuz iletildi. Teşekkürler!</p>
       </section>
 
       <p class="footer-note" data-i18n="upload.footer">Fotoğraflarınız yalnızca özel albümde güvenle saklanır.</p>
     </div>
   </main>
+
+  <!-- Yapışkan gönder çubuğu: fotoğraf seçilince belirir, sayfanın
+       neresinde olursa olsun tek dokunuşla gönderim (startSendFlow) -->
+  <div class="sendbar hidden no-print" id="sendBar">
+    <div class="sendbar-inner">
+      <span class="sendbar-info" id="sendBarInfo"></span>
+      <button type="button" class="btn btn-gold sendbar-btn" id="sendBarBtn">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4z"/></svg>
+        <span id="sendBarText">Gönder</span>
+      </button>
+    </div>
+  </div>
 
   <script src="js/i18n.js"></script>
   <script src="js/events.js"></script>

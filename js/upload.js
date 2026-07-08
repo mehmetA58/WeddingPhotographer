@@ -37,6 +37,17 @@
   var statusNote  = $('statusNote');
   var successScreen = $('successScreen');
   var guestNameEl = $('guestName');
+  var sendBar     = $('sendBar');
+  var sendBarBtn  = $('sendBarBtn');
+  var sendBarText = $('sendBarText');
+  var sendBarInfo = $('sendBarInfo');
+
+  // Misafir adı cihazda hatırlanır: aynı gece tekrar yüklemede yeniden yazılmaz
+  var NAME_KEY = 'eventPhotoGuestName';
+  try {
+    var rememberedName = localStorage.getItem(NAME_KEY);
+    if (rememberedName && !guestNameEl.value) guestNameEl.value = rememberedName;
+  } catch (e) {}
 
   /* --- Etkinlik konsepti + karşılamayı kişiselleştir ------------------- */
   var EVENT_KEY = window.EventPhotoEvents.getKey();
@@ -185,6 +196,10 @@
 
   $('moreBtn').addEventListener('click', reset);
   uploadBtn.addEventListener('click', startSendFlow);
+  sendBarBtn.addEventListener('click', startSendFlow);
+  // Çubuktaki ipucu satırı ad/not durumunu yansıtsın
+  guestNameEl.addEventListener('input', syncControls);
+  noteText.addEventListener('input', syncControls);
 
   /* --- Dosya ekleme ---------------------------------------------------- */
   function addFiles(fileList) {
@@ -263,12 +278,31 @@
     }
   }
 
-  /* --- Buton/başlık durumunu güncelle ---------------------------------- */
+  /* --- Buton/çubuk durumunu güncelle ------------------------------------ */
   function syncControls() {
+    // Eski satır-içi buton kullanılmıyor; gönderim yapışkan çubukta ve
+    // Anı Defteri'ndeki "Gönder"de birleşir.
     uploadBtn.classList.add('hidden');
     uploadBtn.disabled = true;
-    uploadBtnText.textContent = t('upload.uploadButton');
     noteBtn.disabled = busy;
+
+    var pending = items.filter(function (x) { return x.status === 'pending' || x.status === 'error'; });
+    var hasError = items.some(function (x) { return x.status === 'error'; });
+    var showBar = !busy && pending.length > 0 && !uploader.classList.contains('hidden');
+
+    if (!showBar) {
+      sendBar.classList.add('hidden');
+      document.body.classList.remove('has-sendbar');
+      return;
+    }
+    sendBarText.textContent = hasError
+      ? t('upload.retrySend', { count: pending.length })
+      : t('upload.sendCount', { count: pending.length });
+    sendBarInfo.textContent = !(guestNameEl.value || '').trim()
+      ? t('upload.sendBarName')
+      : ((noteText.value || '').trim() ? t('upload.sendBarWithNote') : t('upload.sendBarReady'));
+    sendBar.classList.remove('hidden');
+    document.body.classList.add('has-sendbar');
   }
 
   /* --- Ortak gönderim: fotoğraf + opsiyonel not ------------------------- */
@@ -284,6 +318,7 @@
 
     var guestName = requireGuestName();
     if (!guestName) return;
+    try { localStorage.setItem(NAME_KEY, guestName); } catch (e) {}
 
     busy = true;
     noteBtn.disabled = true;
@@ -291,6 +326,7 @@
     hideNote();
     hideNoteStatus();
     noteDone.classList.add('hidden');
+    syncControls(); // gönderim sürerken çubuk gizlenir
 
     var hadPhotos = queue.length > 0;
     var noteMessage = msg;
@@ -305,13 +341,18 @@
       }
       if (noteMessage) {
         if (hadPhotos) progressLabel.textContent = t('upload.sendingNote');
-        return sendNote(noteMessage, guestName);
+        return sendNote(noteMessage, guestName).catch(function (err) {
+          err = err || new Error(t('upload.noteFail'));
+          err.noteStage = true;
+          throw err;
+        });
       }
       return null;
     }).then(function (data) {
       if (data && data.status !== 'ok') {
         var err = new Error(data.message || t('upload.noteFail'));
         err.code = data.code;
+        err.noteStage = true;
         throw err;
       }
       if (noteMessage) {
@@ -325,7 +366,12 @@
     }).catch(function (err) {
       busy = false;
       if (!err || !err.handled) {
-        showSendError((err && err.message) || t('upload.noteFail'));
+        progressWrap.classList.add('hidden');
+        // Fotolar yüklendi ama not gitmedi: kullanıcıya durumu net söyle —
+        // "Gönder"e tekrar basılırsa yalnızca not yeniden denenir (kuyruk boş).
+        showSendError(err && err.noteStage && hadPhotos
+          ? t('upload.noteFailAfterPhotos')
+          : ((err && err.message) || t('upload.noteFail')));
       }
       syncControls();
     });
@@ -359,60 +405,68 @@
     }
   }
 
+  /* Fotoğraflar 3'lü eşzamanlı havuzla yüklenir (sıralıya göre ~3× hızlı;
+     Apps Script eşzamanlı istekleri sorunsuz karşılar). Byte düzeyinde
+     ilerleme Apps Script CORS'u ile okunamadığından çubuk, biten + uçuştaki
+     dosya sayısından hesaplanır: uçuştakiler yarım slot sayılır ve çubuk
+     hedefe yavaşça "süzülür", dosya bitince yerine oturur. */
+  var UPLOAD_CONCURRENCY = 3;
+
   function uploadQueue(queue) {
     progressWrap.classList.remove('hidden');
 
     var total = queue.length;
     var doneCount = 0;
     var failed = 0;
+    var inFlight = 0;
+    var idx = 0;
     var lastErrorCode = '';
 
     progressFill.style.transition = 'width 0s';
     progressFill.style.width = '0%';
     progressCount.textContent = '0 / ' + total;
+    progressLabel.textContent = t('upload.uploading');
+
+    function paint(settled) {
+      var frac = Math.min(1, (doneCount + failed + inFlight * 0.45) / total);
+      progressFill.style.transition = settled
+        ? 'width 0.3s ease'
+        : 'width 7s cubic-bezier(0,0,0.2,1)';
+      progressFill.style.width = (frac * 100).toFixed(1) + '%';
+      progressCount.textContent = doneCount + ' / ' + total;
+    }
 
     return new Promise(function (resolve) {
-      (function next(idx) {
-        if (idx >= queue.length) {
+      function pump() {
+        if (doneCount + failed === total) {
           resolve({ total: total, failed: failed, errorCode: lastErrorCode });
           return;
         }
-        var item = queue[idx];
-        setStatus(item, 'uploading');
-        progressLabel.textContent = t('upload.preparing');
-        trickleSlot(idx, total);   // bu dosya için çubuğu yavaşça ilerlet
-
-        prepareBlob(item.file).then(function (prepared) {
-          progressLabel.textContent = t('upload.uploading');
-          return uploadOne(prepared);
-        }).then(function () {
-          setStatus(item, 'done');
-          doneCount++;
-        }).catch(function (err) {
-          setStatus(item, 'error');
-          failed++;
-          if (err && err.code) lastErrorCode = err.code;
-          console.error('Yükleme hatası:', err);
-        }).then(function () {           // her iki durumda da slotu tamamla ve devam et
-          settleSlot(idx, total, doneCount);
-          next(idx + 1);
-        });
-      })(0);
+        while (inFlight < UPLOAD_CONCURRENCY && idx < total) {
+          (function (item) {
+            inFlight++;
+            setStatus(item, 'uploading');
+            paint(false);
+            prepareBlob(item.file).then(function (prepared) {
+              return uploadOne(prepared);
+            }).then(function () {
+              setStatus(item, 'done');
+              doneCount++;
+            }).catch(function (err) {
+              setStatus(item, 'error');
+              failed++;
+              if (err && err.code) lastErrorCode = err.code;
+              console.error('Yükleme hatası:', err);
+            }).then(function () {
+              inFlight--;
+              paint(true);
+              pump();
+            });
+          })(queue[idx++]);
+        }
+      }
+      pump();
     });
-  }
-
-  /* Byte düzeyinde ilerleme Apps Script CORS'u ile mümkün olmadığından (upload
-     listener'ı preflight tetikler), dosya-başına "trickle" animasyonu kullanılır:
-     her dosya süresince çubuk kendi slotuna doğru yavaşça yaklaşır, dosya
-     bittiğinde slot sonuna oturur. */
-  function trickleSlot(idx, total) {
-    progressFill.style.transition = 'width 12s cubic-bezier(0,0,0.2,1)';
-    progressFill.style.width = (((idx + 0.92) / total) * 100).toFixed(1) + '%';
-  }
-  function settleSlot(idx, total, doneCount) {
-    progressFill.style.transition = 'width 0.3s ease';
-    progressFill.style.width = (((idx + 1) / total) * 100).toFixed(1) + '%';
-    progressCount.textContent = doneCount + ' / ' + total;
   }
 
   function showUploadFailure(total, failed, errorCode) {
