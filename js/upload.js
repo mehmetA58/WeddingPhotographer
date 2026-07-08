@@ -74,9 +74,44 @@
   /* --- Yapılandırma yoksa dur ------------------------------------------ */
   if (!API_URL) {
     uploader.classList.add('hidden');
+    $('guestbook').classList.add('hidden');
     configError.classList.remove('hidden');
     return;
   }
+
+  /* --- Anı Defteri: kısa not gönder ------------------------------------- */
+  var noteText = $('noteText');
+  var noteBtn  = $('noteBtn');
+  var noteDone = $('noteDone');
+
+  noteBtn.addEventListener('click', function () {
+    var msg = (noteText.value || '').trim();
+    if (!msg) { noteText.focus(); return; }
+    noteBtn.disabled = true;
+
+    // Fotoğraf yüklemeyle aynı no-cors "basit istek" yolu (bkz. uploadOne)
+    fetch(API_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({
+        type: 'note',
+        token: TOKEN,
+        guestName: (guestNameEl.value || '').trim().slice(0, 40),
+        message: msg.slice(0, 400)
+      })
+    }).then(function () {
+      noteText.value = '';
+      noteDone.classList.remove('hidden');
+      setTimeout(function () {
+        noteDone.classList.add('hidden');
+        noteBtn.disabled = false;
+      }, 3000);
+    }, function () {
+      noteBtn.disabled = false;
+      showNote('error', t('upload.noteFail'));
+    });
+  });
 
   /* --- Fotoğraf görevleri (öneri çipleri) -------------------------------- */
   var selectedTask = '';

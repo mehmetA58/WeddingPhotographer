@@ -43,7 +43,7 @@
     hide('empty'); hide('galleryNote');
     grid.innerHTML = '';
 
-    window.WeddingApi.list(API, { max: 1000, token: TOKEN }).then(function (data) {
+    window.WeddingApi.list(API, { max: 1000, token: TOKEN, notes: true }).then(function (data) {
       hide('loading');
       if (!data || data.status !== 'ok') {
         if (data && data.code === 'invalid_token') return fail(t('gallery.invalidToken'));
@@ -60,7 +60,8 @@
       $('countLabel').textContent = files.length
         ? t('gallery.countPhotos', { count: files.length })
         : t('gallery.countEmpty');
-      if (!files.length) { show('empty'); return; }
+      renderNotes(data.notes || []);
+      if (!files.length) { if (!(data.notes || []).length) show('empty'); return; }
       render();
     }).catch(function (err) {
       hide('loading');
@@ -86,6 +87,32 @@
       frag.appendChild(cell);
     });
     grid.appendChild(frag);
+  }
+
+  /* --- Anı Defteri notları ---------------------------------------------- */
+  function renderNotes(notes) {
+    var wrap = $('notesWrap');
+    if (!notes.length) { wrap.classList.add('hidden'); return; }
+    $('notesSummary').textContent = t('gallery.notesTitle', { count: notes.length });
+    var listEl = $('notesList');
+    listEl.innerHTML = '';
+    notes.forEach(function (n) {
+      if (!n || !n.m) return;
+      var card = document.createElement('div');
+      card.className = 'note-card';
+      var text = document.createElement('p');
+      text.className = 'note-text';
+      text.textContent = n.m;
+      card.appendChild(text);
+      if (n.g) {
+        var by = document.createElement('p');
+        by.className = 'note-by';
+        by.textContent = '— ' + n.g;
+        card.appendChild(by);
+      }
+      listEl.appendChild(card);
+    });
+    wrap.classList.remove('hidden');
   }
 
   /* --- Lightbox -------------------------------------------------------- */

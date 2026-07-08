@@ -104,6 +104,21 @@
         </button>
       </section>
 
+      <!-- === Anı Defteri === -->
+      <section id="guestbook" class="guestbook">
+        <div class="divider"><span></span></div>
+        <h2 class="section center" style="font-size:22px" data-i18n="upload.noteTitle">Anı Defteri</h2>
+        <p class="subtitle" data-i18n="upload.noteSub">Fotoğrafın yanına bir de not bırakın — sunum ekranında ve albümde yerini alır.</p>
+        <textarea class="input note-input" id="noteText" maxlength="400" rows="3"
+                  placeholder="Örn. Nice mutlu senelere! Bu gece harikaydı…"
+                  data-i18n-placeholder="upload.notePlaceholder"></textarea>
+        <button type="button" class="btn btn-outline" id="noteBtn" style="margin-top:10px">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4z"/></svg>
+          <span data-i18n="upload.noteSend">Notu Gönder</span>
+        </button>
+        <p class="small center hidden" id="noteDone" style="margin-top:10px" data-i18n="upload.noteThanks">Notunuz iletildi. Teşekkürler!</p>
+      </section>
+
       <p class="footer-note" data-i18n="upload.footer">Fotoğraflarınız yalnızca özel albümde güvenle saklanır.</p>
     </div>
   </main>

@@ -105,13 +105,57 @@ function listFiles_(p) {
   arr.sort(function (a, b) { return b.t - a.t; });
 
   var max = Math.max(1, Math.min(parseInt(p.max, 10) || 500, 1000));
-  return {
+  var out = {
     status: 'ok',
     count: arr.length,
     folderId: folder.getId(),
     folderUrl: folder.getUrl(),
     files: arr.slice(0, max)
   };
+  // Anı Defteri notları (sunum ekranı ve galeri için; Drive taraması yok)
+  if (p.notes === '1') out.notes = listNotes_();
+  return out;
+}
+
+/**
+ * Anı Defteri notunu kaydeder. Çift kayıt yapılır:
+ *  (a) Script Properties (NOTE_*) — sunum/galeri anlık okur, Drive'a gitmez
+ *  (b) Drive'a Not_*.txt — ev sahibine kalıcı hatıra (paylaşıma açılmaz)
+ */
+function saveNote_(body) {
+  var msg = String(body.message || '').replace(/\s+/g, ' ').trim().slice(0, 500);
+  if (!msg) return json_({ status: 'error', message: 'Boş not' });
+  var guest = descClean_(body.guestName, 40);
+  var now = Date.now();
+
+  try {
+    var key = 'NOTE_' + now + '_' + Math.floor(Math.random() * 9000 + 1000);
+    PropertiesService.getScriptProperties()
+      .setProperty(key, JSON.stringify({ g: guest, m: msg, t: now }));
+  } catch (e) {}
+
+  try {
+    var tz = Session.getScriptTimeZone() || 'Europe/Istanbul';
+    var ts = Utilities.formatDate(new Date(), tz, 'yyyy-MM-dd_HH-mm-ss');
+    var name = 'Not_' + ts + (guest ? '_' + sanitize_(guest, 30) : '') + '.txt';
+    getUploadFolder_().createFile(name, (guest ? guest + ':\n' : '') + msg, 'text/plain');
+  } catch (e2) {}
+
+  return json_({ status: 'ok', type: 'note' });
+}
+
+/** Kayıtlı notları yeniden eskiye döndürür (en fazla 50). */
+function listNotes_() {
+  var all;
+  try { all = PropertiesService.getScriptProperties().getProperties(); }
+  catch (e) { return []; }
+  var notes = [];
+  for (var k in all) {
+    if (k.indexOf('NOTE_') !== 0) continue;
+    try { notes.push(JSON.parse(all[k])); } catch (e2) {}
+  }
+  notes.sort(function (a, b) { return (b.t || 0) - (a.t || 0); });
+  return notes.slice(0, 50);
 }
 
 /**
@@ -131,6 +175,11 @@ function doPost(e) {
     var required = PropertiesService.getScriptProperties().getProperty('TOKEN');
     if (required && String(body.token || '') !== required) {
       return json_({ status: 'error', code: 'invalid_token', message: 'Geçersiz güvenlik anahtarı' });
+    }
+
+    // 1b) Anı Defteri notu (fotoğraf değil)
+    if (body.type === 'note') {
+      return saveNote_(body);
     }
 
     // 2) Tür ve veri kontrolü
