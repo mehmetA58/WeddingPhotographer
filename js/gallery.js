@@ -64,9 +64,15 @@
       if (!files.length) { if (!(data.notes || []).length) show('empty'); return; }
       render();
     }).catch(function (err) {
-      hide('loading');
-      fail(t('gallery.failConnection'));
       console.error(err);
+      // Sunucuya erişiliyor ama yanıt okunamıyorsa neden büyük olasılıkla
+      // dağıtım ayarıdır ("Who has access: Anyone") — ev sahibine tam adresi söyle.
+      window.EventPhotoApi.diagnose(API).then(function (state) {
+        hide('loading');
+        failHtml(state === 'unreadable'
+          ? t('gallery.failAccessHtml')
+          : t('gallery.failConnectionHtml'));
+      });
     });
   }
 
@@ -165,6 +171,11 @@
     text.textContent = msg;
     n.appendChild(icon);
     n.appendChild(text);
+    show('galleryNote');
+  }
+  function failHtml(html) {
+    var n = $('galleryNote');
+    n.innerHTML = '<span aria-hidden="true"></span><div>' + html + '</div>';
     show('galleryNote');
   }
   function show(id) { $(id).classList.remove('hidden'); }

@@ -115,6 +115,22 @@
   manualApiEl.addEventListener('input', updateGenerateState);
   updateGenerateState();
 
+  // "Sına": Web App'in gerçekten okunabilir yanıt verdiğini teşhis eder.
+  // 'unreadable' tipik olarak "Who has access: Anyone" seçilmemiş demektir.
+  $('testApiBtn').addEventListener('click', function () {
+    var api = manualApiUrl() || deploymentUrl;
+    if (!api) { showNote('error', t('setup.needAuth')); return; }
+    var btn = $('testApiBtn');
+    btn.disabled = true;
+    showNote('info', t('setup.testing'));
+    window.EventPhotoApi.diagnose(api).then(function (state) {
+      btn.disabled = false;
+      if (state === 'ok') showNote('ok', t('setup.testOkHtml'));
+      else if (state === 'unreadable') showNote('error', t('setup.testAccessHtml'));
+      else showNote('error', t('setup.testNetworkHtml'));
+    });
+  });
+
   langEl.addEventListener('change', function () {
     i18n.setLang(langEl.value);
     buildConceptGrid();
@@ -199,7 +215,10 @@
       return;
     }
     if (GOOGLE_CLIENT_ID === 'BURAYA_GOOGLE_CLIENT_ID_YAZIN') {
-      showNote('info', 'Otomatik kurulum ("Google ile Bağlan") için <b>js/setup.js</b> içindeki <code>GOOGLE_CLIENT_ID</code> değerini ayarlayın (README, Bölüm B · Yol 1). Alternatif: Apps Script\'i kendiniz yayınlayıp Web App URL\'inizi <b>Gelişmiş ayarlar</b>dan girin.');
+      // Görünür bir notun (ör. Sına sonucu) üzerine yazma — yalnızca alan boşken göster
+      if (noteEl.classList.contains('hidden')) {
+        showNote('info', 'Otomatik kurulum ("Google ile Bağlan") için <b>js/setup.js</b> içindeki <code>GOOGLE_CLIENT_ID</code> değerini ayarlayın (README, Bölüm B · Yol 1). Alternatif: Apps Script\'i kendiniz yayınlayıp Web App URL\'inizi <b>Gelişmiş ayarlar</b>dan girin.');
+      }
       return;
     }
     try {

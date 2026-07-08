@@ -38,6 +38,11 @@
       'setup.manualApiLabelHtml': 'Web App URL (manuel bağlantı) <span class="hint">— "Google ile Bağlan" kullanmadan kendi yayınladığınız Apps Script adresi</span>',
       'setup.manualApiPlaceholder': 'https://script.google.com/macros/s/…/exec',
       'setup.manualApiHelp': 'Code.gs\'i kendiniz yayınladıysanız (README Bölüm B) Web App URL\'ini buraya yapıştırın; Google ile bağlanmak gerekmez.',
+      'setup.testApi': 'Sına',
+      'setup.testing': 'Bağlantı sınanıyor…',
+      'setup.testOkHtml': '<b>Bağlantı doğrulandı.</b> Web App okunabilir yanıt veriyor; QR kodu gönül rahatlığıyla oluşturabilirsiniz.',
+      'setup.testAccessHtml': '<b>Web App yanıt veriyor ama okunamıyor.</b> Apps Script\'te <b>Deploy → Manage deployments → ✏</b> açın; <b>Who has access: Anyone</b> seçip <b>Version: New version</b> ile yeniden yayınlayın. URL\'in <code>/exec</code> ile bittiğinden emin olun (<code>/dev</code> giriş ister).',
+      'setup.testNetworkHtml': '<b>Bağlantı kurulamadı.</b> URL\'i kontrol edin — <code>https://script.google.com/macros/s/…/exec</code> biçiminde olmalı — ve internet bağlantınızı sınayın.',
       'setup.tokenLabelHtml': 'Güvenlik anahtarı (token) <span class="hint">— linkiniz sızsa bile yabancı yüklemeleri engeller</span>',
       'setup.tokenPlaceholder': '(boş bırakılabilir)',
       'setup.generateToken': 'Üret',
@@ -239,7 +244,8 @@
       'gallery.countPhotos': '{count} fotoğraf',
       'gallery.countEmpty': 'Fotoğraf yok',
       'gallery.failList': 'Liste alınamadı.',
-      'gallery.failConnection': 'Bağlantı kurulamadı. Web App URL\'inizi ve internet bağlantınızı kontrol edin.',
+      'gallery.failConnectionHtml': '<b>Bağlantı kurulamadı.</b> Web App URL\'inizi (<code>/exec</code> ile bitmeli) ve internet bağlantınızı kontrol edin.',
+      'gallery.failAccessHtml': '<b>Web App yanıt veriyor ama okunamıyor.</b> Apps Script dağıtımında <b>Who has access: Anyone</b> seçili olmalı: <b>Deploy → Manage deployments → ✏ → Anyone → New version</b>. Kurulum sayfasındaki <b>Sına</b> butonu da aynı teşhisi yapar.',
       'gallery.invalidToken': 'Geçersiz güvenlik anahtarı.',
 
       'card.toolsEyebrow': 'Yazdırılabilir QR Kart',
@@ -312,6 +318,7 @@
       'slideshow.count': '{count} kare',
       'slideshow.new': 'Yeni',
       'slideshow.connError': 'Bağlantı bekleniyor… Ekran otomatik olarak yeniden denenecek.',
+      'slideshow.connAccess': 'Web App okunamıyor — Apps Script dağıtımında "Who has access: Anyone" seçin (Deploy → Manage deployments → New version).',
       'slideshow.configErrorHtml': '<b>Sunum bağlantısı eksik.</b> Bu sayfayı kurulum ekranındaki “Sunum Ekranı” linkiyle açın.'
     },
 
@@ -343,6 +350,11 @@
       'setup.manualApiLabelHtml': 'Web App URL (manual connection) <span class="hint">— your own deployed Apps Script address, no Google sign-in needed</span>',
       'setup.manualApiPlaceholder': 'https://script.google.com/macros/s/…/exec',
       'setup.manualApiHelp': 'If you deployed Code.gs yourself (README section B), paste its Web App URL here; Google sign-in is not required.',
+      'setup.testApi': 'Test',
+      'setup.testing': 'Testing the connection…',
+      'setup.testOkHtml': '<b>Connection verified.</b> The Web App responds readably; you can create the QR code with confidence.',
+      'setup.testAccessHtml': '<b>The Web App responds but cannot be read.</b> In Apps Script open <b>Deploy → Manage deployments → ✏</b>; set <b>Who has access: Anyone</b> and republish with <b>Version: New version</b>. Make sure the URL ends with <code>/exec</code> (<code>/dev</code> requires sign-in).',
+      'setup.testNetworkHtml': '<b>Could not connect.</b> Check the URL — it should look like <code>https://script.google.com/macros/s/…/exec</code> — and test your internet connection.',
       'setup.tokenLabelHtml': 'Security key (token) <span class="hint">— blocks uploads without the private link token</span>',
       'setup.tokenPlaceholder': '(optional)',
       'setup.generateToken': 'Generate',
@@ -544,7 +556,8 @@
       'gallery.countPhotos': '{count} photos',
       'gallery.countEmpty': 'No photos',
       'gallery.failList': 'Could not load the list.',
-      'gallery.failConnection': 'Could not connect. Check your Web App URL and internet connection.',
+      'gallery.failConnectionHtml': '<b>Could not connect.</b> Check your Web App URL (it must end with <code>/exec</code>) and internet connection.',
+      'gallery.failAccessHtml': '<b>The Web App responds but cannot be read.</b> The Apps Script deployment must have <b>Who has access: Anyone</b>: <b>Deploy → Manage deployments → ✏ → Anyone → New version</b>. The <b>Test</b> button on the setup page runs the same diagnosis.',
       'gallery.invalidToken': 'Invalid security key.',
 
       'card.toolsEyebrow': 'Printable QR Card',
@@ -617,6 +630,7 @@
       'slideshow.count': '{count} photos',
       'slideshow.new': 'New',
       'slideshow.connError': 'Waiting for connection… The screen will retry automatically.',
+      'slideshow.connAccess': 'The Web App cannot be read — set "Who has access: Anyone" on the Apps Script deployment (Deploy → Manage deployments → New version).',
       'slideshow.configErrorHtml': '<b>Live wall link is missing.</b> Open this page from the “Live Wall” link on the setup screen.'
     }
   };

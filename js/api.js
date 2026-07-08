@@ -50,6 +50,36 @@
     return { guest: guest.trim(), task: task.trim() };
   }
 
-  window.EventPhotoApi = { jsonp: jsonp, list: list, thumb: thumb, parseMeta: parseMeta };
+  /* Sağlık kontrolü: action=ping JSONP ile okunabilir yanıt bekler */
+  function ping(apiUrl, timeoutMs) {
+    var url = apiUrl + (apiUrl.indexOf('?') >= 0 ? '&' : '?') + 'action=ping';
+    return jsonp(url, timeoutMs || 8000);
+  }
+
+  /* Sunucuya ağ düzeyinde erişilebiliyor mu? (yanıt okunamasa bile) */
+  function reachable(apiUrl) {
+    try {
+      return fetch(apiUrl, { method: 'GET', mode: 'no-cors', cache: 'no-store' })
+        .then(function () { return true; }, function () { return false; });
+    } catch (e) { return Promise.resolve(false); }
+  }
+
+  /* Bağlantı teşhisi:
+       'ok'         → Web App okunabilir yanıt veriyor
+       'unreadable' → sunucu erişilebilir ama yanıt betik olarak okunamıyor
+                      (tipik neden: "Who has access: Anyone" değil veya /dev URL)
+       'network'    → URL/ağ düzeyinde erişilemiyor                         */
+  function diagnose(apiUrl) {
+    return ping(apiUrl).then(function (data) {
+      return (data && (data.status === 'ready' || data.status === 'ok')) ? 'ok' : 'unreadable';
+    }, function () {
+      return reachable(apiUrl).then(function (r) { return r ? 'unreadable' : 'network'; });
+    });
+  }
+
+  window.EventPhotoApi = {
+    jsonp: jsonp, list: list, thumb: thumb, parseMeta: parseMeta,
+    ping: ping, reachable: reachable, diagnose: diagnose
+  };
   window.WeddingApi = window.EventPhotoApi;
 })();

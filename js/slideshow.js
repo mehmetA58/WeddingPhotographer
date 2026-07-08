@@ -127,7 +127,11 @@
         showEmpty();
       }
     }).catch(function () {
-      showConnError(t('slideshow.connError'));
+      // Erişilebilir ama okunamıyorsa geçici bir kesinti değil, dağıtım
+      // ayarıdır — ev sahibine düzeltmenin yerini söyle.
+      Api.reachable(API).then(function (r) {
+        showConnError(t(r ? 'slideshow.connAccess' : 'slideshow.connError'));
+      });
     }).then(function () {
       setTimeout(poll, POLL_MS);
     });
