@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+# Misafir/ev sahibi sayfaları kişisel parametreler taşır; indekslenmesin
+Disallow: /upload.html
+Disallow: /gallery.html
+Disallow: /slideshow.html
+Disallow: /card.html
+
+Sitemap: https://mehmeta58.github.io/WeddingPhotographer/sitemap.xml
