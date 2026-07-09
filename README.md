@@ -33,6 +33,10 @@ Yıldönümü, Romantik Akşam Yemeği, Hoş Geldin Partisi, Veda Partisi**.
 
 ## ✨ Öne çıkanlar
 
+> **Canlı demo:** Sunum ekranını örnek karelerle hemen görmek için
+> `slideshow.html?demo=1` açın — kurulum gerektirmez. Sitenin kök adresi
+> (`index.html`) tüm özellikleri anlatan tanıtım sayfasıdır.
+
 - **Davetiye** — `invite.html` ile zarif bir dijital davetiye oluşturun: tarih, mekan,
   el yazısı mesaj, geri sayım. Davetli linki açınca **mühürlü zarf** belirir, dokununca
   davetiye çıkar. Link/WhatsApp/PNG olarak paylaşılır; **Takvime Ekle** (.ics),
