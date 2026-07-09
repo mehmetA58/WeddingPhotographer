@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600">
+  <defs>
+    <linearGradient id="sg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#D9F0F1"/><stop offset="1" stop-color="#A9D7DA"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="330" fill="url(#sg)"/>
+  <circle cx="170" cy="120" r="48" fill="#FFF3D6"/>
+  <rect y="330" width="800" height="120" fill="#4F9FA3"/>
+  <rect y="450" width="800" height="150" fill="#F0E3C8"/>
+  <g fill="#EAF7F8">
+    <path d="M0 352 Q100 340 200 352 T400 352 T600 352 T800 352 L800 362 Q700 374 600 362 T400 362 T200 362 T0 362 Z" opacity=".7"/>
+    <path d="M0 404 Q100 392 200 404 T400 404 T600 404 T800 404 L800 414 Q700 426 600 414 T400 414 T200 414 T0 414 Z" opacity=".5"/>
+  </g>
+  <g transform="translate(600 380)">
+    <line x1="0" y1="90" x2="0" y2="-40" stroke="#7A5C3E" stroke-width="7"/>
+    <path d="M-90 -30 A95 95 0 0 1 90 -30 L0 -40 Z" fill="#B85F73"/>
+    <path d="M-90 -30 A95 95 0 0 1 -30 -88 L0 -40 Z" fill="#FFF6EC"/>
+    <path d="M30 -88 A95 95 0 0 1 90 -30 L0 -40 Z" fill="#FFF6EC"/>
+  </g>
+</svg>

@@ -20,6 +20,7 @@
   var TOKEN   = (params.get('token') || '').trim();
   var TITLE   = (params.get('title') || '').trim();
   var QR_LINK = (params.get('qr') || '').trim();
+  var DEMO    = params.get('demo') === '1';   // API'siz örnek akış (landing/tanıtım)
 
   // ?poll= ve ?slide= (ms) ile ayarlanabilir; varsayılanlar etkinlik için dengeli
   var POLL_MS    = clamp(parseInt(params.get('poll'), 10)  || 20000, 4000, 120000);
@@ -48,7 +49,7 @@
   document.title = barTitle + ' · EventPhoto';
 
   /* --- Yapılandırma eksikse dur ------------------------------------------ */
-  if (!API) {
+  if (!API && !DEMO) {
     stageError.innerHTML = t('slideshow.configErrorHtml');
     stageError.classList.remove('hidden');
     $('stageHint').classList.add('hidden');
@@ -137,6 +138,48 @@
     });
   }
 
+  /* --- Demo modu: API'siz örnek akış (landing / tanıtım) ------------------- */
+  function runDemo() {
+    var base = 'assets/demo/';
+    var samples = [
+      ['dans-pisti.svg', 'Ayşe Teyze', 'Dans pistinden bir kare'],
+      ['gun-batimi.svg', 'Deniz', ''],
+      ['pasta.svg', 'Zeynep', 'Mum üfleme anı'],
+      ['kadeh.svg', 'Mehmet Amca', 'Kadeh kaldırma anı'],
+      ['isiklar.svg', 'Elif', ''],
+      ['manzara.svg', 'Can', 'En güzel manzara'],
+      ['konfeti.svg', 'Selin', 'En içten kahkaha'],
+      ['sahil.svg', 'Burak', '']
+    ];
+    var all = samples.map(function (s, i) {
+      return { id: 'demo' + i, t: Date.now() - i * 60000, guest: s[1], task: s[2], src: base + s[0] };
+    });
+
+    notes = [
+      { g: 'Fatma', m: 'Nice mutlu senelere! Bu gece unutulmazdı.', t: Date.now() },
+      { g: 'Emre', m: 'Her şey çok güzeldi, emeğinize sağlık.', t: Date.now() - 90000 }
+    ];
+
+    photos = all.slice(0, 5);
+    var upcoming = all.slice(5);
+    var demoCount = photos.length;
+    stageCount.textContent = t('slideshow.count', { count: demoCount });
+    firstLoad = false;
+    advance();
+
+    // Arada bir taze kare düşür: "Yeni" rozetli geliş de demoda görünsün
+    setInterval(function () {
+      if (!upcoming.length) upcoming = all.slice(0);
+      var nextItem = upcoming.shift();
+      freshQueue.push({
+        id: nextItem.id + '_' + Date.now(), t: Date.now(),
+        guest: nextItem.guest, task: nextItem.task, src: nextItem.src
+      });
+      demoCount++;
+      stageCount.textContent = t('slideshow.count', { count: demoCount });
+    }, 18000);
+  }
+
   /* --- Kare akışı ---------------------------------------------------------- */
   function advance() {
     slideTimer = null;
@@ -196,7 +239,7 @@
       done();
     };
     img.onerror = function () { done(); }; // yüklenemeyen kareyi atla
-    img.src = Api.thumb(item.id, 1600);
+    img.src = item.src || Api.thumb(item.id, 1600);
   }
 
   function polaroidHtml(item, isNew) {
@@ -289,5 +332,6 @@
     });
   }
 
-  poll();
+  if (DEMO) runDemo();
+  else poll();
 })();

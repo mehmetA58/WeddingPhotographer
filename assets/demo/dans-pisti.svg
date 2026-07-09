@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600">
+  <rect width="800" height="600" fill="#171019"/>
+  <rect y="430" width="800" height="170" fill="#241628"/>
+  <g>
+    <circle cx="120" cy="140" r="46" fill="#E8A33D" opacity=".55"/>
+    <circle cx="300" cy="80" r="30" fill="#B85F73" opacity=".5"/>
+    <circle cx="470" cy="150" r="58" fill="#8B7BB7" opacity=".45"/>
+    <circle cx="650" cy="90" r="36" fill="#E8A33D" opacity=".4"/>
+    <circle cx="730" cy="220" r="52" fill="#B85F73" opacity=".35"/>
+    <circle cx="200" cy="280" r="70" fill="#5F84B8" opacity=".3"/>
+    <circle cx="560" cy="300" r="44" fill="#E8C46B" opacity=".45"/>
+    <circle cx="380" cy="240" r="24" fill="#FFF3D6" opacity=".6"/>
+    <circle cx="70" cy="360" r="34" fill="#8B7BB7" opacity=".35"/>
+  </g>
+  <g fill="#0C070D">
+    <ellipse cx="270" cy="470" rx="46" ry="96"/>
+    <circle cx="270" cy="352" r="26"/>
+    <ellipse cx="420" cy="480" rx="42" ry="88"/>
+    <circle cx="420" cy="372" r="24"/>
+    <ellipse cx="560" cy="472" rx="40" ry="92"/>
+    <circle cx="560" cy="358" r="25"/>
+  </g>
+</svg>
