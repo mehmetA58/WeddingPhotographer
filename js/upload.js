@@ -149,9 +149,17 @@
           throw err;
         }
         var notes = data.notes || [];
+        var serverKnowsNoteIds = false;
         for (var i = 0; i < notes.length; i++) {
-          if (notes[i] && notes[i].id === noteId) return { status: 'ok', type: 'note', noteId: noteId };
+          if (notes[i] && notes[i].id) {
+            serverKnowsNoteIds = true;
+            if (notes[i].id === noteId) return { status: 'ok', type: 'note', noteId: noteId };
+          }
         }
+        // Sunucu not kimliği döndürmüyorsa (eski Apps Script dağıtımı) kimlikle
+        // doğrulama yapılamaz — not gönderimi başarılıydı, misafiri yanlışça
+        // "doğrulanamadı" diye uyarmak yerine iyimser davranıp başarı sayarız.
+        if (!serverKnowsNoteIds) return { status: 'ok', type: 'note', noteId: noteId };
         var missing = new Error(t('upload.noteVerifyFail'));
         missing.code = 'note_not_found';
         throw missing;
@@ -540,9 +548,18 @@
         if (meta.uploadId) found[meta.uploadId] = true;
       });
 
+      // Sunucu açıklamada UploadId döndürüyor mu? Eski Apps Script dağıtımları
+      // yazmaz; o zaman uploadId ile doğrulama yapılamaz. Liste geldiği (yani
+      // ağ yüklemesi başarılı olduğu) halde hiçbir dosyada kimlik yoksa,
+      // misafiri yanlışça "başarısız" diye korkutmak yerine iyimser davranıp
+      // başarı sayarız. Kimlik döndüren güncel dağıtımlarda kesin doğrulama
+      // korunur: gerçekten eksik dosya hâlâ hata olarak yakalanır.
+      var serverKnowsIds = Object.keys(found).length > 0;
+      var listHasFiles = (data.files || []).length > 0;
+
       var failed = 0;
       queue.forEach(function (item) {
-        if (found[item.uploadId]) {
+        if (found[item.uploadId] || (!serverKnowsIds && listHasFiles)) {
           setStatus(item, 'done');
         } else {
           setStatus(item, 'error');
