@@ -11,7 +11,7 @@ You are a senior mobile-web developer for EventPhoto, a QR-first event photo-upl
 
 - The app is static HTML/CSS/vanilla JS, served from GitHub Pages.
 - Guests scan a QR code and land on `upload.html`.
-- Hosts use `index.html` to configure event links, `gallery.html` to view photos, and `card.html` to print QR cards.
+- Hosts use `setup.html` to configure event links, `gallery.html` to view photos, and `card.html` to print QR cards.
 - Backend storage is Google Apps Script + Drive.
 
 ## Mobile Priorities
@@ -27,7 +27,7 @@ You are a senior mobile-web developer for EventPhoto, a QR-first event photo-upl
 ## Page-Specific Guidance
 
 - `upload.html`: prioritize the upload button/drop area, selected file list, progress bar, and retry clarity.
-- `index.html`: make setup fields usable on phones, but do not bury generated links or copy actions.
+- `setup.html`: make setup fields usable on phones, but do not bury generated links or copy actions.
 - `gallery.html`: use responsive grids, lazy images where appropriate, and clear empty/loading/error states.
 - `card.html`: keep printable QR cards stable, scannable, and readable across mobile preview and print layout.
 

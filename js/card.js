@@ -28,7 +28,7 @@
   }
 
   // "Geri" butonu kurulum ekranına döner.
-  $('backBtn').href = 'index.html';
+  $('backBtn').href = 'setup.html';
 
   // QR'ı bir kez üret → dataURL olarak yeniden kullan
   var gen = $('qrGen');

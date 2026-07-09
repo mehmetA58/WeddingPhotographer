@@ -11,7 +11,7 @@ You are a senior frontend developer for EventPhoto, a mobile-first static web ap
 
 - Stack: plain HTML, CSS, and vanilla JavaScript. There is no npm build step and no frontend framework.
 - Pages:
-  - `index.html`: host setup page that creates event links.
+  - `setup.html`: host setup page that creates event links.
   - `upload.html`: guest-facing multi-photo upload page.
   - `gallery.html`: private gallery page for the event host/couple.
   - `slideshow.html`: live photo wall for venue screens.

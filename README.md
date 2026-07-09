@@ -21,7 +21,7 @@ Merkezî sunucu yok. Her organizasyon sahibi kendi Drive'ını şöyle bağlar:
 > Deploy ettiğinizde size özel bir **Web App URL'i** verilir; bu adres sizin
 > Drive'ınıza bağlıdır.
 
-Statik site (`index.html`, `upload.html`) **bir kez** yayınlanır. Kurulum sayfası
+Statik site (`setup.html`, `upload.html`) **bir kez** yayınlanır. Kurulum sayfası
 sizin Web App URL'inizi + etkinlik türünü + etkinlik başlığını linke gömüp
 **kişiselleştirilmiş bir QR** üretir. O QR'ı okutan herkes, sizin Drive'ınıza
 yükleme yapar.
@@ -55,7 +55,8 @@ Yıldönümü, Romantik Akşam Yemeği, Hoş Geldin Partisi, Veda Partisi**.
 
 ```
 EventPhoto/
-├── index.html          # Kurulum sayfası (etkinlik → link + QR üretir)
+├── index.html          # Landing page (tanıtım / ön kapı)
+├── setup.html          # Kurulum sayfası (etkinlik → link + QR üretir)
 ├── upload.html         # Katılımcı yükleme sayfası (QR buraya gider)
 ├── gallery.html        # Organizasyon sahibi için özel fotoğraf galerisi
 ├── slideshow.html      # Canlı sunum ekranı (mekandaki TV/projeksiyon)
@@ -114,7 +115,7 @@ Toplam süre: ~10 dakika. İki bölüm var: **(A) Siteyi yayınla**, **(B) Drive
    Dilerseniz bunun yerine *Source: Deploy from a branch → `main` / `(root)`* de seçebilirsiniz.)
 4. 1–2 dakika sonra siteniz yayında olur:
    `https://<kullanıcı-adınız>.github.io/etkinlik-foto/`
-5. Kurulum sayfanız: `.../etkinlik-foto/index.html`
+5. Kurulum sayfanız: `.../etkinlik-foto/setup.html` (kök adres tanıtım sayfasını açar)
 
 **Seçenek 2: Netlify (daha da hızlı, sürükle-bırak)**
 
@@ -183,7 +184,7 @@ adımları (klasör, proje, yayın, token) otomatik tamamlanır. Yol 2'ye gerek 
 
 ### Bölüm C — QR kodunuzu oluşturun
 
-1. Yayınladığınız **`index.html`** (kurulum) sayfasını açın ve Bölüm B'deki
+1. Yayınladığınız **`setup.html`** (kurulum) sayfasını açın ve Bölüm B'deki
    yollardan biriyle Drive'ınızı bağlayın (Yol 1: **"Google ile Bağlan"** ·
    Yol 2: **Gelişmiş ayarlar → Web App URL**).
 2. **Etkinlik Türü** seçin. Karşılama metni, vurgu rengi ve sayfa zemin tonu

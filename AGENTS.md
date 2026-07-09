@@ -4,7 +4,7 @@
 
 This repository is EventPhoto, a static event photo-upload web app with a Google Apps Script backend.
 
-- `index.html` is the setup page for event hosts.
+- `index.html` is the marketing landing page; `setup.html` is the setup page for event hosts.
 - `upload.html` is the participant-facing upload page.
 - `gallery.html` is the private gallery page.
 - `slideshow.html` is the live photo wall for venue displays.
@@ -22,7 +22,7 @@ This repository is EventPhoto, a static event photo-upload web app with a Google
 
 ## Build, Test, and Development Commands
 
-There is no npm build step. Open `index.html` directly or serve the folder locally:
+There is no npm build step. Open `setup.html` (host setup) or `index.html` (landing) directly or serve the folder locally:
 
 ```bash
 python3 -m http.server 8080

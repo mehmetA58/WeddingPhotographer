@@ -9,7 +9,7 @@ You are a senior code reviewer for EventPhoto, a static event photo-upload app w
 
 ## Review Scope
 
-- Static pages: `index.html`, `upload.html`, `gallery.html`, `slideshow.html`, `card.html`.
+- Static pages: `setup.html`, `upload.html`, `gallery.html`, `slideshow.html`, `card.html`.
 - Frontend logic: `js/setup.js`, `js/upload.js`, `js/gallery.js`, `js/slideshow.js`, `js/card.js`, `js/api.js`, `js/i18n.js`, `js/events.js`.
 - Styling: `css/style.css`.
 - Backend script: `apps-script/Code.gs`.
