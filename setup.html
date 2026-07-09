@@ -89,19 +89,19 @@
           <div class="field" style="margin-top:12px">
             <label for="manualApi" data-i18n-html="setup.manualApiLabelHtml">Web App URL (manuel bağlantı)
               <span class="hint">— "Google ile Bağlan" kullanmadan kendi yayınladığınız Apps Script adresi</span></label>
-            <div style="display:flex; gap:8px">
+            <div class="field-row">
               <input class="input" type="url" id="manualApi" inputmode="url" autocomplete="off" spellcheck="false"
                      placeholder="https://script.google.com/macros/s/…/exec" data-i18n-placeholder="setup.manualApiPlaceholder" />
-              <button type="button" class="btn btn-ghost" id="testApiBtn" style="width:auto; padding:0 16px" data-i18n="setup.testApi">Sına</button>
+              <button type="button" class="btn btn-ghost" id="testApiBtn" data-i18n="setup.testApi">Sına</button>
             </div>
             <p class="small" style="margin:6px 2px 0" data-i18n="setup.manualApiHelp">Code.gs'i kendiniz yayınladıysanız (README Bölüm B) Web App URL'ini buraya yapıştırın; Google ile bağlanmak gerekmez.</p>
           </div>
           <div class="field">
             <label for="token" data-i18n-html="setup.tokenLabelHtml">Güvenlik anahtarı (token)
               <span class="hint">— linkiniz sızsa bile yabancı yüklemeleri engeller</span></label>
-            <div style="display:flex; gap:8px">
+            <div class="field-row">
               <input class="input" type="text" id="token" placeholder="(boş bırakılabilir)" data-i18n-placeholder="setup.tokenPlaceholder" />
-              <button type="button" class="btn btn-ghost" id="genToken" style="width:auto; padding:0 16px" data-i18n="setup.generateToken">Üret</button>
+              <button type="button" class="btn btn-ghost" id="genToken" data-i18n="setup.generateToken">Üret</button>
             </div>
             <p class="small" style="margin:6px 2px 0" data-i18n-html="setup.tokenHelpHtml">Bu anahtar otomatik yapılandırıldı.</p>
           </div>

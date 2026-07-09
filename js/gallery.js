@@ -154,6 +154,22 @@
   $('lbPrev').addEventListener('click', function () { nav(-1); });
   $('lbNext').addEventListener('click', function () { nav(1); });
   lb.addEventListener('click', function (e) { if (e.target === lb) closeLightbox(); });
+  var touchStartX = 0;
+  var touchStartY = 0;
+  lb.addEventListener('touchstart', function (e) {
+    if (!e.touches || !e.touches.length) return;
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+  }, { passive: true });
+  lb.addEventListener('touchend', function (e) {
+    if (!touchStartX || !e.changedTouches || !e.changedTouches.length || files.length < 2) return;
+    var dx = e.changedTouches[0].clientX - touchStartX;
+    var dy = e.changedTouches[0].clientY - touchStartY;
+    touchStartX = 0;
+    touchStartY = 0;
+    if (Math.abs(dx) < 48 || Math.abs(dx) < Math.abs(dy) * 1.2) return;
+    nav(dx < 0 ? 1 : -1);
+  }, { passive: true });
   document.addEventListener('keydown', function (e) {
     if (lb.classList.contains('hidden')) return;
     if (e.key === 'Escape') closeLightbox();
