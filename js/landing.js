@@ -68,6 +68,20 @@
   var steps  = $$('.lp-step');
 
   var ticking = false;
+  /* Ölçümler önbelleğe alınır: mobilde URL çubuğu açılıp kapanınca yalnızca
+     yükseklik değişir ve resize tetiklenir — bunu yeniden ölçmeye bağlarsak
+     scroll'a kilitli parallax zıplar. Onun yerine ölçümleri dondurur, yalnızca
+     genişlik değişince (yön değişimi / pencere yeniden boyutlanması) yenileriz. */
+  var vh = window.innerHeight;
+  var heroH = hero.offsetHeight;
+  var heroTop = hero.offsetTop;
+  var lastW = window.innerWidth;
+
+  function measure() {
+    vh = window.innerHeight;
+    heroH = hero.offsetHeight;
+    heroTop = hero.offsetTop;
+  }
 
   function onScroll() {
     nav.classList.toggle('is-scrolled', window.scrollY > 40);
@@ -75,14 +89,20 @@
     if (!ticking) { ticking = true; requestAnimationFrame(update); }
   }
 
+  function onResize() {
+    if (window.innerWidth === lastW) return;   // yükseklik-yalnızca (URL çubuğu) yok sayılır
+    lastW = window.innerWidth;
+    measure();
+    onScroll();
+  }
+
   function update() {
     ticking = false;
-    var vh = window.innerHeight;
 
     /* --- Hero --- */
-    var span = hero.offsetHeight - vh;
+    var span = heroH - vh;
     if (span > 0) {
-      var p = clamp01((window.scrollY - hero.offsetTop) / span);
+      var p = clamp01((window.scrollY - heroTop) / span);
 
       var out = seg(p, 0.06, 0.26);                    // faz 1 çıkışı
       phase1.style.opacity = String(1 - out);
@@ -118,7 +138,7 @@
   }
 
   window.addEventListener('scroll', onScroll, { passive: true });
-  window.addEventListener('resize', onScroll);
+  window.addEventListener('resize', onResize);
   onScroll();
   if (!reduce) update();
 

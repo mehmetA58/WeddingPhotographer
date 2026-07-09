@@ -7,8 +7,9 @@ info:
 
     The backend is a Google Apps Script Web App deployed as `/exec`.
     Browser uploads are sent with `fetch(..., { mode: "no-cors" })`, so the
-    frontend treats a sent request as success because the response is opaque.
-    GET list calls may use JSONP by passing `callback`.
+    response is opaque. The frontend includes a client-generated `uploadId`
+    and verifies success by reading the gallery list through JSONP. GET list
+    calls may use JSONP by passing `callback`.
 servers:
   - url: https://script.google.com/macros/s/{deploymentId}/exec
     description: Google Apps Script Web App deployment URL
@@ -33,15 +34,14 @@ paths:
         Multipurpose Apps Script GET endpoint.
 
         - No `action` or `action=ping` returns service status.
-        - `action=setup` stores token and Drive folder settings in Script Properties and returns HTML.
+        - `action=setup` stores token and Drive folder settings in Script Properties and returns HTML. It requires `setupKey`.
         - `action=list` returns gallery data, optionally wrapped as JSONP when `callback` is supplied.
-        - `action=note` saves a guest-book note and returns a readable JSON/JSONP result.
       parameters:
         - name: action
           in: query
           schema:
             type: string
-            enum: [ping, setup, list, note]
+            enum: [ping, setup, list]
             default: ping
           description: Endpoint mode.
         - name: callback
@@ -55,6 +55,11 @@ paths:
           schema:
             type: string
           description: Shared event token. Required for `list` when TOKEN is configured; saved during `setup` when provided.
+        - name: setupKey
+          in: query
+          schema:
+            type: string
+          description: Secret one-time setup/admin key required for `action=setup`.
         - name: folderId
           in: query
           schema:
@@ -80,18 +85,12 @@ paths:
             type: string
             enum: ["1"]
           description: Set to `1` to include guest-book notes in `action=list`.
-        - name: guestName
+        - name: refresh
           in: query
           schema:
             type: string
-            maxLength: 40
-          description: Guest name for `action=note`.
-        - name: message
-          in: query
-          schema:
-            type: string
-            maxLength: 500
-          description: Guest-book note text for `action=note`.
+            enum: ["1"]
+          description: Set to `1` to rebuild the upload index from Drive before returning `action=list`.
       responses:
         "200":
           description: Response depends on `action`.
@@ -101,7 +100,6 @@ paths:
                 oneOf:
                   - $ref: "#/components/schemas/PingResponse"
                   - $ref: "#/components/schemas/ListResponse"
-                  - $ref: "#/components/schemas/SaveNoteResponse"
                   - $ref: "#/components/schemas/ErrorResponse"
               examples:
                 ping:
@@ -122,19 +120,12 @@ paths:
                         t: 1783530910000
                         createdAt: "2026-07-08T17:15:10.000Z"
                         size: 2459012
-                        d: "EventPhoto · Katılımcı: Ayşe · Görev: Dans pistinden bir kare"
+                        d: "EventPhoto · Katılımcı: Ayşe · Görev: Dans pistinden bir kare · UploadId: u_abc123"
                     notes:
-                      - g: Ayşe
+                      - id: n_abc123
+                        g: Ayşe
                         m: Bu gece çok güzeldi.
                         t: 1783530915000
-                note:
-                  summary: Guest-book note response
-                  value:
-                    status: ok
-                    type: note
-                    savedProperties: true
-                    savedDrive: true
-                    fileId: 1abcNoteFile
             application/javascript:
               schema:
                 type: string
@@ -166,6 +157,7 @@ paths:
                   {
                     "token": "shared-event-token",
                     "guestName": "Ayşe",
+                    "uploadId": "u_abc123",
                     "task": "Dans pistinden bir kare",
                     "filename": "IMG_001.jpg",
                     "mimeType": "image/jpeg",
@@ -178,6 +170,7 @@ paths:
                     "type": "note",
                     "token": "shared-event-token",
                     "guestName": "Ayşe",
+                    "noteId": "n_abc123",
                     "message": "Bu gece çok güzeldi."
                   }
       responses:
@@ -194,6 +187,7 @@ paths:
                 uploaded:
                   value:
                     status: ok
+                    uploadId: u_abc123
                     fileId: 1abcFile
                     name: 2026-07-08_20-15-10_Ayse_IMG-001_1234.jpg
                 note:
@@ -269,6 +263,9 @@ components:
         g:
           type: string
           description: Guest name.
+        id:
+          type: string
+          description: Client-generated guest-book note id.
         m:
           type: string
           description: Note message.
@@ -278,13 +275,17 @@ components:
           description: Creation timestamp in milliseconds.
     UploadPhotoRequest:
       type: object
-      required: [filename, mimeType, data]
+      required: [guestName, uploadId, filename, mimeType, data]
       properties:
         token:
           type: string
         guestName:
           type: string
           maxLength: 40
+        uploadId:
+          type: string
+          maxLength: 80
+          description: Client-generated idempotency key used to verify and deduplicate uploads.
         task:
           type: string
           maxLength: 60
@@ -292,7 +293,16 @@ components:
           type: string
         mimeType:
           type: string
-          pattern: "^image/"
+          enum:
+            - image/jpeg
+            - image/jpg
+            - image/png
+            - image/webp
+            - image/gif
+            - image/heic
+            - image/heif
+            - image/bmp
+            - image/tiff
           example: image/jpeg
         data:
           type: string
@@ -300,7 +310,7 @@ components:
           description: Base64 file data without the `data:*/*;base64,` prefix.
     SaveNoteRequest:
       type: object
-      required: [type, message]
+      required: [type, guestName, noteId, message]
       properties:
         type:
           type: string
@@ -310,6 +320,10 @@ components:
         guestName:
           type: string
           maxLength: 40
+        noteId:
+          type: string
+          maxLength: 80
+          description: Client-generated idempotency key used to verify and deduplicate notes.
         message:
           type: string
           maxLength: 500
@@ -320,6 +334,10 @@ components:
         status:
           type: string
           enum: [ok]
+        uploadId:
+          type: string
+        duplicate:
+          type: boolean
         fileId:
           type: string
         name:
@@ -334,6 +352,10 @@ components:
         type:
           type: string
           enum: [note]
+        noteId:
+          type: string
+        duplicate:
+          type: boolean
         savedProperties:
           type: boolean
           description: Whether the note was stored in Script Properties for gallery/live wall listing.

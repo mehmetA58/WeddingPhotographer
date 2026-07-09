@@ -14,7 +14,9 @@
      Google Cloud Console > APIs & Services > Credentials > OAuth 2.0
      Web Client ID'nizi aşağıya yapıştırın.
      ===================================================================== */
-  var GOOGLE_CLIENT_ID = 'BURAYA_GOOGLE_CLIENT_ID_YAZIN';
+  var configuredClientId = (window.EventPhotoConfig && window.EventPhotoConfig.googleClientId) ||
+    window.EVENTPHOTO_GOOGLE_CLIENT_ID || '';
+  var GOOGLE_CLIENT_ID = String(configuredClientId || 'BURAYA_GOOGLE_CLIENT_ID_YAZIN').trim();
 
   var SCOPES = [
     'https://www.googleapis.com/auth/script.projects',
@@ -68,6 +70,8 @@
   var deploymentUrl  = '';
   var folderId       = '';
   var securityToken  = '';
+  var setupAdminKey  = '';
+  var googleInitAttempts = 0;
 
   /* =====================================================================
      Kayıtlı ayarları geri yükle
@@ -210,14 +214,21 @@
 
   function initGoogleAuth() {
     if (typeof google === 'undefined' || !google.accounts) {
-      // GIS henüz yüklenmedi — 1 sn bekle
+      googleInitAttempts++;
+      if (googleInitAttempts > 12) {
+        googleBtn.disabled = true;
+        showGoogleError(t('setup.authError'));
+        return;
+      }
+      // GIS henüz yüklenmedi — kısa süre bekle
       setTimeout(initGoogleAuth, 1000);
       return;
     }
     if (GOOGLE_CLIENT_ID === 'BURAYA_GOOGLE_CLIENT_ID_YAZIN') {
+      googleBtn.disabled = true;
       // Görünür bir notun (ör. Sına sonucu) üzerine yazma — yalnızca alan boşken göster
       if (noteEl.classList.contains('hidden')) {
-        showNote('info', 'Otomatik kurulum ("Google ile Bağlan") için <b>js/setup.js</b> içindeki <code>GOOGLE_CLIENT_ID</code> değerini ayarlayın (README, Bölüm B · Yol 1). Alternatif: Apps Script\'i kendiniz yayınlayıp Web App URL\'inizi <b>Gelişmiş ayarlar</b>dan girin.');
+        showNote('info', t('setup.googleClientMissingHtml'));
       }
       return;
     }
@@ -289,6 +300,8 @@
     googleNotAuthed.classList.add('hidden');
     deployProgress.classList.remove('hidden');
     generateBtn.disabled = true;
+    ensureSecurityToken();
+    setupAdminKey = randomHex(16);
 
     Promise.resolve()
       .then(function () { return stepCreateFolder(); })
@@ -310,7 +323,7 @@
   /* --- 1. Drive klasörü oluştur -------------------------------------- */
   function stepCreateFolder() {
     setStepActive('folder');
-    return fetch('https://www.googleapis.com/drive/v3/files', {
+    return fetchJson('https://www.googleapis.com/drive/v3/files', {
       method: 'POST',
       headers: {
         'Authorization': 'Bearer ' + accessToken,
@@ -320,7 +333,7 @@
         name: 'Etkinlik Fotoğrafları',
         mimeType: 'application/vnd.google-apps.folder'
       })
-    }).then(function (r) { return r.json(); }).then(function (data) {
+    }, 30000).then(function (data) {
       if (data.error) throw new Error(data.error.message || 'Drive klasörü oluşturulamadı');
       folderId = data.id;
       setStepDone('folder');
@@ -331,21 +344,18 @@
   function deployFull_() {
     setStepActive('project');
 
-    return fetch('apps-script/Code.gs')
-      .then(function (r) {
-        if (!r.ok) throw new Error('Code.gs dosyası okunamadı');
-        return r.text();
-      })
+    return fetchText('apps-script/Code.gs', {}, 15000)
       .then(function (codeContent) {
+        codeContent = injectSetupKey(codeContent);
         // Proje oluştur
-        return fetch('https://script.googleapis.com/v1/projects', {
+        return fetchJson('https://script.googleapis.com/v1/projects', {
           method: 'POST',
           headers: {
             'Authorization': 'Bearer ' + accessToken,
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({ title: 'Etkinlik Fotoğraf Yükleme' })
-        }).then(function (r) { return r.json(); }).then(function (project) {
+        }, 30000).then(function (project) {
           if (project.error) throw new Error(project.error.message || 'Proje oluşturulamadı');
           scriptId_ = project.scriptId;
 
@@ -362,7 +372,7 @@
 
           setStepDone('folder');
           setStepActive('project');
-          return fetch('https://script.googleapis.com/v1/projects/' + scriptId_ + '/content', {
+          return fetchJson('https://script.googleapis.com/v1/projects/' + scriptId_ + '/content', {
             method: 'PUT',
             headers: {
               'Authorization': 'Bearer ' + accessToken,
@@ -374,7 +384,7 @@
                 { name: 'appsscript', type: 'JSON', source: manifest }
               ]
             })
-          }).then(function (r) { return r.json(); });
+          }, 30000);
         });
       })
       .then(function (content) {
@@ -383,21 +393,21 @@
         setStepActive('deploy');
 
         // Version oluştur
-        return fetch('https://script.googleapis.com/v1/projects/' + scriptId_ + '/versions', {
+        return fetchJson('https://script.googleapis.com/v1/projects/' + scriptId_ + '/versions', {
           method: 'POST',
           headers: {
             'Authorization': 'Bearer ' + accessToken,
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({ description: 'İlk yayın' })
-        }).then(function (r) { return r.json(); });
+        }, 30000);
       })
       .then(function (version) {
         if (version.error) throw new Error(version.error.message || 'Version oluşturulamadı');
         var versionNumber = version.versionNumber;
 
         // Deploy et
-        return fetch('https://script.googleapis.com/v1/projects/' + scriptId_ + '/deployments', {
+        return fetchJson('https://script.googleapis.com/v1/projects/' + scriptId_ + '/deployments', {
           method: 'POST',
           headers: {
             'Authorization': 'Bearer ' + accessToken,
@@ -414,7 +424,7 @@
               }
             }]
           })
-        }).then(function (r) { return r.json(); });
+        }, 30000);
       })
       .then(function (deployment) {
         if (deployment.error) throw new Error(deployment.error.message || 'Deploy başarısız');
@@ -431,21 +441,13 @@
   /* --- 4. Yetkilendirme popup'ı -------------------------------------- */
   function stepAuthorize() {
     setStepActive('auth');
+    ensureSecurityToken();
+    if (!setupAdminKey) setupAdminKey = randomHex(16);
 
-    // Token oluştur (yoksa)
-    if (!securityToken) {
-      var arr = new Uint8Array(9);
-      (window.crypto || {}).getRandomValues
-        ? window.crypto.getRandomValues(arr)
-        : arr.forEach(function (_, i) { arr[i] = Math.floor(Math.random() * 256); });
-      securityToken = Array.prototype.map.call(arr, function (b) {
-        return ('0' + b.toString(16)).slice(-2);
-      }).join('');
-    }
-
-    // Setup URL'ini oluştur: action=setup + token + folderId
+    // Setup URL'ini oluştur: action=setup + setupKey + token + folderId
     var setupUrl = deploymentUrl +
       '?action=setup' +
+      '&setupKey=' + encodeURIComponent(setupAdminKey) +
       '&token=' + encodeURIComponent(securityToken) +
       '&folderId=' + encodeURIComponent(folderId) +
       '&folderName=' + encodeURIComponent('Etkinlik Fotoğrafları');
@@ -470,16 +472,18 @@
     }
 
     return new Promise(function (resolve) {
+      var authTimeout;
       var checkClosed = setInterval(function () {
         if (popup.closed) {
           clearInterval(checkClosed);
+          clearTimeout(authTimeout);
           setStepDone('auth');
           resolve();
         }
       }, 500);
 
       // Güvenlik: 5 dk sonra timeout
-      setTimeout(function () {
+      authTimeout = setTimeout(function () {
         clearInterval(checkClosed);
         setStepDone('auth');
         resolve();
@@ -688,6 +692,56 @@
       .replace(/[ıİ]/g, 'i').replace(/[şŞ]/g, 's').replace(/[ğĞ]/g, 'g')
       .replace(/[üÜ]/g, 'u').replace(/[öÖ]/g, 'o').replace(/[çÇ]/g, 'c')
       .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  }
+
+  function ensureSecurityToken() {
+    if (!securityToken) securityToken = randomHex(9);
+    if (tokenEl && securityToken) tokenEl.value = securityToken;
+  }
+
+  function randomHex(bytes) {
+    var arr = new Uint8Array(bytes);
+    if ((window.crypto || {}).getRandomValues) {
+      window.crypto.getRandomValues(arr);
+    } else {
+      Array.prototype.forEach.call(arr, function (_, i) {
+        arr[i] = Math.floor(Math.random() * 256);
+      });
+    }
+    return Array.prototype.map.call(arr, function (b) {
+      return ('0' + b.toString(16)).slice(-2);
+    }).join('');
+  }
+
+  function injectSetupKey(codeContent) {
+    var marker = "var SETUP_ADMIN_KEY = 'EVENTPHOTO_SETUP_KEY_PLACEHOLDER';";
+    if (codeContent.indexOf(marker) < 0) {
+      throw new Error('Code.gs kurulum anahtarı yeri bulunamadı');
+    }
+    return codeContent.replace(marker, "var SETUP_ADMIN_KEY = '" + setupAdminKey + "';");
+  }
+
+  function fetchWithTimeout(url, opts, timeoutMs) {
+    opts = opts || {};
+    var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+    var timer = ctrl ? setTimeout(function () { ctrl.abort(); }, timeoutMs || 30000) : null;
+    if (ctrl) opts.signal = ctrl.signal;
+    return fetch(url, opts).then(function (r) {
+      if (timer) clearTimeout(timer);
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r;
+    }, function (err) {
+      if (timer) clearTimeout(timer);
+      throw err;
+    });
+  }
+
+  function fetchJson(url, opts, timeoutMs) {
+    return fetchWithTimeout(url, opts, timeoutMs).then(function (r) { return r.json(); });
+  }
+
+  function fetchText(url, opts, timeoutMs) {
+    return fetchWithTimeout(url, opts, timeoutMs).then(function (r) { return r.text(); });
   }
 
   /* =====================================================================

@@ -104,12 +104,16 @@
     var payload = {
       token: TOKEN,
       guestName: String(guestName || '').trim().slice(0, 40),
-      message: msg.slice(0, 400)
+      message: msg.slice(0, 400),
+      noteId: makeClientId('n')
     };
 
-    // Fotoğrafların kanıtlanmış yolu: no-cors POST (yanıt okunamaz ama
-    // istek sunucuya ulaşır; Code.gs doPost type=note'u kaydeder).
-    function postFallback() {
+    // Not metnini URL'e yazmamak için POST kullanılır; ardından JSONP list ile
+    // noteId doğrulanır. Böylece no-cors yanıtı okunamasa bile başarı kanıtlanır.
+    function postNote() {
+      var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+      var timer = ctrl ? setTimeout(function () { ctrl.abort(); }, 60000) : null;
+      var clear = function () { if (timer) clearTimeout(timer); };
       return fetch(API_URL, {
         method: 'POST',
         mode: 'no-cors',
@@ -118,27 +122,40 @@
           type: 'note',
           token: payload.token,
           guestName: payload.guestName,
-          message: payload.message
-        })
-      }).then(function () { return { status: 'ok', opaque: true }; });
+          message: payload.message,
+          noteId: payload.noteId
+        }),
+        signal: ctrl ? ctrl.signal : undefined
+      }).then(function () { clear(); return verifyNote(payload.noteId); }, function (err) {
+        clear();
+        throw err;
+      });
     }
 
-    if (window.EventPhotoApi && window.EventPhotoApi.jsonp) {
-      // Önce JSONP: sonucu okunabilir (ör. geçersiz token görünür). Ama betik
-      // yüklenemezse ("Betik hatası" — eski deploy, erişim ayarı, engelleyici…)
-      // not kaybolmasın diye POST yoluna otomatik düşülür.
-      return window.EventPhotoApi.jsonp(buildNoteUrl(payload), 20000).catch(postFallback);
-    }
-    return postFallback();
+    return postNote();
   }
 
-  function buildNoteUrl(payload) {
-    var url = new URL(API_URL, location.href);
-    url.searchParams.set('action', 'note');
-    if (payload.token) url.searchParams.set('token', payload.token);
-    if (payload.guestName) url.searchParams.set('guestName', payload.guestName);
-    url.searchParams.set('message', payload.message);
-    return url.toString();
+  function verifyNote(noteId) {
+    if (!window.EventPhotoApi || !window.EventPhotoApi.list) {
+      var noApi = new Error(t('upload.noteVerifyFail'));
+      noApi.code = 'verify_unavailable';
+      throw noApi;
+    }
+    return window.EventPhotoApi.list(API_URL, { max: 1, token: TOKEN, notes: true, timeoutMs: 15000 })
+      .then(function (data) {
+        if (!data || data.status !== 'ok') {
+          var err = new Error(data && data.message ? data.message : t('upload.noteVerifyFail'));
+          err.code = data && data.code;
+          throw err;
+        }
+        var notes = data.notes || [];
+        for (var i = 0; i < notes.length; i++) {
+          if (notes[i] && notes[i].id === noteId) return { status: 'ok', type: 'note', noteId: noteId };
+        }
+        var missing = new Error(t('upload.noteVerifyFail'));
+        missing.code = 'note_not_found';
+        throw missing;
+      });
   }
 
   /* --- Fotoğraf görevleri (öneri çipleri) -------------------------------- */
@@ -222,7 +239,7 @@
 
       var item = {
         id: nextId++, file: file, url: URL.createObjectURL(file),
-        status: 'pending', el: null, badge: null
+        status: 'pending', el: null, badge: null, uploadId: makeClientId('u')
       };
       items.push(item);
       renderThumb(item);
@@ -447,9 +464,16 @@
     }
 
     return new Promise(function (resolve) {
+      var finalized = false;
       function pump() {
+        if (finalized) return;
         if (doneCount + failed === total) {
-          resolve({ total: total, failed: failed, errorCode: lastErrorCode });
+          finalized = true;
+          if (failed) {
+            resolve({ total: total, failed: failed, errorCode: lastErrorCode });
+            return;
+          }
+          verifyUploadedItems(queue).then(resolve);
           return;
         }
         while (inFlight < UPLOAD_CONCURRENCY && idx < total) {
@@ -457,7 +481,7 @@
             inFlight++;
             setStatus(item, 'uploading');
             paint(false);
-            prepareBlob(item.file).then(function (prepared) {
+            prepareBlob(item.file, item.uploadId).then(function (prepared) {
               return uploadOne(prepared);
             }).then(function () {
               setStatus(item, 'done');
@@ -479,12 +503,71 @@
     });
   }
 
+  function verifyUploadedItems(queue) {
+    progressLabel.textContent = t('upload.verifying');
+    if (!window.EventPhotoApi || !window.EventPhotoApi.list) {
+      markVerifyFailed(queue);
+      return Promise.resolve({ total: queue.length, failed: queue.length, errorCode: 'verify_unavailable' });
+    }
+    return checkUploadList(queue, false).then(function (result) {
+      if (result.failed) return checkUploadList(queue, true);
+      return result;
+    }).catch(function () {
+      markVerifyFailed(queue);
+      return { total: queue.length, failed: queue.length, errorCode: 'verify_failed' };
+    });
+  }
+
+  function checkUploadList(queue, refresh) {
+    return window.EventPhotoApi.list(API_URL, {
+      max: 1000,
+      token: TOKEN,
+      timeoutMs: refresh ? 30000 : 15000,
+      refresh: refresh
+    }).then(function (data) {
+      if (!data || data.status !== 'ok') {
+        markVerifyFailed(queue);
+        return {
+          total: queue.length,
+          failed: queue.length,
+          errorCode: data && data.code || 'verify_failed'
+        };
+      }
+
+      var found = {};
+      (data.files || []).forEach(function (f) {
+        var meta = window.EventPhotoApi.parseMeta(f.d);
+        if (meta.uploadId) found[meta.uploadId] = true;
+      });
+
+      var failed = 0;
+      queue.forEach(function (item) {
+        if (found[item.uploadId]) {
+          setStatus(item, 'done');
+        } else {
+          setStatus(item, 'error');
+          failed++;
+        }
+      });
+      if (!failed) {
+        progressFill.style.width = '100%';
+      }
+      return { total: queue.length, failed: failed, errorCode: failed ? 'verify_failed' : '' };
+    });
+  }
+
+  function markVerifyFailed(queue) {
+    queue.forEach(function (item) { setStatus(item, 'error'); });
+  }
+
   function showUploadFailure(total, failed, errorCode) {
     var ok = total - failed;
     progressWrap.classList.add('hidden');
     showNote('error', errorCode === 'invalid_token'
       ? t('upload.invalidTokenHtml')
-      : t('upload.partialErrorHtml', { ok: ok, failed: failed }));
+      : (errorCode === 'verify_failed' || errorCode === 'verify_unavailable'
+        ? t('upload.verifyFail')
+        : t('upload.partialErrorHtml', { ok: ok, failed: failed })));
   }
 
   function showSuccessScreen() {
@@ -504,12 +587,14 @@
   // KAYDEDİLİR. no-cors ile isteği göndeririz: yanıt "opaque"tur (okunamaz)
   // ama yükleme güvenilir çalışır. Bu, Apps Script yüklemelerinin standart yolu.
   //  • text/plain + özel olmayan header = CORS "basit istek" (preflight yok).
-  //  • Yanıtı okuyamadığımız için isteği tek kez göndeririz (mükerrer kayıt olmaz).
+  //  • Yanıtı okuyamadığımız için uploadId ile sonradan doğrularız; tekrar denemede
+  //    backend aynı uploadId'yi ikinci kez kaydetmez.
   function uploadOne(prepared) {
     var payload = JSON.stringify({
       token: TOKEN,
       guestName: (guestNameEl.value || '').trim().slice(0, 40),
       task: selectedTask.slice(0, 60),
+      uploadId: prepared.uploadId,
       filename: prepared.filename,
       mimeType: prepared.mimeType,
       data: prepared.base64
@@ -532,21 +617,21 @@
   }
 
   /* --- Fotoğrafı hazırla: (opsiyonel) resize + base64 ------------------ */
-  function prepareBlob(file) {
+  function prepareBlob(file, uploadId) {
     if (RAW) {
       // Orijinali olduğu gibi gönder
       return fileToBase64(file).then(function (b64) {
-        return { base64: b64, mimeType: sourceMime(file), filename: file.name };
+        return { base64: b64, mimeType: sourceMime(file), filename: file.name, uploadId: uploadId };
       });
     }
     return resizeImage(file, MAX_DIM, QUALITY).then(function (blob) {
       return fileToBase64(blob).then(function (b64) {
-        return { base64: b64, mimeType: 'image/jpeg', filename: ensureJpg(file.name) };
+        return { base64: b64, mimeType: 'image/jpeg', filename: ensureJpg(file.name), uploadId: uploadId };
       });
     }).catch(function () {
       // Resize başarısızsa orijinale düş
       return fileToBase64(file).then(function (b64) {
-        return { base64: b64, mimeType: sourceMime(file), filename: file.name };
+        return { base64: b64, mimeType: sourceMime(file), filename: file.name, uploadId: uploadId };
       });
     });
   }
@@ -657,6 +742,21 @@
   function clamp(value, min, max) {
     if (isNaN(value)) return min;
     return Math.min(max, Math.max(min, value));
+  }
+  function makeClientId(prefix) {
+    prefix = prefix || 'id';
+    var arr = new Uint8Array(10);
+    if ((window.crypto || {}).getRandomValues) {
+      window.crypto.getRandomValues(arr);
+    } else {
+      Array.prototype.forEach.call(arr, function (_, i) {
+        arr[i] = Math.floor(Math.random() * 256);
+      });
+    }
+    return prefix + '_' + Date.now().toString(36) + '_' +
+      Array.prototype.map.call(arr, function (b) {
+        return ('0' + b.toString(16)).slice(-2);
+      }).join('');
   }
   function esc(s) {
     return String(s).replace(/[&<>"']/g, function (c) {

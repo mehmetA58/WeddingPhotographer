@@ -2,6 +2,8 @@
    landing.css — EventPhoto tanıtım sayfası ("Canlı Albüm" vitrini)
    style.css'in üzerine yüklenir: renk token'ları ve data-event paletleri
    oradan gelir; burada yalnızca landing'e özgü yerleşim/bileşenler var.
+   Kırılma noktaları (kanonik): 380 · 480 · 640 · 860 (+ 320 güvenlik ağı,
+   reduced-motion). style.css ile aynı ölçek.
    ========================================================================= */
 
 html { scroll-behavior: smooth; }
@@ -103,7 +105,7 @@ body.lp { line-height: 1.6; }
   transition: color .2s ease;
 }
 .lp-links a:hover { color: var(--gold-dark); }
-.lp-nav .lp-btn { padding: 11px 20px; font-size: 14px; }
+.lp-nav .lp-btn { padding: 11px 20px; min-height: 44px; font-size: 14px; }
 .lp-menu-btn {
   display: none;
   width: 44px; height: 44px;
@@ -115,7 +117,7 @@ body.lp { line-height: 1.6; }
   align-items: center;
   justify-content: center;
 }
-@media (max-width: 940px) {
+@media (max-width: 860px) {
   .lp-links, .lp-nav .lp-btn-gold { display: none; }
   .lp-menu-btn { display: inline-flex; }
 }
@@ -435,7 +437,7 @@ body.lp { line-height: 1.6; }
   transition: opacity .5s ease .15s, transform .5s ease .15s;
 }
 .lp-acc-item.is-active .lp-acc-label p { opacity: 1; transform: none; }
-@media (max-width: 780px) {
+@media (max-width: 860px) {
   .lp-acc { flex-direction: column; height: auto; }
   .lp-acc-item { min-height: 64px; height: 72px; flex: none; transition: height .6s cubic-bezier(.25, 1, .5, 1); }
   .lp-acc-item.is-active { height: 340px; flex: none; }
@@ -470,6 +472,7 @@ body.lp { line-height: 1.6; }
   border: 1px solid var(--line);
   border-radius: 999px;
   padding: 11px 18px;
+  min-height: 44px;
   cursor: pointer;
   transition: border-color .2s ease, background .2s ease, color .2s ease, transform .1s ease;
 }
@@ -589,7 +592,7 @@ body.lp { line-height: 1.6; }
 .lp-footer-bar a { color: #CFC5B4; font: 600 13.5px var(--sans); text-decoration: none; }
 .lp-footer-bar a:hover { color: #E8C46B; }
 .lp-footer-bar .note { color: #8D8272; font-size: 13px; }
-@media (max-width: 700px) { .lp-footer-bar { flex-direction: column; align-items: flex-start; } }
+@media (max-width: 640px) { .lp-footer-bar { flex-direction: column; align-items: flex-start; } }
 
 /* =========================================================================
    Mobil / responsive sağlamlaştırma
@@ -709,7 +712,7 @@ body.lp { line-height: 1.6; }
   }
 }
 
-@media (max-width: 520px) {
+@media (max-width: 640px) {
   .lp-h2 { font-size: 34px; letter-spacing: 0; }
   .lp-sub { font-size: 16px; }
   .lp-btn {
@@ -745,7 +748,7 @@ body.lp { line-height: 1.6; }
   }
 }
 
-@media (max-width: 360px) {
+@media (max-width: 380px) {
   .lp-nav { width: calc(100% - 14px); }
   .lp-logo b { max-width: 122px; overflow: hidden; text-overflow: ellipsis; }
   .lp-h1 { font-size: 40px; }
@@ -761,7 +764,7 @@ body.lp { line-height: 1.6; }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .lp-hero { height: auto; }
-  .lp-hero-stage { position: relative; height: auto; min-height: 100vh; }
+  .lp-hero-stage { position: relative; height: auto; min-height: 100vh; min-height: 100svh; }
   .lp-scroll-hint { display: none; }
   .lp-menu { transition: none; }
   .lp-ko video { display: none; }
@@ -771,4 +774,4 @@ body.lp { line-height: 1.6; }
 html:not(.js) .lp-phase-1 { display: none; }
 html:not(.js) .lp-phase-2 { position: static; }
 html:not(.js) .lp-hero { height: auto; }
-html:not(.js) .lp-hero-stage { position: relative; min-height: 100vh; }
+html:not(.js) .lp-hero-stage { position: relative; min-height: 100vh; min-height: 100svh; }

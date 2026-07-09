@@ -31,7 +31,8 @@
     var url = apiUrl + (apiUrl.indexOf('?') >= 0 ? '&' : '?') +
       'action=list&max=' + (opts.max || 500) +
       (opts.token ? '&token=' + encodeURIComponent(opts.token) : '') +
-      (opts.notes ? '&notes=1' : '');
+      (opts.notes ? '&notes=1' : '') +
+      (opts.refresh ? '&refresh=1' : '');
     return jsonp(url, opts.timeoutMs);
   }
 
@@ -47,7 +48,8 @@
     desc = String(desc || '');
     var guest = (desc.match(/Katılımcı:\s*([^·]+)/) || [])[1] || '';
     var task  = (desc.match(/Görev:\s*([^·]+)/) || [])[1] || '';
-    return { guest: guest.trim(), task: task.trim() };
+    var uploadId = (desc.match(/UploadId:\s*([^·]+)/) || [])[1] || '';
+    return { guest: guest.trim(), task: task.trim(), uploadId: uploadId.trim() };
   }
 
   /* Sağlık kontrolü: action=ping JSONP ile okunabilir yanıt bekler */

@@ -85,6 +85,7 @@
       cell.setAttribute('aria-label', f.name || 'Fotoğraf');
       var img = document.createElement('img');
       img.loading = 'lazy';
+      img.decoding = 'async';
       img.alt = f.name || '';
       img.src = thumb(f.id, 600);
       img.onerror = function () { cell.classList.add('g-fail'); img.remove(); };

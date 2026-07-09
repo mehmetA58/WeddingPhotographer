@@ -100,7 +100,8 @@ https://<kullanıcı-adınız>.github.io/<repo-adı>/docs/swagger.html
 
 Not: Fotoğraf yükleme akışı Apps Script CORS kısıtları nedeniyle `no-cors`
 kullanır; bu yüzden Swagger gerçek JSON yanıtını belgeler, fakat tarayıcıdaki
-misafir arayüzü yükleme yanıtını okuyamaz.
+misafir arayüzü yükleme yanıtını okuyamaz. Güncel arayüz başarıyı `uploadId`
+ve galeri listesi üzerinden ayrıca doğrular.
 
 ---
 
@@ -155,7 +156,8 @@ projesini ve Web App yayınını sizin adınıza otomatik oluşturur. Bunun çal
    (kapalıysa proje oluşturma `403` hatası verir).
 
 Artık kurulum sayfasında **"Google ile Bağlan"** → izinleri onaylayın → kurulum
-adımları (klasör, proje, yayın, token) otomatik tamamlanır. Yol 2'ye gerek kalmaz.
+adımları (klasör, proje, yayın, token ve gizli kurulum anahtarı) otomatik
+tamamlanır. Yol 2'ye gerek kalmaz.
 
 #### Yol 2 — Manuel kurulum (Cloud Console gerektirmez)
 
@@ -167,19 +169,26 @@ adımları (klasör, proje, yayın, token) otomatik tamamlanır. Yol 2'ye gerek 
    - Apps Script'te üstteki fonksiyon menüsünden **`SETUP_setToken`** seçin,
      kod içindeki `'BURAYA_TOKEN_YAPISTIRIN'` yerine o token'ı yazın → **Run**.
      (Alternatif: **Proje Ayarları ⚙ → Script Properties → Add**, `TOKEN` = değeriniz.)
-4. (İsteğe bağlı) Fotoğraflar mevcut bir Drive klasörüne gitsin istiyorsanız:
+4. (İsteğe bağlı) **Kurulum anahtarı**:
+   - Public Web App'te `action=setup` ayar değiştirmesin diye güncel sürüm bunu
+     gizli bir `SETUP_ADMIN_KEY` ile korur.
+   - Manuel kurulumda otomatik `action=setup` kullanmayacaksanız bu adımı
+     atlayabilirsiniz. Kullanacaksanız `SETUP_setSetupKey` içindeki
+     `'BURAYA_UZUN_KURULUM_ANAHTARI_YAPISTIRIN'` değerini uzun rastgele bir
+     metinle değiştirip **Run** deyin.
+5. (İsteğe bağlı) Fotoğraflar mevcut bir Drive klasörüne gitsin istiyorsanız:
    - Drive klasör linkindeki ID'yi kopyalayın.
    - Apps Script'te `SETUP_setExistingFolderId` içindeki
      `'BURAYA_DRIVE_KLASOR_ID_YAPISTIRIN'` alanına yapıştırın → **Run**.
    - Bunu yapmazsanız ilk yüklemede **"Etkinlik Fotoğrafları"** klasörü otomatik oluşur.
-5. **Deploy → New deployment** → dişli ⚙ → **Web app**:
+6. **Deploy → New deployment** → dişli ⚙ → **Web app**:
    - **Execute as:** `Me` (kendi hesabınız)
    - **Who has access:** `Anyone`  ← *katılımcılar anonim yükleyecek, bu şart*
    - **Deploy**.
-6. İlk kez izin istenir → hesabınızı seçin → "Advanced → Go to project (unsafe)"
+7. İlk kez izin istenir → hesabınızı seçin → "Advanced → Go to project (unsafe)"
    → **Allow** (kendi betiğinize Drive izni veriyorsunuz).
-7. Açılan **Web app URL**'ini kopyalayın — `https://script.google.com/macros/s/AKfyc…/exec`
-8. Kurulum sayfasında **Gelişmiş ayarlar → Web App URL (manuel bağlantı)** alanına bu adresi yapıştırın.
+8. Açılan **Web app URL**'ini kopyalayın — `https://script.google.com/macros/s/AKfyc…/exec`
+9. Kurulum sayfasında **Gelişmiş ayarlar → Web App URL (manuel bağlantı)** alanına bu adresi yapıştırın.
 
 ✅ Artık Drive'ınız bağlı. İlk fotoğraf yüklendiğinde Drive'ınızda
 **"Etkinlik Fotoğrafları"** klasörü otomatik oluşur.
@@ -262,14 +271,14 @@ QR kartlarını masalara koyun. Küçük bir not ekleyebilirsiniz:
 
 | Sorun | Çözüm |
 |---|---|
-| **Yükleme başarısız / CORS "Ağ hatası"** | Apps Script `/exec` yanıtı CORS başlığı döndürmediği için istek `mode:'no-cors'` ile gönderilir (kodda ayarlı) — yükleme çalışır ama tarayıcı yanıtı **okuyamaz**, bu yüzden arayüz iyimser şekilde "başarılı" gösterir. Fotoğrafların gerçekten geldiğini **Galeri** veya Drive klasöründen doğrulayın. Web App'in **"Who has access: Anyone"** ile yayınlandığından emin olun. |
+| **Yükleme başarısız / CORS "Ağ hatası"** | Apps Script `/exec` yanıtı CORS başlığı döndürmediği için fotoğraf gönderimi `mode:'no-cors'` ile yapılır; güncel arayüz ardından JSONP galeri listesinden `uploadId` ile doğrulama yapar. Doğrulama başarısızsa **Gönder**'e tekrar dokunun; aynı fotoğraf iki kez kaydedilmez. Web App'in **"Who has access: Anyone"** ile yayınlandığından emin olun. |
 | **"0 uploaded, 1 failed" görüyordum** | Eski sürümde tarayıcı başarı yanıtını okuyamadığı için yanlışlıkla "başarısız" gösteriyordu; **fotoğraflar aslında Drive'a kaydedilmiş olabilir**. Güncel sürüm bunu düzeltir (`no-cors`). |
-| **Güvenlik anahtarı (token) uyarısı** | `no-cors` ile tarayıcı sunucu yanıtını okuyamadığından, **yanlış token** durumunda arayüz yine "başarılı" gösterir ama sunucu dosyayı **kaydetmez**. Token kullanıyorsanız yüklemeyi Galeri'den doğrulayın. |
+| **Güvenlik anahtarı (token) uyarısı** | Güncel sürüm yanlış token durumunu yükleme sonrası galeri doğrulamasında yakalar ve başarı ekranına geçmez. Eski Apps Script deploy'u kullanıyorsanız `Code.gs` dosyasını güncelleyip **Version: New version** ile tekrar yayınlayın. |
 | **"Google ile Bağlan" hata veriyor (403 / yetki)** | [script.google.com/home/usersettings](https://script.google.com/home/usersettings)'ten **Google Apps Script API**'yi açın; Cloud Console'da **Apps Script API + Drive API**'nin etkin ve sitenizin **Authorized JavaScript origins** listesinde olduğundan emin olun. Alternatif: Bölüm B · Yol 2 (manuel) ile Web App URL'inizi *Gelişmiş ayarlar*'dan girin. |
 | **Kodda değişiklik yaptım, çalışmıyor** | Aynı URL'i korumak için **Deploy → Manage deployments → ✏ → Version: New version**. "New deployment" **yeni URL** üretir (QR'ı da yenilemeniz gerekir). |
 | **Görev/not/sunum altyazısı çalışmıyor** | Apps Script projeniz eski sürüm `Code.gs` ile yayınlanmış olabilir. Güncel `apps-script/Code.gs` içeriğini projeye yapıştırıp **Deploy → Manage deployments → ✏ → Version: New version** deyin (URL aynı kalır). Eski sürümde fotoğraf yükleme çalışmaya devam eder; yalnızca yeni özellikler eksik kalır. |
 | **Galeri/Sunum: "Bağlantı kurulamadı" veya notta "Betik hatası"** | Kurulum sayfasında *Gelişmiş ayarlar → Web App URL* yanındaki **Sına** butonu tam teşhis koyar. Tipik nedenler: dağıtımda **Who has access: Anyone** seçili değil; URL `/exec` yerine `/dev` ile bitiyor; ya da dağıtım eski — **Deploy → Manage deployments → ✏ → New version** ile yenileyin. |
-| **Anı Defteri notları kaydedilmiyor** | Güncel sürümde notlar `GET ?action=note` JSONP akışıyla kaydedilir ve sonucu okunur. Apps Script tarafında güncel `Code.gs` yoksa notlar hiç kaydolmaz. `apps-script/Code.gs` dosyasını Apps Script projenize tekrar yapıştırın, **Deploy → Manage deployments → ✏ → Version: New version** ile aynı Web App URL'ini güncelleyin. Sonra galeri linkini açıp notların **Anı Defteri** bölümünde veya Drive klasöründe `Not_*.txt` olarak oluştuğunu kontrol edin. |
+| **Anı Defteri notları kaydedilmiyor** | Güncel sürümde notlar POST ile gönderilir ve `noteId` üzerinden galeri listesinde doğrulanır; not metni URL'e yazılmaz. Apps Script tarafında güncel `Code.gs` yoksa doğrulama başarısız olur. `apps-script/Code.gs` dosyasını Apps Script projenize tekrar yapıştırın, **Deploy → Manage deployments → ✏ → Version: New version** ile aynı Web App URL'ini güncelleyin. Sonra galeri linkini açıp notların **Anı Defteri** bölümünde veya Drive klasöründe `Not_*.txt` olarak oluştuğunu kontrol edin. |
 | **iPhone HEIC fotoğrafları** | Varsayılan resize açıkken tarayıcı fotoğrafı **JPEG'e** çevirir (uyumlu). Kapatırsanız (orijinal) HEIC olarak kaydolur. |
 | **Çok büyük fotoğraf / yavaş** | Resize varsayılan açık (~2560px). Orijinal kalite isterseniz kurulumda *"Orijinal çözünürlükte yükle"*yi işaretleyin (daha yavaş, ~40MB/dosya sınırı). |
 | **QR okunmuyor** | Daha büyük yazdırın; link uzun olduğu için QR yoğun olabilir. İsim/token kısaldıkça QR sadeleşir. |
@@ -281,6 +290,8 @@ QR kartlarını masalara koyun. Küçük bir not ekleyebilirsiniz:
 - Tasarım gereği giriş yok: **linke/QR'a sahip herkes yükleyebilir** (katılımcılar anonim).
   Bu yüzden linki halka açık paylaşmayın; QR'ı yalnızca mekânda kullanın.
 - **Güvenlik anahtarı (token)** kullanırsanız, link sızsa bile token'sız istekler reddedilir.
+- Otomatik kurulumda Apps Script `action=setup` uç noktası gizli `setupKey` ile kilitlenir;
+  bu anahtar QR/yükleme/galeri linklerine eklenmez.
 - Fotoğraflar yalnızca **sizin** Drive'ınıza gider; bu proje hiçbir yere kopya göndermez.
 - **Galeri için not:** Yüklenen her fotoğraf, galeri sayfasında küçük resim görünebilsin diye
   “**bağlantıya sahip olan görüntüleyebilir**” yapılır. Dosya kimlikleri (ID) tahmin edilemez ve
