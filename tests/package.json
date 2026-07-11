@@ -1,0 +1,6 @@
+{
+  "name": "eventphoto-tests",
+  "private": true,
+  "description": "Playwright tabanlı regresyon paketleri — python3 -m http.server 8000 açıkken koşulur",
+  "dependencies": { "playwright-core": "^1.45.0" }
+}

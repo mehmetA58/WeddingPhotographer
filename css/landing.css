@@ -146,7 +146,7 @@ body.lp { line-height: 1.6; }
   padding: 10px 0;
   transition: color .2s ease, transform .3s ease;
 }
-.lp-menu a:hover { color: #E8C46B; transform: translateX(10px); }
+.lp-menu a:hover { color: #A9BEDD; transform: translateX(10px); }
 .lp-menu-close {
   position: absolute;
   top: 22px; right: 22px;
@@ -337,10 +337,10 @@ body.lp { line-height: 1.6; }
   box-shadow: 0 30px 60px -30px rgba(40, 28, 14, .55);
   display: block;
 }
-.lp-step-1 { background: linear-gradient(135deg, #FBF6EC, #F1E7D4); }
+.lp-step-1 { background: linear-gradient(135deg, #FBF6EC, #F1E5CF); }
 .lp-step-2 { background: linear-gradient(135deg, #F6EBE0, #EDD8C6); }
 .lp-step-3 { background: radial-gradient(120% 120% at 20% 0%, #2A231C, #17120D); border-color: rgba(255, 253, 246, .12); }
-.lp-step-3 .lp-step-no { color: #E8C46B; }
+.lp-step-3 .lp-step-no { color: #A9BEDD; }
 .lp-step-3 h3 { color: #F2ECE1; }
 .lp-step-3 p { color: #B4A995; }
 @media (max-width: 860px) {
@@ -356,7 +356,7 @@ body.lp { line-height: 1.6; }
   color: #F2ECE1;
   overflow: hidden;
 }
-.lp-demo .lp-eyebrow { color: #E8C46B; }
+.lp-demo .lp-eyebrow { color: #A9BEDD; }
 .lp-demo .lp-h2 { color: #F2ECE1; }
 .lp-demo .lp-sub { color: #B4A995; }
 .lp-demo-grid { display: grid; grid-template-columns: 1fr; gap: 40px; }
@@ -373,7 +373,7 @@ body.lp { line-height: 1.6; }
 .lp-tv-stand { width: 180px; height: 10px; margin: 14px auto 0; border-radius: 999px; background: #0C0906; opacity: .8; }
 .lp-demo-note { display: flex; align-items: baseline; gap: 16px; justify-content: center; margin-top: 22px; flex-wrap: wrap; }
 .lp-demo-note .date-stamp { margin: 0; }
-.lp-demo-note a { color: #E8C46B; font: 600 14px var(--sans); }
+.lp-demo-note a { color: #A9BEDD; font: 600 14px var(--sans); }
 
 /* =========================================================================
    Özellik akordeonu
@@ -577,7 +577,7 @@ body.lp { line-height: 1.6; }
   transition: color .5s ease;
   cursor: default;
 }
-.lp-ko:hover .lp-ko-text { color: #E8C46B; }
+.lp-ko:hover .lp-ko-text { color: #A9BEDD; }
 .lp-footer-bar {
   display: flex;
   flex-wrap: wrap;
@@ -590,7 +590,7 @@ body.lp { line-height: 1.6; }
 }
 .lp-footer-bar nav { display: flex; flex-wrap: wrap; gap: 20px; }
 .lp-footer-bar a { color: #CFC5B4; font: 600 13.5px var(--sans); text-decoration: none; }
-.lp-footer-bar a:hover { color: #E8C46B; }
+.lp-footer-bar a:hover { color: #A9BEDD; }
 .lp-footer-bar .note { color: #8D8272; font-size: 13px; }
 @media (max-width: 640px) { .lp-footer-bar { flex-direction: column; align-items: flex-start; } }
 

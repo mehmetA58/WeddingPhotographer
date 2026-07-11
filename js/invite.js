@@ -119,6 +119,7 @@
     var cd = countdownText(data.d);
 
     var html = '<i class="mounts" aria-hidden="true"></i>' +
+      '<div class="airmail" aria-hidden="true"></div>' +
       '<p class="eyebrow">' + esc(t('invite.' + e + '.headline')) + '</p>';
 
     var th = titleHtml(data);
@@ -455,8 +456,8 @@
 
   function downloadPng(data) {
     Events.apply(eventKey(data.e)); // tema renkleri doğru okunsun
-    var wanted = ['600 92px "Fraunces"', '500 64px "Fraunces"', '600 30px "Inter"',
-                  '400 32px "Inter"', '500 52px "Caveat"', '600 150px "Fraunces"'];
+    var wanted = ['600 92px "Bricolage Grotesque"', '600 46px "Bricolage Grotesque"', '600 30px "Inter"',
+                  '400 32px "Inter"', '500 52px "Caveat"', '600 150px "Bricolage Grotesque"'];
     var ready = (document.fonts && document.fonts.load)
       ? Promise.all(wanted.map(function (f) { return document.fonts.load(f).catch(function () {}); }))
       : Promise.resolve();
@@ -472,13 +473,13 @@
     canvas.width = W; canvas.height = H;
     var x = canvas.getContext('2d');
 
-    var cream    = cssVar('--cream', '#F3EDE2');
-    var gold     = cssVar('--gold', '#A8844E');
-    var goldDark = cssVar('--gold-dark', '#735B37');
-    var goldLight= cssVar('--gold-light', '#D6C29B');
-    var ink      = cssVar('--ink', '#302B25');
-    var inkSoft  = cssVar('--ink-soft', '#6E6256');
-    var surface  = '#FFFCF6';
+    var cream    = cssVar('--cream', '#FBF6EC');
+    var gold     = cssVar('--gold', '#29508C');
+    var goldDark = cssVar('--gold-dark', '#1D3C6D');
+    var goldLight= cssVar('--gold-light', '#A9BEDD');
+    var ink      = cssVar('--ink', '#33302A');
+    var inkSoft  = cssVar('--ink-soft', '#6C6353');
+    var surface  = '#FFFDF7';
     var hand     = '#4A4238';
 
     /* Zemin + kart + çift çerçeve */
@@ -535,15 +536,15 @@
     var title = (data.t || '').trim();
     if (title) {
       x.fillStyle = ink;
-      x.font = '600 92px Fraunces, serif';
+      x.font = '600 92px "Bricolage Grotesque", sans-serif';
       if (ev.names && title.indexOf('&') >= 0) {
         var parts = title.split('&');
         wrap(parts[0].trim(), maxW).forEach(function (ln) { x.fillText(ln, cx, y + 66); y += 104; });
         x.fillStyle = gold;
-        x.font = 'italic 500 62px Fraunces, serif';
+        x.font = '500 74px Caveat, cursive'; /* el yazısı "&" — kartpostal dili */
         x.fillText('&', cx, y + 42); y += 86;
         x.fillStyle = ink;
-        x.font = '600 92px Fraunces, serif';
+        x.font = '600 92px "Bricolage Grotesque", sans-serif';
         wrap(parts.slice(1).join('&').trim(), maxW).forEach(function (ln) { x.fillText(ln, cx, y + 66); y += 104; });
       } else {
         wrap(title, maxW).forEach(function (ln) { x.fillText(ln, cx, y + 66); y += 104; });
@@ -563,7 +564,7 @@
     var bits = dateBits(data);
     if (bits) {
       x.fillStyle = ink;
-      x.font = '600 150px Fraunces, serif';
+      x.font = '600 150px "Bricolage Grotesque", sans-serif';
       x.fillText(bits.day, cx, y + 60); y += 120;
       x.fillStyle = goldDark;
       x.font = '600 30px Inter, sans-serif';
@@ -589,7 +590,7 @@
     if (data.ve || data.a) {
       if (data.ve) {
         x.fillStyle = ink;
-        x.font = '600 46px Fraunces, serif';
+        x.font = '600 46px "Bricolage Grotesque", sans-serif';
         wrap(data.ve, maxW).forEach(function (ln) { x.fillText(ln, cx, y + 30); y += 58; });
       }
       if (data.a) {
