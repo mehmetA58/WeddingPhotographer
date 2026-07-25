@@ -42,7 +42,7 @@ You are a senior backend developer for EventPhoto, a static event photo-upload a
 for f in functions/api/*.js functions/api/**/*.js; do cp "$f" /tmp/c.mjs && node --check /tmp/c.mjs; done
 node --check js/upload.js && node --check js/gallery.js && node --check js/setup.js
 node tests/security-smoke.test.js         # backend security invariants (run from repo root)
-npx wrangler pages dev .                  # full runtime + KV (needs .dev.vars)
+npx wrangler pages dev . --kv EVENTS      # full runtime + local KV (needs .dev.vars; --kv required locally)
 ```
 
 Manual verification should cover the OAuth round-trip (folder created, event in KV), upload to Drive, gallery listing gated by `k`, note KV + Drive `.txt`, and failure messages for missing/invalid configuration.

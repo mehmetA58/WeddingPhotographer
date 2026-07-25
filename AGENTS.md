@@ -38,8 +38,8 @@ python3 -m http.server 8000
 Run the backend (Cloudflare runtime) locally with real Functions + KV:
 
 ```bash
-cp .dev.vars.example .dev.vars   # fill GOOGLE_CLIENT_ID/SECRET, BASE_URL=http://localhost:8788
-npx wrangler pages dev .         # http://localhost:8788
+cp .dev.vars.example .dev.vars       # fill GOOGLE_CLIENT_ID/SECRET, BASE_URL=http://localhost:8788
+npx wrangler pages dev . --kv EVENTS # http://localhost:8788 (--kv needed for local KV)
 ```
 
 Validate JavaScript syntax before committing:

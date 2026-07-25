@@ -185,9 +185,9 @@ QR kartlarını masalara koyun; küçük bir not ekleyin:
 **Yerelde (Cloudflare çalışma zamanı):**
 
 ```bash
-cp .dev.vars.example .dev.vars      # GOOGLE_CLIENT_ID/SECRET, BASE_URL=http://localhost:8788
-npx wrangler pages dev .            # http://localhost:8788
-curl http://localhost:8788/api/ping # {"status":"ready","service":"eventphoto-api"}
+cp .dev.vars.example .dev.vars           # GOOGLE_CLIENT_ID/SECRET, BASE_URL=http://localhost:8788
+npx wrangler pages dev . --kv EVENTS     # http://localhost:8788 (yerel KV için --kv şart)
+curl http://localhost:8788/api/ping      # {"status":"ready","service":"eventphoto-api"}
 ```
 
 - **Tek tık OAuth:** `setup.html` → "Google ile Bağlan" → onay → sayfa `?e=&k=` ile
