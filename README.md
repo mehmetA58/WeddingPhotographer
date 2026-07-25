@@ -5,9 +5,9 @@ QR ile çalışan ortak bir fotoğraf albümüdür. Katılımcılar masadaki **Q
 okutur, **giriş yapmadan** telefonlarındaki fotoğrafları seçip yükler;
 fotoğraflar doğrudan **organizatörün Google Drive'ına** kaydedilir.
 
-Backend, sitenin kendisiyle aynı adreste çalışan **Cloudflare Pages Functions**'tır
-(uç sunucu). Organizatör "Google ile Bağlan"a **tek dokunuşla** Drive'ını bağlar;
-kurmak, indirmek, açmak zorunda olduğu hiçbir ayar yoktur.
+Backend, sitenin kendisiyle aynı adreste çalışan bir **Cloudflare Worker**'dır
+(static assets + `/api/*` router). Organizatör "Google ile Bağlan"a **tek dokunuşla**
+Drive'ını bağlar; kurmak, indirmek, açmak zorunda olduğu hiçbir ayar yoktur.
 
 ```
 📷 Katılımcı ──(QR)──▶ upload.html ──(ikili foto)──▶ /api/upload (Cloudflare) ──▶ Google Drive
@@ -18,9 +18,10 @@ kurmak, indirmek, açmak zorunda olduğu hiçbir ayar yoktur.
 
 ## 🧩 Sistem nasıl çalışıyor?
 
-- **Statik site** (`index.html`, `setup.html`, `upload.html`, …) Cloudflare Pages'te yayınlanır.
-- **`functions/api/*`** dizini otomatik olarak Cloudflare Pages Functions'a dönüşür ve
-  aynı origin'de `/api/…` uçlarını karşılar (CORS/JSONP derdi yok).
+- **Statik site** (`index.html`, `setup.html`, `upload.html`, …) Cloudflare Workers static
+  assets olarak servis edilir.
+- **`worker.js`** giriş noktası `/api/*` isteklerini `functions/api/*` handler'larına
+  yönlendirir; gerisini statik varlık sistemine bırakır — hepsi aynı origin (CORS/JSONP yok).
 - Organizatör kurulum sayfasında **"Google ile Bağlan"** der → sunucu tarafı OAuth
   (authorization code) akışı çalışır → Drive'da bir klasör oluşturulur → etkinlik
   Cloudflare **KV**'ye kaydedilir. Sonuç: organizatöre özel bir **eventId** ve
@@ -82,7 +83,8 @@ EventPhoto/
 │   ├── slideshow.js    # Canlı sunum: polaroid duvarı + not kartları
 │   ├── invite.js       # Davetiye: link-içi veri, zarf, ICS, PNG çizimi
 │   └── card.js         # PDF/yazdırma kartı
-├── functions/api/      # Cloudflare Pages Functions (backend)
+├── worker.js           # Worker giriş noktası: /api/* router + statik varlıklar
+├── functions/api/      # Backend handler'ları (worker.js bunları çağırır)
 │   ├── ping.js         # GET /api/ping (sağlık)
 │   ├── upload.js       # POST /api/upload?e= (ikili foto → Drive)
 │   ├── list.js         # GET  /api/list?e=&k= (galeri/sunum listesi)
@@ -90,7 +92,8 @@ EventPhoto/
 │   ├── oauth/start.js  # GET  /api/oauth/start (Google'a yönlendir)
 │   ├── oauth/callback.js # GET /api/oauth/callback (token + klasör + KV)
 │   └── _lib/           # google.js (OAuth/Drive), util.js, notes.js
-├── wrangler.toml       # Cloudflare Pages + KV yapılandırması
+├── wrangler.jsonc      # Cloudflare Worker + KV + assets yapılandırması
+├── .assetsignore       # backend kaynağı statik servis edilmez
 ├── .dev.vars.example   # Yerel secret şablonu (.dev.vars gitignore'lu)
 └── README.md           # Bu dosya
 ```
@@ -102,29 +105,26 @@ EventPhoto/
 Bu adımları **yalnızca site sahibi bir kez** yapar. Organizatörler ve misafirler
 için ek adım yoktur.
 
-### Bölüm A — Cloudflare Pages'e yayınlayın
+### Bölüm A — Cloudflare Workers'a yayınlayın
 
-1. Depoyu GitHub'a gönderin (veya Cloudflare'e doğrudan bağlayın).
-2. [dash.cloudflare.com](https://dash.cloudflare.com) → **Workers & Pages → Create → Pages**
-   → **Connect to Git** → bu depoyu seçin.
-   - **Build command:** *(boş bırakın)*
-   - **Build output directory:** `/` (kök)
-3. **KV namespace** oluşturun: **Workers & Pages → KV → Create** → ad: `eventphoto`.
-   (Veya `npx wrangler kv namespace create EVENTS`.) Oluşan namespace'i Pages projesine
-   bağlayın: **Pages projesi → Settings → Functions → KV namespace bindings** →
-   **Variable name: `EVENTS`** → namespace'i seçin.
-   (`wrangler.toml`'daki `id`/`preview_id` alanlarını da doldurabilirsiniz.)
-4. **Secret'ları** girin: **Pages projesi → Settings → Environment variables**
-   (Production ve Preview için, "Encrypt" işaretli):
+Depo Cloudflare'e bir **Worker** projesi olarak bağlıdır (`wrangler.jsonc`). Backend
+`worker.js` (static assets + `/api/*` router) olarak çalışır.
+
+1. **KV namespace** oluşturun: `npx wrangler kv namespace create EVENTS`
+   (veya dashboard → **Workers & Pages → KV → Create**, ad: `eventphoto`). Dönen id'yi
+   `wrangler.jsonc` içindeki `kv_namespaces[0].id` alanına (`REPLACE_WITH_KV_NAMESPACE_ID`) yazın.
+2. **Secret'ları** girin (dashboard → **Worker → Settings → Variables and Secrets**,
+   "Encrypt"; veya `npx wrangler secret put <AD>`):
    - `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` (Bölüm B'den)
    - `BASE_URL` = sitenizin kök adresi, sonda `/` olmadan
-     (ör. `https://eventphoto.pages.dev` veya özel alan adınız)
-5. Deploy tamamlanınca siteniz `https://<proje>.pages.dev` adresinde yayında olur.
-   Kurulum sayfanız: `.../setup.html`.
+     (ör. `https://weddingphotographer.<hesap>.workers.dev` veya özel alan adınız)
+3. **Deploy:** repoyu Git ile bağladıysanız her `main` push'unda otomatik yayınlanır;
+   veya elle `npx wrangler deploy`.
+4. Yayınlanınca kurulum sayfanız `.../setup.html` adresinde olur.
 
-> **Not:** Cloudflare'in *preview* dağıtımları rastgele alt alan adı üretir; OAuth
-> yalnızca `BASE_URL` ile Google'daki **Authorized redirect URI**'nin eşleştiği
-> **production/özel alan adında** çalışır.
+> **Not:** OAuth yalnızca `BASE_URL` ile Google'daki **Authorized redirect URI**'nin
+> (`<BASE_URL>/api/oauth/callback`) birebir eşleştiği adreste çalışır. Preview
+> dağıtımlarının alt alan adları farklı olacağı için OAuth'u production adresinde test edin.
 
 ### Bölüm B — Google Cloud Console (bir kez)
 
@@ -186,7 +186,7 @@ QR kartlarını masalara koyun; küçük bir not ekleyin:
 
 ```bash
 cp .dev.vars.example .dev.vars           # GOOGLE_CLIENT_ID/SECRET, BASE_URL=http://localhost:8788
-npx wrangler pages dev . --kv EVENTS     # http://localhost:8788 (yerel KV için --kv şart)
+npx wrangler dev --port 8788             # http://localhost:8788 (KV + assets wrangler.jsonc'den gelir)
 curl http://localhost:8788/api/ping      # {"status":"ready","service":"eventphoto-api"}
 ```
 
@@ -243,9 +243,9 @@ mock'lar; gerçek Google/Cloudflare gerektirmez.
 
 ## 💸 Maliyet & limitler
 
-- **Ücretsiz.** Cloudflare Pages free planı: statik istekler sınırsız; Functions
-  günde **100.000 istek** (Workers ile ortak), çağrı başına **10 ms CPU**, 100 MB
-  istek gövdesi. KV free kotası etkinlik ölçeği için fazlasıyla yeterli.
+- **Ücretsiz.** Cloudflare Workers free planı: statik varlık istekleri sınırsız;
+  Worker çağrıları günde **100.000 istek**, çağrı başına **10 ms CPU**, 100 MB istek
+  gövdesi. KV free kotası etkinlik ölçeği için fazlasıyla yeterli.
 - İstemci tarafı resize (~2560px) hem hızı hem 10 ms CPU bütçesini korur; yükleme
   base64 değil **ikili** gönderildiği için sunucuda decode maliyeti yoktur.
 - Drive depolama, organizatörün Google hesabı kotasına tabidir (15 GB ücretsiz).

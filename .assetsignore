@@ -1,0 +1,10 @@
+# Bu dosyalar statik varlık olarak SUNULMAZ (yalnızca frontend + docs sunulur).
+worker.js
+functions/
+tests/
+agents/
+AGENTS.md
+wrangler.jsonc
+.dev.vars*
+.github/
+.assetsignore

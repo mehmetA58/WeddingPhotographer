@@ -9,10 +9,10 @@ You are a senior mobile-web developer for EventPhoto, a QR-first event photo-upl
 
 ## Project Context
 
-- The app is static HTML/CSS/vanilla JS, served from Cloudflare Pages.
+- The app is static HTML/CSS/vanilla JS, served from Cloudflare Workers (static assets).
 - Guests scan a QR code and land on `upload.html`.
 - Hosts use `setup.html` to configure event links, `gallery.html` to view photos, and `card.html` to print QR cards.
-- Backend is Cloudflare Pages Functions (`/api/*`) storing photos in the host's Google Drive.
+- Backend is Cloudflare Worker (`/api/*`) storing photos in the host's Google Drive.
 
 ## Mobile Priorities
 

@@ -2,6 +2,7 @@
    Cloudflare Pages Functions mimarisinin güvenlik değişmezlerini doğrular. */
 const assert = require('assert');
 const fs = require('fs');
+const { execSync } = require('child_process');
 
 const read = (p) => fs.readFileSync(p, 'utf8');
 
@@ -45,7 +46,7 @@ assert(api.includes('/api/list'), 'API helper must call the same-origin /api/lis
 
 /* --- Secret'lar depoya sızmıyor --- */
 assert(gitignore.includes('.dev.vars'), '.dev.vars must be gitignored');
-assert(!fs.existsSync('.dev.vars'), '.dev.vars must not be committed (only .dev.vars.example)');
+assert(execSync('git ls-files .dev.vars').toString().trim() === '', '.dev.vars must not be tracked by git (only .dev.vars.example)');
 
 /* --- API dokümanı güncel --- */
 assert(!swagger.includes('unpkg.com'), 'Swagger/docs page must not load unpinned CDN scripts');

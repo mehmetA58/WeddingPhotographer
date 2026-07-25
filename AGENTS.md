@@ -3,7 +3,7 @@
 ## Project Structure & Module Organization
 
 This repository is EventPhoto, a static event photo-upload web app with a
-Cloudflare Pages Functions backend (same-origin `/api/*`).
+Cloudflare Worker backend (static assets + same-origin `/api/*` router).
 
 - `index.html` is the marketing landing page; `setup.html` is the setup page for event hosts.
 - `upload.html` is the participant-facing upload page.
@@ -17,15 +17,17 @@ Cloudflare Pages Functions backend (same-origin `/api/*`).
   - `i18n.js` for Turkish/English copy
   - `events.js` for supported event types
   - `qrcode.min.js` vendored QR library
-- `functions/api/` is the Cloudflare Pages Functions backend:
+- `worker.js` is the Worker entry point: routes `/api/*` to the handlers below and
+  serves everything else via the static-assets binding (`env.ASSETS`).
+- `functions/api/` holds the backend handlers (Pages-Functions signature
+  `onRequestGet/onRequestPost({ request, env })`, called by `worker.js`):
   - `ping.js`, `upload.js`, `list.js`, `note.js`, `oauth/start.js`, `oauth/callback.js`
   - `_lib/google.js` (OAuth code flow + Drive helpers, `drive.file` scope only),
     `_lib/util.js` (image signature, filename/description, ids), `_lib/notes.js`
-- `wrangler.toml` configures the Pages project + `EVENTS` KV binding;
-  `.dev.vars.example` documents the required secrets (`GOOGLE_CLIENT_ID`,
-  `GOOGLE_CLIENT_SECRET`, `BASE_URL`).
+- `wrangler.jsonc` configures the Worker (`main`, `assets`, `EVENTS` KV binding);
+  `.assetsignore` keeps backend source out of the served assets; `.dev.vars.example`
+  documents the required secrets (`GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `BASE_URL`).
 - `docs/openapi.yaml` and `docs/swagger.html` document the `/api` contract.
-- `.github/workflows/deploy.yml` remains for GitHub Pages; the backend requires Cloudflare Pages.
 
 ## Build, Test, and Development Commands
 
@@ -39,7 +41,7 @@ Run the backend (Cloudflare runtime) locally with real Functions + KV:
 
 ```bash
 cp .dev.vars.example .dev.vars       # fill GOOGLE_CLIENT_ID/SECRET, BASE_URL=http://localhost:8788
-npx wrangler pages dev . --kv EVENTS # http://localhost:8788 (--kv needed for local KV)
+npx wrangler dev --port 8788         # http://localhost:8788 (KV + assets from wrangler.jsonc)
 ```
 
 Validate JavaScript syntax before committing:
