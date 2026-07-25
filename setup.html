@@ -10,7 +10,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=Courier+Prime:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="icon" type="image/svg+xml" href="favicon.svg" />
   <link rel="stylesheet" href="css/style.css" />
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
   <main class="page">
@@ -33,8 +32,8 @@
               <div class="google-icon" aria-hidden="true"></div>
               <h2 data-i18n="setup.googleTitle">Google Drive'a Bağlan</h2>
               <p class="small" data-i18n="setup.googleDesc">
-                Fotoğraflar otomatik olarak Google Drive'ınıza kaydedilecek.
-                Apps Script projesi sizin için otomatik oluşturulup yayınlanacak.
+                Fotoğraflar otomatik olarak Google Drive'ınıza kaydedilir.
+                Tek dokunuşla Drive'ınızı bağlayın — kurulum gerektirmez.
               </p>
               <button type="button" class="btn btn-google" id="googleBtn">
                 <svg class="google-logo" viewBox="0 0 48 48" width="20" height="20"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.54 28.59A14.5 14.5 0 0 1 9.5 24c0-1.59.28-3.14.76-4.59l-7.98-6.19A23.99 23.99 0 0 0 0 24c0 3.77.87 7.35 2.56 10.56l7.98-5.97z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 5.97C6.51 42.62 14.62 48 24 48z"/></svg>
@@ -43,23 +42,11 @@
               <p class="small" id="googleError" style="color:#B4544B;margin-top:10px;display:none"></p>
             </div>
           </div>
-          <div id="deployProgress" class="hidden">
-            <div class="deploy-card">
-              <h2 data-i18n="setup.deployTitle">Kurulum yapılıyor…</h2>
-              <div class="deploy-steps">
-                <div class="deploy-step" data-step="folder"><span data-i18n="setup.deployFolder">Drive klasörü oluşturuluyor</span></div>
-                <div class="deploy-step" data-step="project"><span data-i18n="setup.deployProject">Apps Script projesi oluşturuluyor</span></div>
-                <div class="deploy-step" data-step="deploy"><span data-i18n="setup.deployDeploy">Web App yayınlanıyor</span></div>
-                <div class="deploy-step" data-step="auth"><span data-i18n="setup.deployAuth">Drive izni bekleniyor</span></div>
-                <div class="deploy-step" data-step="done"><span data-i18n="setup.deployDone">Kurulum tamamlandı</span></div>
-              </div>
-            </div>
-          </div>
           <div id="setupComplete" class="hidden">
             <div class="google-card success">
               <div class="success-icon" aria-hidden="true"></div>
               <h2 data-i18n="setup.completeTitle">Google Drive Bağlantısı Hazır</h2>
-              <p class="small" data-i18n="setup.completeDesc">Apps Script projeniz oluşturuldu ve Drive klasörünüz hazır. Şimdi etkinlik ayarlarını yapabilirsiniz.</p>
+              <p class="small" data-i18n="setup.completeDesc">Drive klasörünüz hazır. Şimdi etkinlik ayarlarını yapabilirsiniz.</p>
               <button type="button" class="btn btn-ghost" id="reconnectBtn" data-i18n="setup.reconnect">Yeniden Bağlan</button>
             </div>
           </div>
@@ -87,25 +74,6 @@
         <details class="advanced">
           <summary data-i18n="setup.advanced">Gelişmiş ayarlar (isteğe bağlı)</summary>
           <div class="field" style="margin-top:12px">
-            <label for="manualApi" data-i18n-html="setup.manualApiLabelHtml">Web App URL (manuel bağlantı)
-              <span class="hint">— "Google ile Bağlan" kullanmadan kendi yayınladığınız Apps Script adresi</span></label>
-            <div class="field-row">
-              <input class="input" type="url" id="manualApi" inputmode="url" autocomplete="off" spellcheck="false"
-                     placeholder="https://script.google.com/macros/s/…/exec" data-i18n-placeholder="setup.manualApiPlaceholder" />
-              <button type="button" class="btn btn-ghost" id="testApiBtn" data-i18n="setup.testApi">Sına</button>
-            </div>
-            <p class="small" style="margin:6px 2px 0" data-i18n="setup.manualApiHelp">Code.gs'i kendiniz yayınladıysanız (README Bölüm B) Web App URL'ini buraya yapıştırın; Google ile bağlanmak gerekmez.</p>
-          </div>
-          <div class="field">
-            <label for="token" data-i18n-html="setup.tokenLabelHtml">Güvenlik anahtarı (token)
-              <span class="hint">— linkiniz sızsa bile yabancı yüklemeleri engeller</span></label>
-            <div class="field-row">
-              <input class="input" type="text" id="token" placeholder="(boş bırakılabilir)" data-i18n-placeholder="setup.tokenPlaceholder" />
-              <button type="button" class="btn btn-ghost" id="genToken" data-i18n="setup.generateToken">Üret</button>
-            </div>
-            <p class="small" style="margin:6px 2px 0" data-i18n-html="setup.tokenHelpHtml">Bu anahtar otomatik yapılandırıldı.</p>
-          </div>
-          <div class="field">
             <label><input type="checkbox" id="rawMode" /> <span data-i18n-html="setup.rawLabelHtml">Orijinal çözünürlükte yükle
               <span class="hint">(kapalıyken fotoğraflar hızlı yüklenmesi için ~2560px'e küçültülür)</span></span></label>
           </div>

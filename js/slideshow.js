@@ -1,10 +1,10 @@
 /* =========================================================================
    slideshow.js — Canlı Sunum Ekranı (mekandaki TV / projeksiyon)
-   - 20 sn'de bir Apps Script'ten listeyi çeker (JSONP, js/api.js)
+   - 20 sn'de bir Cloudflare Pages Functions'tan (aynı origin) listeyi çeker
    - Yeni fotoğraflar "masaya bırakılan polaroid" animasyonuyla öne alınır
    - Aralara Anı Defteri notları serpiştirilir
    - Tıklama = tam ekran; Wake Lock ile ekran uyumaz
-   URL parametreleri: api (zorunlu), token, event, title, lang,
+   URL parametreleri: e (eventId, zorunlu), k (ev sahibi anahtarı), event, title, lang,
                       qr (misafir yükleme linki — köşe QR'ı)
    ========================================================================= */
 
@@ -16,8 +16,8 @@
   var Api = window.EventPhotoApi;
 
   var params  = new URLSearchParams(location.search);
-  var API     = (params.get('api') || '').trim();
-  var TOKEN   = (params.get('token') || '').trim();
+  var EVENT_ID  = (params.get('e') || '').trim();
+  var ADMIN_KEY = (params.get('k') || '').trim();
   var TITLE   = (params.get('title') || '').trim();
   var QR_LINK = (params.get('qr') || '').trim();
   var DEMO    = params.get('demo') === '1';   // API'siz örnek akış (landing/tanıtım)
@@ -49,7 +49,7 @@
   document.title = barTitle + ' · EventPhoto';
 
   /* --- Yapılandırma eksikse dur ------------------------------------------ */
-  if (!API && !DEMO) {
+  if (!EVENT_ID && !DEMO) {
     stageError.innerHTML = t('slideshow.configErrorHtml');
     stageError.classList.remove('hidden');
     $('stageHint').classList.add('hidden');
@@ -87,7 +87,7 @@
 
   /* --- Liste döngüsü ------------------------------------------------------ */
   function poll() {
-    Api.list(API, { max: 200, token: TOKEN, notes: true }).then(function (data) {
+    Api.list(EVENT_ID, { max: 200, token: ADMIN_KEY, notes: true }).then(function (data) {
       if (!data || data.status !== 'ok') {
         showConnError(data && data.code === 'invalid_token' ? t('gallery.invalidToken') : t('slideshow.connError'));
         return;
@@ -128,10 +128,9 @@
         showEmpty();
       }
     }).catch(function () {
-      // Erişilebilir ama okunamıyorsa geçici bir kesinti değil, dağıtım
-      // ayarıdır — ev sahibine düzeltmenin yerini söyle.
-      Api.reachable(API).then(function (r) {
-        showConnError(t(r ? 'slideshow.connAccess' : 'slideshow.connError'));
+      // Ağ hatası: bağlantı kurulamadı.
+      Api.reachable().then(function () {
+        showConnError(t('slideshow.connError'));
       });
     }).then(function () {
       setTimeout(poll, POLL_MS);

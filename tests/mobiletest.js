@@ -10,11 +10,11 @@ const ok = (c, l) => { console.log((c ? '  ✓ ' : '  ✗ ') + l); if (!c) failu
 const PAGES = [
   ['index.html',     'landing'],
   ['setup.html',     'kurulum'],
-  ['upload.html?api=https://x.test/exec&title=Test', 'yükleme'],
-  ['gallery.html?api=https://x.test/exec&title=Test', 'galeri'],
+  ['upload.html?e=testevt&title=Test', 'yükleme'],
+  ['gallery.html?e=testevt&k=testkey&title=Test', 'galeri'],
   ['slideshow.html?demo=1', 'sunum'],
   ['invite.html',    'davetiye'],
-  ['card.html?api=https://x.test/exec&title=Test', 'kart'],
+  ['card.html?data=x&title=Test', 'kart'],
 ];
 const VIEWPORTS = [
   { w: 320, h: 690, name: '320' },
@@ -65,7 +65,7 @@ const VIEWPORTS = [
       r.fulfill({ status: 200, contentType: 'application/javascript; charset=utf-8', body: `window[${JSON.stringify(cb)}] && window[${JSON.stringify(cb)}]({items:[]})` });
     });
     // Galeri: yenile butonu
-    await pg.goto(BASE + '/gallery.html?api=https://x.test/exec&title=Test', { waitUntil: 'load' });
+    await pg.goto(BASE + '/gallery.html?e=testevt&k=testkey&title=Test', { waitUntil: 'load' });
     await pg.waitForTimeout(400);
     const gbtn = await pg.locator('#refreshBtn').evaluate(el => el.getBoundingClientRect().height).catch(() => 0);
     ok(gbtn >= 44, `galeri #refreshBtn ≥44px (${Math.round(gbtn)})`);

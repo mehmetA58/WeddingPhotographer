@@ -1,0 +1,12 @@
+# Yerel geliştirme secret'ları — bu dosyayı ".dev.vars" olarak kopyalayıp doldurun.
+# .dev.vars gitignore'ludur; gerçek değerleri ASLA depoya commit etmeyin.
+#
+#   cp .dev.vars.example .dev.vars
+#   npx wrangler pages dev .        # http://localhost:8788
+
+# Google Cloud Console → APIs & Services → Credentials → OAuth 2.0 Client (Web application)
+GOOGLE_CLIENT_ID=xxxxxxxx.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=xxxxxxxxxxxxxxxxxxxx
+
+# Sitenin kök adresi (sonda / olmadan). Yerelde wrangler dev portu:
+BASE_URL=http://localhost:8788

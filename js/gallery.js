@@ -1,8 +1,8 @@
 /* =========================================================================
    gallery.js — Etkinlik sahibi için fotoğraf galerisi
-   - Apps Script'ten JSONP ile fotoğraf listesini çeker (CORS'a takılmaz)
+   - Cloudflare Pages Functions'tan (aynı origin) fotoğraf listesini çeker
    - Google Drive thumbnail URL'leriyle ızgara + lightbox gösterir
-   URL parametreleri: api (zorunlu), token (opsiyonel), title/couple (başlık), event
+   URL parametreleri: e (eventId, zorunlu), k (ev sahibi anahtarı), title/couple, event
    ========================================================================= */
 
 (function () {
@@ -13,8 +13,8 @@
   var thumb = window.EventPhotoApi.thumb;
 
   var params = new URLSearchParams(location.search);
-  var API    = (params.get('api') || '').trim();
-  var TOKEN  = (params.get('token') || '').trim();
+  var EVENT_ID  = (params.get('e') || '').trim();
+  var ADMIN_KEY = (params.get('k') || '').trim();
   var EVENT_TITLE = (params.get('title') || params.get('couple') || '').trim();
 
   var grid = $('grid');
@@ -28,7 +28,7 @@
     document.title = EVENT_TITLE + ' · EventPhoto';
   }
 
-  if (!API) {
+  if (!EVENT_ID) {
     $('configError').classList.remove('hidden');
     return;
   }
@@ -43,7 +43,7 @@
     hide('empty'); hide('galleryNote');
     grid.innerHTML = '';
 
-    window.EventPhotoApi.list(API, { max: 1000, token: TOKEN, notes: true }).then(function (data) {
+    window.EventPhotoApi.list(EVENT_ID, { max: 1000, token: ADMIN_KEY, notes: true }).then(function (data) {
       hide('loading');
       if (!data || data.status !== 'ok') {
         if (data && data.code === 'invalid_token') return fail(t('gallery.invalidToken'));
@@ -65,13 +65,10 @@
       render();
     }).catch(function (err) {
       console.error(err);
-      // Sunucuya erişiliyor ama yanıt okunamıyorsa neden büyük olasılıkla
-      // dağıtım ayarıdır ("Who has access: Anyone") — ev sahibine tam adresi söyle.
-      window.EventPhotoApi.diagnose(API).then(function (state) {
+      // Ağ hatası: bağlantı kurulamadı.
+      window.EventPhotoApi.diagnose().then(function () {
         hide('loading');
-        failHtml(state === 'unreadable'
-          ? t('gallery.failAccessHtml')
-          : t('gallery.failConnectionHtml'));
+        failHtml(t('gallery.failConnectionHtml'));
       });
     });
   }

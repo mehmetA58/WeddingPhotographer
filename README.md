@@ -3,28 +3,34 @@
 EventPhoto, düğünden geziye, toplantıdan doğum gününe kadar her etkinlik için
 QR ile çalışan ortak bir fotoğraf albümüdür. Katılımcılar masadaki **QR kodu**
 okutur, **giriş yapmadan** telefonlarındaki fotoğrafları seçip yükler;
-fotoğraflar doğrudan **sizin Google Drive'ınıza** kaydedilir. Sunucusuz,
-ücretsiz, bakım gerektirmez.
+fotoğraflar doğrudan **organizatörün Google Drive'ına** kaydedilir.
+
+Backend, sitenin kendisiyle aynı adreste çalışan **Cloudflare Pages Functions**'tır
+(uç sunucu). Organizatör "Google ile Bağlan"a **tek dokunuşla** Drive'ını bağlar;
+kurmak, indirmek, açmak zorunda olduğu hiçbir ayar yoktur.
 
 ```
-📷 Katılımcı telefonu ──(QR)──▶ upload.html ──(base64 foto)──▶ Apps Script ──▶ Google Drive
+📷 Katılımcı ──(QR)──▶ upload.html ──(ikili foto)──▶ /api/upload (Cloudflare) ──▶ Google Drive
+🧑‍💼 Organizatör ──(tek tık)──▶ /api/oauth ──▶ Google onayı ──▶ Drive bağlandı
 ```
 
 ---
 
 ## 🧩 Sistem nasıl çalışıyor?
 
-Merkezî sunucu yok. Her organizasyon sahibi kendi Drive'ını şöyle bağlar:
-
-> **Organizasyon sahibi, `apps-script/Code.gs` dosyasını kendi Google hesabına kurar ve
-> "Web App" olarak yayınlar.** İşte "kendi Drive'ınızla eşleştirme" adımı budur.
-> Deploy ettiğinizde size özel bir **Web App URL'i** verilir; bu adres sizin
-> Drive'ınıza bağlıdır.
-
-Statik site (`setup.html`, `upload.html`) **bir kez** yayınlanır. Kurulum sayfası
-sizin Web App URL'inizi + etkinlik türünü + etkinlik başlığını linke gömüp
-**kişiselleştirilmiş bir QR** üretir. O QR'ı okutan herkes, sizin Drive'ınıza
-yükleme yapar.
+- **Statik site** (`index.html`, `setup.html`, `upload.html`, …) Cloudflare Pages'te yayınlanır.
+- **`functions/api/*`** dizini otomatik olarak Cloudflare Pages Functions'a dönüşür ve
+  aynı origin'de `/api/…` uçlarını karşılar (CORS/JSONP derdi yok).
+- Organizatör kurulum sayfasında **"Google ile Bağlan"** der → sunucu tarafı OAuth
+  (authorization code) akışı çalışır → Drive'da bir klasör oluşturulur → etkinlik
+  Cloudflare **KV**'ye kaydedilir. Sonuç: organizatöre özel bir **eventId** ve
+  **ev-sahibi anahtarı (adminKey)**.
+- Kurulum sayfası eventId'yi bir **QR**'a gömer. QR'ı okutan herkes organizatörün
+  Drive'ına yükler. Galeri/sunum ise yalnızca adminKey ile açılır.
+- Yalnızca **`drive.file`** OAuth kapsamı kullanılır: uygulama SADECE kendi
+  oluşturduğu klasör/dosyaları görür. Bu kapsam Google tarafından *non-sensitive*
+  sayılır → **uygulama doğrulaması (verification) gerektirmez**, kullanıcı başına
+  hiçbir manuel ayar yoktur.
 
 V1 etkinlik türleri sabittir: **Gezi, Toplantı, Doğum Günü, Düğün, Nişan,
 Yıldönümü, Romantik Akşam Yemeği, Hoş Geldin Partisi, Veda Partisi**.
@@ -40,14 +46,12 @@ Yıldönümü, Romantik Akşam Yemeği, Hoş Geldin Partisi, Veda Partisi**.
 - **Davetiye** — `invite.html` ile zarif bir dijital davetiye oluşturun: tarih, mekan,
   el yazısı mesaj, geri sayım. Davetli linki açınca **mühürlü zarf** belirir, dokununca
   davetiye çıkar. Link/WhatsApp/PNG olarak paylaşılır; **Takvime Ekle** (.ics),
-  **Haritada Aç** ve **LCV (WhatsApp)** butonları hazır. Google bağlantısı gerektirmez —
-  davetiye verisi linkin içinde yaşar.
+  **Haritada Aç** ve **LCV (WhatsApp)** butonları hazır. Google bağlantısı gerektirmez.
 - **Canlı Sunum Ekranı** — kurulumdaki özel linki mekandaki **TV/projeksiyona** açın;
   yüklenen kareler saniyeler içinde "masaya bırakılan polaroid" olarak ekranda belirir,
   köşedeki QR misafirleri paylaşmaya çağırır. Tıklama tam ekran yapar, ekran uyumaz.
 - **Fotoğraf Görevleri** — misafirlere etkinliğe özel eğlenceli görev önerileri sunulur
   ("Dans pistinden bir kare", "Yerel bir lezzet"…); seçilen görev fotoğrafın altyazısı olur.
-  İstemezseniz kurulumda *Gelişmiş ayarlar → Fotoğraf görevlerini kapat*.
 - **Anı Defteri** — misafirler fotoğrafın yanına kısa bir tebrik notu bırakabilir; notlar
   sunum ekranında el yazısı kartlar olarak döner ve Drive'a `.txt` hatıra olarak kaydedilir.
 - **Canlı Albüm tasarımı** — albüm köşe cepleri, polaroid "banyo" efekti, film tarih damgası;
@@ -62,7 +66,7 @@ EventPhoto/
 ├── index.html          # Landing page (tanıtım / ön kapı)
 ├── setup.html          # Kurulum sayfası (etkinlik → link + QR üretir)
 ├── upload.html         # Katılımcı yükleme sayfası (QR buraya gider)
-├── gallery.html        # Organizasyon sahibi için özel fotoğraf galerisi
+├── gallery.html        # Organizatör için özel fotoğraf galerisi
 ├── slideshow.html      # Canlı sunum ekranı (mekandaki TV/projeksiyon)
 ├── invite.html         # Davetiye oluşturucu + davetli görünümü (zarf)
 ├── card.html           # Yazdırmaya hazır QR masa kartı
@@ -71,158 +75,92 @@ EventPhoto/
 │   ├── qrcode.min.js   # Yerel QR kütüphanesi (CDN yok)
 │   ├── i18n.js         # Türkçe / İngilizce dil metinleri
 │   ├── events.js       # V1 etkinlik türleri, konsept + görev tanımları
-│   ├── api.js          # Apps Script liste/JSONP ortak yardımcıları
-│   ├── setup.js        # Kurulum mantığı
+│   ├── api.js          # /api/list & /api/ping ortak fetch yardımcıları
+│   ├── setup.js        # Kurulum + OAuth başlatma + QR üretimi
 │   ├── upload.js       # Yükleme + resize + progress + görev/not
 │   ├── gallery.js      # Galeri + lightbox + Anı Defteri
 │   ├── slideshow.js    # Canlı sunum: polaroid duvarı + not kartları
 │   ├── invite.js       # Davetiye: link-içi veri, zarf, ICS, PNG çizimi
 │   └── card.js         # PDF/yazdırma kartı
-├── apps-script/Code.gs # Google Apps Script backend (Drive'a kaydeder)
-├── docs/
-│   ├── openapi.yaml    # Apps Script API için OpenAPI/Swagger sözleşmesi
-│   └── swagger.html    # Swagger UI ile okunabilir API dokümanı
+├── functions/api/      # Cloudflare Pages Functions (backend)
+│   ├── ping.js         # GET /api/ping (sağlık)
+│   ├── upload.js       # POST /api/upload?e= (ikili foto → Drive)
+│   ├── list.js         # GET  /api/list?e=&k= (galeri/sunum listesi)
+│   ├── note.js         # POST /api/note?e= (Anı Defteri notu)
+│   ├── oauth/start.js  # GET  /api/oauth/start (Google'a yönlendir)
+│   ├── oauth/callback.js # GET /api/oauth/callback (token + klasör + KV)
+│   └── _lib/           # google.js (OAuth/Drive), util.js, notes.js
+├── wrangler.toml       # Cloudflare Pages + KV yapılandırması
+├── .dev.vars.example   # Yerel secret şablonu (.dev.vars gitignore'lu)
 └── README.md           # Bu dosya
 ```
 
 ---
 
-## 📘 API / Swagger dokümanı
-
-Apps Script backend sözleşmesi `docs/openapi.yaml` içinde OpenAPI 3.0 formatında
-tanımlıdır. Tarayıcıdan görüntülemek için `docs/swagger.html` dosyasını açın.
-
-GitHub Pages yayındaysa doküman şu adreste olur:
-
-```text
-https://<kullanıcı-adınız>.github.io/<repo-adı>/docs/swagger.html
-```
-
-Not: Fotoğraf yükleme akışı Apps Script CORS kısıtları nedeniyle `no-cors`
-kullanır; bu yüzden Swagger gerçek JSON yanıtını belgeler, fakat tarayıcıdaki
-misafir arayüzü yükleme yanıtını okuyamaz. Güncel arayüz başarıyı `uploadId`
-ve galeri listesi üzerinden ayrıca doğrular.
-
----
-
 ## 🚀 Kurulum — Adım Adım
 
-Toplam süre: ~10 dakika. İki bölüm var: **(A) Siteyi yayınla**, **(B) Drive'ını bağla**.
+Bu adımları **yalnızca site sahibi bir kez** yapar. Organizatörler ve misafirler
+için ek adım yoktur.
 
-### Bölüm A — Statik siteyi yayınlayın (bir kez)
+### Bölüm A — Cloudflare Pages'e yayınlayın
 
-**Seçenek 1: GitHub Pages (önerilen, ücretsiz)**
+1. Depoyu GitHub'a gönderin (veya Cloudflare'e doğrudan bağlayın).
+2. [dash.cloudflare.com](https://dash.cloudflare.com) → **Workers & Pages → Create → Pages**
+   → **Connect to Git** → bu depoyu seçin.
+   - **Build command:** *(boş bırakın)*
+   - **Build output directory:** `/` (kök)
+3. **KV namespace** oluşturun: **Workers & Pages → KV → Create** → ad: `eventphoto`.
+   (Veya `npx wrangler kv namespace create EVENTS`.) Oluşan namespace'i Pages projesine
+   bağlayın: **Pages projesi → Settings → Functions → KV namespace bindings** →
+   **Variable name: `EVENTS`** → namespace'i seçin.
+   (`wrangler.toml`'daki `id`/`preview_id` alanlarını da doldurabilirsiniz.)
+4. **Secret'ları** girin: **Pages projesi → Settings → Environment variables**
+   (Production ve Preview için, "Encrypt" işaretli):
+   - `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` (Bölüm B'den)
+   - `BASE_URL` = sitenizin kök adresi, sonda `/` olmadan
+     (ör. `https://eventphoto.pages.dev` veya özel alan adınız)
+5. Deploy tamamlanınca siteniz `https://<proje>.pages.dev` adresinde yayında olur.
+   Kurulum sayfanız: `.../setup.html`.
 
-1. [github.com](https://github.com) hesabı açın → **New repository** (örn. `etkinlik-foto`), *Public*.
-2. Bu klasördeki tüm dosyaları repoya yükleyin (sürükle-bırak ile "Add file → Upload files").
-3. Repo → **Settings → Pages** → *Build and deployment* → **Source: GitHub Actions**.
-   (Depoda hazır `.github/workflows/deploy.yml` var; her `main` push'unda site otomatik yayınlanır.
-   Dilerseniz bunun yerine *Source: Deploy from a branch → `main` / `(root)`* de seçebilirsiniz.)
-4. 1–2 dakika sonra siteniz yayında olur:
-   `https://<kullanıcı-adınız>.github.io/etkinlik-foto/`
-5. Kurulum sayfanız: `.../etkinlik-foto/setup.html` (kök adres tanıtım sayfasını açar)
+> **Not:** Cloudflare'in *preview* dağıtımları rastgele alt alan adı üretir; OAuth
+> yalnızca `BASE_URL` ile Google'daki **Authorized redirect URI**'nin eşleştiği
+> **production/özel alan adında** çalışır.
 
-**Seçenek 2: Netlify (daha da hızlı, sürükle-bırak)**
-
-1. [app.netlify.com/drop](https://app.netlify.com/drop) adresine gidin.
-2. `EventPhoto` klasörünü olduğu gibi tarayıcıya sürükleyin → anında yayınlanır.
-
-> İki seçenek de HTTPS sağlar (kamera erişimi için zorunlu).
-
----
-
-### Bölüm B — Google Drive'ınızı bağlayın (Apps Script)
-
-> Bu adımı **organizasyon sahibi** kendi Google hesabında yapar.
-> İki yol var; **birini** seçmeniz yeterli.
-
-#### Yol 1 — "Google ile Bağlan" (otomatik kurulum)
-
-Kurulum sayfasındaki **"Google ile Bağlan"** butonu; Drive klasörünü, Apps Script
-projesini ve Web App yayınını sizin adınıza otomatik oluşturur. Bunun çalışması için
-**siteyi yayınlayan kişinin** bir kez OAuth istemcisi tanımlaması gerekir:
+### Bölüm B — Google Cloud Console (bir kez)
 
 1. [console.cloud.google.com](https://console.cloud.google.com) → yeni bir proje oluşturun.
-2. **APIs & Services → Library** → şu ikisini etkinleştirin: **Apps Script API** ve **Google Drive API**.
-3. **APIs & Services → OAuth consent screen** → *External* → uygulama adını girin;
-   kendi e-postanızı **Test users** listesine ekleyin.
-4. **APIs & Services → Credentials → Create Credentials → OAuth client ID** → *Web application*.
-   **Authorized JavaScript origins** alanına sitenizin adresini ekleyin
-   (örn. `https://<kullanıcı-adınız>.github.io`; yerelde denemek için `http://localhost:8000`).
-5. Oluşan **Client ID**'yi `js/setup.js` başındaki `GOOGLE_CLIENT_ID` değerine yapıştırın
-   ve siteyi yeniden yayınlayın.
-6. Organizasyon sahibi ayrıca [script.google.com/home/usersettings](https://script.google.com/home/usersettings)
-   adresinden **Google Apps Script API** iznini **Açık** konuma getirmelidir
-   (kapalıysa proje oluşturma `403` hatası verir).
-
-Artık kurulum sayfasında **"Google ile Bağlan"** → izinleri onaylayın → kurulum
-adımları (klasör, proje, yayın, token ve gizli kurulum anahtarı) otomatik
-tamamlanır. Yol 2'ye gerek kalmaz.
-
-#### Yol 2 — Manuel kurulum (Cloud Console gerektirmez)
-
-1. [script.google.com](https://script.google.com) → **Yeni proje**.
-2. Soldaki `Code.gs` dosyasının içeriğini silin; `apps-script/Code.gs`
-   dosyamızın **tamamını** yapıştırın → **Kaydet** (💾).
-3. (İsteğe bağlı ama önerilir) **Güvenlik anahtarı**:
-   - Bir sonraki bölümdeki kurulum sayfasında **"Üret"** ile bir token oluşturun.
-   - Apps Script'te üstteki fonksiyon menüsünden **`SETUP_setToken`** seçin,
-     kod içindeki `'BURAYA_TOKEN_YAPISTIRIN'` yerine o token'ı yazın → **Run**.
-     (Alternatif: **Proje Ayarları ⚙ → Script Properties → Add**, `TOKEN` = değeriniz.)
-4. (İsteğe bağlı) **Kurulum anahtarı**:
-   - Public Web App'te `action=setup` ayar değiştirmesin diye güncel sürüm bunu
-     gizli bir `SETUP_ADMIN_KEY` ile korur.
-   - Manuel kurulumda otomatik `action=setup` kullanmayacaksanız bu adımı
-     atlayabilirsiniz. Kullanacaksanız `SETUP_setSetupKey` içindeki
-     `'BURAYA_UZUN_KURULUM_ANAHTARI_YAPISTIRIN'` değerini uzun rastgele bir
-     metinle değiştirip **Run** deyin.
-5. (İsteğe bağlı) Fotoğraflar mevcut bir Drive klasörüne gitsin istiyorsanız:
-   - Drive klasör linkindeki ID'yi kopyalayın.
-   - Apps Script'te `SETUP_setExistingFolderId` içindeki
-     `'BURAYA_DRIVE_KLASOR_ID_YAPISTIRIN'` alanına yapıştırın → **Run**.
-   - Bunu yapmazsanız ilk yüklemede **"Etkinlik Fotoğrafları"** klasörü otomatik oluşur.
-6. **Deploy → New deployment** → dişli ⚙ → **Web app**:
-   - **Execute as:** `Me` (kendi hesabınız)
-   - **Who has access:** `Anyone`  ← *katılımcılar anonim yükleyecek, bu şart*
-   - **Deploy**.
-7. İlk kez izin istenir → hesabınızı seçin → "Advanced → Go to project (unsafe)"
-   → **Allow** (kendi betiğinize Drive izni veriyorsunuz).
-8. Açılan **Web app URL**'ini kopyalayın — `https://script.google.com/macros/s/AKfyc…/exec`
-9. Kurulum sayfasında **Gelişmiş ayarlar → Web App URL (manuel bağlantı)** alanına bu adresi yapıştırın.
-
-✅ Artık Drive'ınız bağlı. İlk fotoğraf yüklendiğinde Drive'ınızda
-**"Etkinlik Fotoğrafları"** klasörü otomatik oluşur.
-
----
+2. **APIs & Services → Library** → **Google Drive API**'yi etkinleştirin.
+   *(Apps Script API'ye artık gerek yok.)*
+3. **APIs & Services → OAuth consent screen** → *External* → uygulama adı, destek
+   e-postası, geliştirici e-postası girin.
+   - **Scopes:** yalnızca `openid`, `email` ve `.../auth/drive.file` eklenir.
+   - **Publishing status → PUBLISH APP → Production.** ⚠️ *Testing'de bırakmayın:*
+     Testing modunda refresh token'lar **7 günde** geçersiz olur; etkinlik gününden
+     önce bağlanan organizatör kopar. `drive.file` non-sensitive olduğu için
+     Production'a geçiş **doğrulama (verification) gerektirmez**.
+4. **APIs & Services → Credentials → Create Credentials → OAuth client ID** →
+   *Web application*:
+   - **Authorized redirect URIs:** `https://<siteniz>/api/oauth/callback`
+     (yerelde ayrıca `http://localhost:8788/api/oauth/callback`)
+   - Oluşan **Client ID** ve **Client Secret**'i Bölüm A · adım 4'teki Cloudflare
+     secret'larına yazın.
 
 ### Bölüm C — QR kodunuzu oluşturun
 
-1. Yayınladığınız **`setup.html`** (kurulum) sayfasını açın ve Bölüm B'deki
-   yollardan biriyle Drive'ınızı bağlayın (Yol 1: **"Google ile Bağlan"** ·
-   Yol 2: **Gelişmiş ayarlar → Web App URL**).
-2. **Etkinlik Türü** seçin. Karşılama metni, vurgu rengi ve sayfa zemin tonu
-   buna göre değişir.
-3. **Etkinlik Başlığı** girin (örn. `Ayşe & Mehmet`, `Kapadokya 2026`,
-   `Ayşe'nin 30. Yaşı`) — karşılama yazısında görünür.
-4. **Dil** alanından Türkçe veya English seçin. QR linki bu dili otomatik taşır.
-5. (Yol 2 + token kullandıysanız) *Gelişmiş ayarlar → Güvenlik anahtarı* alanına
-   Apps Script'te ayarladığınız token'ı girin. (Yol 1'de token otomatik yapılandırılır.)
-6. **"QR Kodu Oluştur"** → QR belirir.
-7. **PNG İndir** ile tek QR görseli alın veya **Kart Yazdır (PDF)** ile
-   yazdırmaya hazır masa kartını açın.
-8. **Galeri Linkini Kopyala** butonuyla özel galeri linkini saklayın.
-   Bu linki katılımcılarla paylaşmayın.
-9. **Sunum Linkini Kopyala** ile canlı sunum ekranı linkini alın. Etkinlik günü
-   mekandaki TV/projeksiyona bağlı bir tarayıcıda açın ve tıklayarak tam ekran yapın.
-   Bu link de galeri gibi **özeldir** — yalnızca ekranda gösterin, dağıtmayın.
-   (İnce ayar: linke `&slide=6000` eklerseniz kare süresi 6 sn olur,
-   `&poll=10000` liste tazelemeyi 10 sn'ye indirir.)
-
----
+1. Yayınladığınız **`setup.html`** sayfasını açın.
+2. **Etkinlik Türü** ve **Etkinlik Başlığı** seçin, **Dil**'i belirleyin.
+3. **"Google ile Bağlan"** → Google onayı → sayfa `?e=…&k=…` ile geri döner ve
+   **"Google Drive Bağlantısı Hazır"** görünür. *(Kullanıcı tarafında başka adım yoktur.)*
+4. **"QR Kodu Oluştur"** → QR belirir.
+5. **PNG İndir** / **Kart Yazdır (PDF)** ile masalara koyacağınız QR'ı alın.
+6. **Galeri Linkini Kopyala** ve **Sunum Linkini Kopyala** — bu linkler
+   ev-sahibi anahtarını (`k=`) taşır; **yalnızca sizindir, katılımcılarla paylaşmayın.**
+   (İnce ayar: sunum linkine `&slide=6000` kare süresini, `&poll=10000` liste
+   tazeleme aralığını ms olarak değiştirir.)
 
 ### Bölüm D — Masalara yerleştirin
 
-QR kartlarını masalara koyun. Küçük bir not ekleyebilirsiniz:
+QR kartlarını masalara koyun; küçük bir not ekleyin:
 
 > *"Etkinliğe ait karelerinizi paylaşmak için QR'ı okutmanız yeterli."*
 
@@ -230,40 +168,39 @@ QR kartlarını masalara koyun. Küçük bir not ekleyebilirsiniz:
 
 ## ✉️ Davetiye — oluştur, paylaş
 
-1. `invite.html` sayfasını açın (kurulum sayfasındaki **Davetiye Oluştur** butonu
-   da buraya gelir). **Google bağlantısı gerekmez.**
+1. `invite.html` sayfasını açın (kurulumdaki **Davetiye Oluştur** butonu da buraya gelir).
+   **Google bağlantısı gerekmez.**
 2. Etkinlik türünü seçin; başlık, tarih/saat, mekan, el yazısı mesaj ve isteğe bağlı
    **LCV WhatsApp numarası** girin. Önizleme her tuşta güncellenir.
-3. Paylaşın:
-   - **Davetiye Linkini Kopyala** / **WhatsApp'ta Paylaş** — davetli linki açınca
-     mühürlü zarfı görür, dokununca davetiye çıkar; **Takvime Ekle (.ics)**,
-     **Haritada Aç** ve **LCV** butonları davetlinin ekranındadır.
-   - **PNG İndir** — 1080×1620 görsel davetiye (WhatsApp/Instagram'da paylaşmak için).
+3. Paylaşın: **Davetiye Linkini Kopyala** / **WhatsApp'ta Paylaş** / **PNG İndir**
+   (1080×1620 görsel).
 4. Nasıl çalışır? Davetiye verisi sunucuya değil, linkin `#d=` bölümüne yazılır.
-   Link kimde varsa davetiyeyi görür; **fotoğraf yükleme linki/token'ı davetiyeye
-   asla eklenmez** (davetiye ileri paylaşılsa bile albüm adresiniz sızmaz).
-   Düzenlemek için oluşturucuda alanları değiştirip yeni linki paylaşmanız yeterli.
+   **Fotoğraf yükleme linki/eventId davetiyeye asla eklenmez** (davetiye ileri
+   paylaşılsa bile albüm adresiniz sızmaz).
 
 ---
 
 ## ✅ Doğrulama / Test
 
-- **Konsept kontrolü:** Kurulumda farklı etkinlik türleri seçtikçe karşılama metni,
-  vurgu rengi ve sayfa zemin tonu değişmeli; **"Yükleme Sayfasını Önizle"** ile
-  katılımcının göreceği ekranı kontrol edin.
-- **Uçtan uca:** Telefonunuzla QR'ı okutun → 2–3 fotoğraf seçin → ilerleme çubuğu
-  dolmalı → "Teşekkür Ederiz" ekranı gelmeli → **Drive klasörünüzde** zaman
-  damgalı dosyalar görünmeli.
-- **Çoklu + kamera:** Hem galeriden çoklu seçim hem "Kamera" ile anlık çekim çalışmalı.
-- **Galeri:** Kurulum ekranındaki **Galeri Linki** açıldığında yüklenen fotoğraflar
-  ızgarada görünmeli; isterseniz **Drive Klasörü** butonuyla dosyaları Drive'da açın.
-- **Canlı sunum:** Sunum linkini bilgisayarda açın, telefonla bir fotoğraf yükleyin →
-  kare ~20 sn içinde **"Yeni"** rozetiyle ekranda belirmeli; sayaç artmalı.
-- **Görev + not:** Yüklemede bir görev seçin → Drive'daki dosya adında ve galeri
-  lightbox altyazısında görev görünmeli. Bir not bırakın → Drive klasöründe
-  `Not_*.txt` oluşmalı, galerideki **Anı Defteri** bölümünde ve sunumda görünmeli.
-- **QR kart:** **Kart Yazdır (PDF)** sayfasında sayfa başına 1/2/4/6 kart seçip
-  tarayıcıdan "PDF olarak kaydet" diyebilirsiniz.
+**Yerelde (Cloudflare çalışma zamanı):**
+
+```bash
+cp .dev.vars.example .dev.vars      # GOOGLE_CLIENT_ID/SECRET, BASE_URL=http://localhost:8788
+npx wrangler pages dev .            # http://localhost:8788
+curl http://localhost:8788/api/ping # {"status":"ready","service":"eventphoto-api"}
+```
+
+- **Tek tık OAuth:** `setup.html` → "Google ile Bağlan" → onay → sayfa `?e=&k=` ile
+  döner, "Bağlantı Hazır" görünür. Drive'da **"Etkinlik Fotoğrafları — …"** klasörü oluşur.
+- **Yükleme:** Üretilen `upload.html?e=…` → 2–3 foto + ad + not → **Gönder** → gerçek
+  başarı yanıtı; Drive klasöründe zaman damgalı dosyalar + `Not_*.txt`.
+- **Galeri/Sunum:** `gallery.html?e=&k=` fotoğrafları ızgarada gösterir; yanlış/eksik
+  `k` → "Geçersiz güvenlik anahtarı". `slideshow.html?e=&k=` yeni kareyi ~20 sn'de
+  "Yeni" rozetiyle gösterir. `slideshow.html?demo=1` API'siz çalışır.
+
+**Statik arayüz regresyonu (Playwright):** proje kökünde `python3 -m http.server 8000`
+açın, `cd tests && node <test>.js`. Testler `/api/*` yanıtlarını `page.route` ile
+mock'lar; gerçek Google/Cloudflare gerektirmez.
 
 ---
 
@@ -271,49 +208,52 @@ QR kartlarını masalara koyun. Küçük bir not ekleyebilirsiniz:
 
 | Sorun | Çözüm |
 |---|---|
-| **Yükleme başarısız / CORS "Ağ hatası"** | Apps Script `/exec` yanıtı CORS başlığı döndürmediği için fotoğraf gönderimi `mode:'no-cors'` ile yapılır; güncel arayüz ardından JSONP galeri listesinden `uploadId` ile doğrulama yapar. Doğrulama başarısızsa **Gönder**'e tekrar dokunun; aynı fotoğraf iki kez kaydedilmez. Web App'in **"Who has access: Anyone"** ile yayınlandığından emin olun. |
-| **"0 uploaded, 1 failed" görüyordum** | Eski sürümde tarayıcı başarı yanıtını okuyamadığı için yanlışlıkla "başarısız" gösteriyordu; **fotoğraflar aslında Drive'a kaydedilmiş olabilir**. Güncel sürüm bunu düzeltir (`no-cors`). |
-| **Güvenlik anahtarı (token) uyarısı** | Güncel sürüm yanlış token durumunu yükleme sonrası galeri doğrulamasında yakalar ve başarı ekranına geçmez. Eski Apps Script deploy'u kullanıyorsanız `Code.gs` dosyasını güncelleyip **Version: New version** ile tekrar yayınlayın. |
-| **"Google ile Bağlan" hata veriyor (403 / yetki)** | [script.google.com/home/usersettings](https://script.google.com/home/usersettings)'ten **Google Apps Script API**'yi açın; Cloud Console'da **Apps Script API + Drive API**'nin etkin ve sitenizin **Authorized JavaScript origins** listesinde olduğundan emin olun. Alternatif: Bölüm B · Yol 2 (manuel) ile Web App URL'inizi *Gelişmiş ayarlar*'dan girin. |
-| **Kodda değişiklik yaptım, çalışmıyor** | Aynı URL'i korumak için **Deploy → Manage deployments → ✏ → Version: New version**. "New deployment" **yeni URL** üretir (QR'ı da yenilemeniz gerekir). |
-| **Görev/not/sunum altyazısı çalışmıyor** | Apps Script projeniz eski sürüm `Code.gs` ile yayınlanmış olabilir. Güncel `apps-script/Code.gs` içeriğini projeye yapıştırıp **Deploy → Manage deployments → ✏ → Version: New version** deyin (URL aynı kalır). Eski sürümde fotoğraf yükleme çalışmaya devam eder; yalnızca yeni özellikler eksik kalır. |
-| **Galeri/Sunum: "Bağlantı kurulamadı" veya notta "Betik hatası"** | Kurulum sayfasında *Gelişmiş ayarlar → Web App URL* yanındaki **Sına** butonu tam teşhis koyar. Tipik nedenler: dağıtımda **Who has access: Anyone** seçili değil; URL `/exec` yerine `/dev` ile bitiyor; ya da dağıtım eski — **Deploy → Manage deployments → ✏ → New version** ile yenileyin. |
-| **Anı Defteri notları kaydedilmiyor** | Güncel sürümde notlar POST ile gönderilir ve `noteId` üzerinden galeri listesinde doğrulanır; not metni URL'e yazılmaz. Apps Script tarafında güncel `Code.gs` yoksa doğrulama başarısız olur. `apps-script/Code.gs` dosyasını Apps Script projenize tekrar yapıştırın, **Deploy → Manage deployments → ✏ → Version: New version** ile aynı Web App URL'ini güncelleyin. Sonra galeri linkini açıp notların **Anı Defteri** bölümünde veya Drive klasöründe `Not_*.txt` olarak oluştuğunu kontrol edin. |
-| **iPhone HEIC fotoğrafları** | Varsayılan resize açıkken tarayıcı fotoğrafı **JPEG'e** çevirir (uyumlu). Kapatırsanız (orijinal) HEIC olarak kaydolur. |
-| **Çok büyük fotoğraf / yavaş** | Resize varsayılan açık (~2560px). Orijinal kalite isterseniz kurulumda *"Orijinal çözünürlükte yükle"*yi işaretleyin (daha yavaş, ~40MB/dosya sınırı). |
-| **QR okunmuyor** | Daha büyük yazdırın; link uzun olduğu için QR yoğun olabilir. İsim/token kısaldıkça QR sadeleşir. |
+| **"Google bağlantısı başarısız (redirect_uri_mismatch)"** | Google Cloud → Credentials → OAuth client → **Authorized redirect URIs** listesinde `https://<siteniz>/api/oauth/callback` **birebir** olmalı (şema/alan adı/sonda-slash dahil). `BASE_URL` secret'ı da bununla aynı köke işaret etmeli. |
+| **Bir hafta sonra bağlantı düşüyor** | OAuth consent screen **Testing** modunda kalmış. **Production**'a publish edin (refresh token'lar kalıcı olur). |
+| **`Sunucu yapılandırması eksik` (500)** | Cloudflare'de `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `BASE_URL` secret'ları veya `EVENTS` KV binding'i tanımlı değil. |
+| **Yükleme "bad_image_signature"** | Dosya gerçekten görsel değil ya da bozuk; başka bir kareyle deneyin. Sunucu ilk baytlardaki imzayı doğrular. |
+| **Galeri thumbnail'ları yüklenmiyor** | Her dosya yüklenirken "bağlantıya sahip olan görüntüler" yapılır (`permissions.create`). Google tarafında geçici bir hata olduysa yeni yüklemeler etkilenmez; dosyayı Drive'dan da açabilirsiniz. |
+| **Galeri boş görünüyor ama Drive'da dosya var** | Galeri linkindeki `k=` (ev-sahibi anahtarı) doğru mu? Yanlış `k` "Geçersiz güvenlik anahtarı" döndürür. Kurulumdaki **Galeri Linkini Kopyala**'yı kullanın. |
+| **iPhone HEIC fotoğrafları** | Varsayılan resize açıkken tarayıcı fotoğrafı **JPEG'e** çevirir. Kapatırsanız (orijinal) HEIC olarak kaydolur. |
+| **QR okunmuyor** | Daha büyük yazdırın. eventId kısa olduğu için QR bu sürümde daha sadedir. |
 
 ---
 
 ## 🔒 Güvenlik notları
 
-- Tasarım gereği giriş yok: **linke/QR'a sahip herkes yükleyebilir** (katılımcılar anonim).
-  Bu yüzden linki halka açık paylaşmayın; QR'ı yalnızca mekânda kullanın.
-- **Güvenlik anahtarı (token)** kullanırsanız, link sızsa bile token'sız istekler reddedilir.
-- Otomatik kurulumda Apps Script `action=setup` uç noktası gizli `setupKey` ile kilitlenir;
-  bu anahtar QR/yükleme/galeri linklerine eklenmez.
-- Fotoğraflar yalnızca **sizin** Drive'ınıza gider; bu proje hiçbir yere kopya göndermez.
-- **Galeri için not:** Yüklenen her fotoğraf, galeri sayfasında küçük resim görünebilsin diye
-  “**bağlantıya sahip olan görüntüleyebilir**” yapılır. Dosya kimlikleri (ID) tahmin edilemez ve
-  galeri listesi token ile korunur; yani fotoğraflar herkese açık **listelenmez**, ama ID'yi bilen
-  görebilir. Bu davranışı istemiyorsanız `Code.gs` içindeki `setSharing(...)` satırını silin
-  (o zaman galeri küçük resimleri yüklenmez, fotoğrafları yalnızca Drive'dan görürsünüz).
+- Tasarım gereği giriş yok: **QR/eventId'ye sahip herkes yükleyebilir** (misafirler anonim).
+  Bu yüzden misafir QR'ını yalnızca mekânda kullanın.
+- **Galeri/sunum ayrı anahtarla korunur:** listeleme yalnızca `k=` (adminKey) ile açılır;
+  misafir QR'ı fotoğrafları **listeleyemez**. adminKey QR'a/yükleme linkine eklenmez.
+- **Emanet edilen yetki sizde:** Bu modelde organizatörün refresh token'ı Cloudflare
+  **KV**'de saklanır ve `GOOGLE_CLIENT_SECRET` bir Cloudflare secret'ıdır. Yani site
+  sahibi olarak, bağlanan organizatörlerin Drive'ına (yalnızca `drive.file` kapsamında —
+  uygulamanın oluşturduğu dosyalar) yazma yetkisini elinde tutarsınız. Bunu bilerek
+  yönetin; secret'ları paylaşmayın.
+- **Kapsam dar:** `drive.file` yalnızca uygulamanın oluşturduğu dosya/klasörlere erişir;
+  organizatörün Drive'ındaki diğer hiçbir dosyaya erişemez.
+- **Anyone-with-link thumbnail:** Yüklenen her fotoğraf, galeri küçük resimleri Google
+  CDN'den yüklenebilsin diye "bağlantıya sahip olan görüntüleyebilir" yapılır. Dosya
+  ID'leri tahmin edilemez ve liste `k=` ile korunur; yani fotoğraflar herkese açık
+  **listelenmez**, ama ID'yi bilen görebilir. İstemiyorsanız `functions/api/upload.js`
+  içindeki `driveSetAnyoneReader(...)` çağrısını kaldırın (o zaman thumbnail'lar
+  yüklenmez, fotoğrafları yalnızca Drive'dan görürsünüz).
 
 ---
 
 ## 💸 Maliyet & limitler
 
-- **Ücretsiz.** GitHub Pages/Netlify ve Apps Script tüketici kotaları etkinlik ölçeği
-  (yüzlerce fotoğraf) için fazlasıyla yeterlidir.
-- Apps Script tek istek gövdesi **~50MB**; bu yüzden istemci tarafı resize önerilir.
-- Drive depolama, Google hesabınızın kotasına tabidir (15GB ücretsiz).
+- **Ücretsiz.** Cloudflare Pages free planı: statik istekler sınırsız; Functions
+  günde **100.000 istek** (Workers ile ortak), çağrı başına **10 ms CPU**, 100 MB
+  istek gövdesi. KV free kotası etkinlik ölçeği için fazlasıyla yeterli.
+- İstemci tarafı resize (~2560px) hem hızı hem 10 ms CPU bütçesini korur; yükleme
+  base64 değil **ikili** gönderildiği için sunucuda decode maliyeti yoktur.
+- Drive depolama, organizatörün Google hesabı kotasına tabidir (15 GB ücretsiz).
 
 ---
 
 ## 🔁 Başka bir organizasyon için
 
-Statik siteyi tekrar yayınlamaya gerek yok. Yeni organizasyon sahibi:
-1. `apps-script/Code.gs`'i **kendi** Google hesabında deploy eder (Bölüm B),
-2. Kendi Web App URL'i + etkinlik türü + başlığıyla aynı kurulum sayfasından **kendi QR'ını** üretir.
-
-Her organizasyonun fotoğrafları ilgili sahibin kendi Drive'ına gider.
+Siteyi yeniden yayınlamaya gerek yok. Her yeni organizatör aynı `setup.html`'de
+**"Google ile Bağlan"** der → kendi eventId'sini ve QR'ını alır. Her organizasyonun
+fotoğrafları ilgili sahibin kendi Drive'ına gider; hiçbiri diğerini göremez.

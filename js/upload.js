@@ -1,8 +1,9 @@
 /* =========================================================================
    upload.js — Katılımcı fotoğraf yükleme mantığı
-   - URL parametrelerinden yapılandırmayı okur (api, title/couple, token, event)
+   - URL parametrelerinden yapılandırmayı okur (e=eventId, title/couple, event)
    - Fotoğrafları istemcide yeniden boyutlandırır (hız + boyut limiti)
-   - Apps Script'e "basit istek" (text/plain, base64) olarak SIRALI yükler
+   - Cloudflare Pages Functions'a ikili (binary) olarak yükler (aynı origin)
+   - Yanıt gerçek okunur → yükleme sonrası ayrı doğrulama gerekmez
    - Tekil + toplam ilerleme çubuğu, per-dosya durum, tekrar deneme
    ========================================================================= */
 
@@ -13,9 +14,8 @@
 
   /* --- Yapılandırma (URL parametreleri) --------------------------------- */
   var params  = new URLSearchParams(location.search);
-  var API_URL = (params.get('api') || '').trim();
+  var EVENT_ID = (params.get('e') || '').trim();
   var EVENT_TITLE = (params.get('title') || params.get('couple') || '').trim();
-  var TOKEN   = (params.get('token') || '').trim();
   var RAW     = params.get('raw') === '1';                 // resize'ı kapat
   var MAX_DIM = clamp(parseInt(params.get('maxdim'), 10) || 2560, 1200, 4096); // uzun kenar (px)
   var QUALITY = clamp(parseFloat(params.get('q')) || 0.9, 0.72, 0.95);         // JPEG kalitesi
@@ -83,7 +83,7 @@
   }
 
   /* --- Yapılandırma yoksa dur ------------------------------------------ */
-  if (!API_URL) {
+  if (!EVENT_ID) {
     uploader.classList.add('hidden');
     $('guestbook').classList.add('hidden');
     configError.classList.remove('hidden');
@@ -101,69 +101,35 @@
   noteBtn.addEventListener('click', startSendFlow);
 
   function sendNote(msg, guestName) {
-    var payload = {
-      token: TOKEN,
+    var body = JSON.stringify({
       guestName: String(guestName || '').trim().slice(0, 40),
       message: msg.slice(0, 400),
       noteId: makeClientId('n')
-    };
+    });
+    var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+    var timer = ctrl ? setTimeout(function () { ctrl.abort(); }, 60000) : null;
+    var clear = function () { if (timer) clearTimeout(timer); };
 
-    // Not metnini URL'e yazmamak için POST kullanılır; ardından JSONP list ile
-    // noteId doğrulanır. Böylece no-cors yanıtı okunamasa bile başarı kanıtlanır.
-    function postNote() {
-      var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
-      var timer = ctrl ? setTimeout(function () { ctrl.abort(); }, 60000) : null;
-      var clear = function () { if (timer) clearTimeout(timer); };
-      return fetch(API_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({
-          type: 'note',
-          token: payload.token,
-          guestName: payload.guestName,
-          message: payload.message,
-          noteId: payload.noteId
-        }),
-        signal: ctrl ? ctrl.signal : undefined
-      }).then(function () { clear(); return verifyNote(payload.noteId); }, function (err) {
-        clear();
-        throw err;
-      });
-    }
-
-    return postNote();
-  }
-
-  function verifyNote(noteId) {
-    if (!window.EventPhotoApi || !window.EventPhotoApi.list) {
-      var noApi = new Error(t('upload.noteVerifyFail'));
-      noApi.code = 'verify_unavailable';
-      throw noApi;
-    }
-    return window.EventPhotoApi.list(API_URL, { max: 1, token: TOKEN, notes: true, timeoutMs: 15000 })
-      .then(function (data) {
-        if (!data || data.status !== 'ok') {
-          var err = new Error(data && data.message ? data.message : t('upload.noteVerifyFail'));
-          err.code = data && data.code;
-          throw err;
-        }
-        var notes = data.notes || [];
-        var serverKnowsNoteIds = false;
-        for (var i = 0; i < notes.length; i++) {
-          if (notes[i] && notes[i].id) {
-            serverKnowsNoteIds = true;
-            if (notes[i].id === noteId) return { status: 'ok', type: 'note', noteId: noteId };
-          }
-        }
-        // Sunucu not kimliği döndürmüyorsa (eski Apps Script dağıtımı) kimlikle
-        // doğrulama yapılamaz — not gönderimi başarılıydı, misafiri yanlışça
-        // "doğrulanamadı" diye uyarmak yerine iyimser davranıp başarı sayarız.
-        if (!serverKnowsNoteIds) return { status: 'ok', type: 'note', noteId: noteId };
-        var missing = new Error(t('upload.noteVerifyFail'));
-        missing.code = 'note_not_found';
-        throw missing;
-      });
+    // Aynı origin: yanıt gerçek okunur, ayrı doğrulama (JSONP) gerekmez.
+    return fetch('/api/note?e=' + encodeURIComponent(EVENT_ID), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: body,
+      signal: ctrl ? ctrl.signal : undefined
+    }).then(function (r) {
+      clear();
+      return r.json().catch(function () { throw new Error(t('upload.noteFail')); });
+    }, function (err) {
+      clear();
+      throw err;
+    }).then(function (data) {
+      if (!data || data.status !== 'ok') {
+        var e = new Error(data && data.message ? data.message : t('upload.noteFail'));
+        e.code = data && data.code;
+        throw e;
+      }
+      return data;
+    });
   }
 
   /* --- Fotoğraf görevleri (öneri çipleri) -------------------------------- */
@@ -477,11 +443,13 @@
         if (finalized) return;
         if (doneCount + failed === total) {
           finalized = true;
+          // Yanıt gerçek okunduğu için başarı doğrudan bellidir; ayrı doğrulama yok.
           if (failed) {
             resolve({ total: total, failed: failed, errorCode: lastErrorCode });
-            return;
+          } else {
+            progressFill.style.width = '100%';
+            resolve({ total: total, failed: 0, errorCode: '' });
           }
-          verifyUploadedItems(queue).then(resolve);
           return;
         }
         while (inFlight < UPLOAD_CONCURRENCY && idx < total) {
@@ -511,80 +479,12 @@
     });
   }
 
-  function verifyUploadedItems(queue) {
-    progressLabel.textContent = t('upload.verifying');
-    if (!window.EventPhotoApi || !window.EventPhotoApi.list) {
-      markVerifyFailed(queue);
-      return Promise.resolve({ total: queue.length, failed: queue.length, errorCode: 'verify_unavailable' });
-    }
-    return checkUploadList(queue, false).then(function (result) {
-      if (result.failed) return checkUploadList(queue, true);
-      return result;
-    }).catch(function () {
-      markVerifyFailed(queue);
-      return { total: queue.length, failed: queue.length, errorCode: 'verify_failed' };
-    });
-  }
-
-  function checkUploadList(queue, refresh) {
-    return window.EventPhotoApi.list(API_URL, {
-      max: 1000,
-      token: TOKEN,
-      timeoutMs: refresh ? 30000 : 15000,
-      refresh: refresh
-    }).then(function (data) {
-      if (!data || data.status !== 'ok') {
-        markVerifyFailed(queue);
-        return {
-          total: queue.length,
-          failed: queue.length,
-          errorCode: data && data.code || 'verify_failed'
-        };
-      }
-
-      var found = {};
-      (data.files || []).forEach(function (f) {
-        var meta = window.EventPhotoApi.parseMeta(f.d);
-        if (meta.uploadId) found[meta.uploadId] = true;
-      });
-
-      // Sunucu açıklamada UploadId döndürüyor mu? Eski Apps Script dağıtımları
-      // yazmaz; o zaman uploadId ile doğrulama yapılamaz. Liste geldiği (yani
-      // ağ yüklemesi başarılı olduğu) halde hiçbir dosyada kimlik yoksa,
-      // misafiri yanlışça "başarısız" diye korkutmak yerine iyimser davranıp
-      // başarı sayarız. Kimlik döndüren güncel dağıtımlarda kesin doğrulama
-      // korunur: gerçekten eksik dosya hâlâ hata olarak yakalanır.
-      var serverKnowsIds = Object.keys(found).length > 0;
-      var listHasFiles = (data.files || []).length > 0;
-
-      var failed = 0;
-      queue.forEach(function (item) {
-        if (found[item.uploadId] || (!serverKnowsIds && listHasFiles)) {
-          setStatus(item, 'done');
-        } else {
-          setStatus(item, 'error');
-          failed++;
-        }
-      });
-      if (!failed) {
-        progressFill.style.width = '100%';
-      }
-      return { total: queue.length, failed: failed, errorCode: failed ? 'verify_failed' : '' };
-    });
-  }
-
-  function markVerifyFailed(queue) {
-    queue.forEach(function (item) { setStatus(item, 'error'); });
-  }
-
   function showUploadFailure(total, failed, errorCode) {
     var ok = total - failed;
     progressWrap.classList.add('hidden');
-    showNote('error', errorCode === 'invalid_token'
-      ? t('upload.invalidTokenHtml')
-      : (errorCode === 'verify_failed' || errorCode === 'verify_unavailable'
-        ? t('upload.verifyFail')
-        : t('upload.partialErrorHtml', { ok: ok, failed: failed })));
+    showNote('error', errorCode === 'invalid_event'
+      ? t('upload.invalidEventHtml')
+      : t('upload.partialErrorHtml', { ok: ok, failed: failed }));
   }
 
   function showSuccessScreen() {
@@ -597,59 +497,56 @@
     }, 400);
   }
 
-  /* --- Tek dosya yükleme (fetch, no-cors) ------------------------------ */
-  // NEDEN no-cors: Apps Script /exec yanıtı çapraz-köken CORS başlığı (ACAO)
-  // döndürmez; bu yüzden NORMAL bir istekte tarayıcı YANITI okuyamaz ve
-  // "Ağ hatası" (xhr.onerror) verir — oysa istek sunucuya ulaşıp dosya
-  // KAYDEDİLİR. no-cors ile isteği göndeririz: yanıt "opaque"tur (okunamaz)
-  // ama yükleme güvenilir çalışır. Bu, Apps Script yüklemelerinin standart yolu.
-  //  • text/plain + özel olmayan header = CORS "basit istek" (preflight yok).
-  //  • Yanıtı okuyamadığımız için uploadId ile sonradan doğrularız; tekrar denemede
-  //    backend aynı uploadId'yi ikinci kez kaydetmez.
+  /* --- Tek dosya yükleme (aynı origin, ikili gövde) -------------------- */
+  // Aynı origin olduğundan yanıt gerçek okunur: başarı = HTTP 200 + status:ok.
+  // Meta veriler query parametrelerinde; gövde ham görsel baytlarıdır (base64
+  // yok → küçük gövde, hızlı). Tekrar denemede backend aynı uploadId'yi ikinci
+  // kez kaydetmez (idempotent).
   function uploadOne(prepared) {
-    var payload = JSON.stringify({
-      token: TOKEN,
-      guestName: (guestNameEl.value || '').trim().slice(0, 40),
-      task: selectedTask.slice(0, 60),
-      uploadId: prepared.uploadId,
-      filename: prepared.filename,
-      mimeType: prepared.mimeType,
-      data: prepared.base64
-    });
+    var qs = new URLSearchParams();
+    qs.set('e', EVENT_ID);
+    qs.set('guestName', (guestNameEl.value || '').trim().slice(0, 40));
+    if (selectedTask) qs.set('task', selectedTask.slice(0, 60));
+    qs.set('uploadId', prepared.uploadId);
+    qs.set('filename', prepared.filename);
+    qs.set('mimeType', prepared.mimeType);
 
     var ctrl = (typeof AbortController !== 'undefined') ? new AbortController() : null;
     var timer = ctrl ? setTimeout(function () { ctrl.abort(); }, 120000) : null;
     var clear = function () { if (timer) clearTimeout(timer); };
 
-    return fetch(API_URL, {
+    return fetch('/api/upload?' + qs.toString(), {
       method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: payload,
+      headers: { 'Content-Type': prepared.mimeType },
+      body: prepared.blob,
       signal: ctrl ? ctrl.signal : undefined
-    }).then(
-      function () { clear(); return { status: 'ok' }; },          // opaque yanıt → gönderildi = başarı
-      function (err) { clear(); throw new Error('Ağ hatası: ' + (err && err.message || err)); }
-    );
+    }).then(function (r) {
+      clear();
+      return r.json().catch(function () { throw new Error('Yükleme hatası'); });
+    }, function (err) {
+      clear();
+      throw new Error('Ağ hatası: ' + (err && err.message || err));
+    }).then(function (data) {
+      if (!data || data.status !== 'ok') {
+        var e = new Error(data && data.message ? data.message : 'Yükleme hatası');
+        e.code = data && data.code;
+        throw e;
+      }
+      return data;
+    });
   }
 
-  /* --- Fotoğrafı hazırla: (opsiyonel) resize + base64 ------------------ */
+  /* --- Fotoğrafı hazırla: (opsiyonel) resize; ikili blob döndürür ------ */
   function prepareBlob(file, uploadId) {
     if (RAW) {
       // Orijinali olduğu gibi gönder
-      return fileToBase64(file).then(function (b64) {
-        return { base64: b64, mimeType: sourceMime(file), filename: file.name, uploadId: uploadId };
-      });
+      return Promise.resolve({ blob: file, mimeType: sourceMime(file), filename: file.name, uploadId: uploadId });
     }
     return resizeImage(file, MAX_DIM, QUALITY).then(function (blob) {
-      return fileToBase64(blob).then(function (b64) {
-        return { base64: b64, mimeType: 'image/jpeg', filename: ensureJpg(file.name), uploadId: uploadId };
-      });
+      return { blob: blob, mimeType: 'image/jpeg', filename: ensureJpg(file.name), uploadId: uploadId };
     }).catch(function () {
       // Resize başarısızsa orijinale düş
-      return fileToBase64(file).then(function (b64) {
-        return { base64: b64, mimeType: sourceMime(file), filename: file.name, uploadId: uploadId };
-      });
+      return { blob: file, mimeType: sourceMime(file), filename: file.name, uploadId: uploadId };
     });
   }
 
@@ -689,19 +586,6 @@
       img.onload = function () { URL.revokeObjectURL(url); resolve(img); };
       img.onerror = function () { URL.revokeObjectURL(url); reject(new Error('Görsel yüklenemedi')); };
       img.src = url;
-    });
-  }
-
-  function fileToBase64(blob) {
-    return new Promise(function (resolve, reject) {
-      var reader = new FileReader();
-      reader.onload = function () {
-        var s = reader.result || '';
-        var comma = s.indexOf(',');
-        resolve(comma >= 0 ? s.slice(comma + 1) : s); // "data:...;base64," önekini at
-      };
-      reader.onerror = function () { reject(new Error('Dosya okunamadı')); };
-      reader.readAsDataURL(blob);
     });
   }
 

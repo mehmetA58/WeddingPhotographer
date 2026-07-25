@@ -1,4 +1,4 @@
-/* Sunum ekranı smoke testi: sahte JSONP list ucu + sahte Drive küçük resimleri */
+/* Sunum ekranı smoke testi: sahte /api/list ucu + sahte Drive küçük resimleri */
 const { chromium } = require('playwright-core');
 const BASE = 'http://localhost:8000';
 let failures = [];
@@ -20,16 +20,15 @@ const svgPhoto = (label, color) =>
   ];
   const fileNew = { id: 'CCC', name: 'c.jpg', t: 2000, d: 'EventPhoto · Katılımcı: Zeynep' };
 
-  await page.route(/^https:\/\/x\.test\/fake-exec/, route => {
+  await page.route('**/api/list*', route => {
     const url = new URL(route.request().url());
-    const cb = url.searchParams.get('callback');
     pollNum++;
     const files = pollNum >= 2 ? [fileNew, ...filesV1] : filesV1;
     const body = { status: 'ok', count: files.length, files };
     if (url.searchParams.get('notes') === '1') {
       body.notes = [{ g: 'Fatma', m: 'Nice mutlu senelere! Harika bir geceydi.', t: 500 }];
     }
-    route.fulfill({ contentType: 'application/javascript', body: `${cb}(${JSON.stringify(body)})` });
+    route.fulfill({ contentType: 'application/json', body: JSON.stringify(body) });
   });
   await page.route(/^https:\/\/drive\.google\.com\/thumbnail/, route => {
     const id = new URL(route.request().url()).searchParams.get('id');
@@ -37,8 +36,8 @@ const svgPhoto = (label, color) =>
     route.fulfill({ contentType: 'image/svg+xml', body: svgPhoto(id, color) });
   });
 
-  await page.goto(BASE + '/slideshow.html?api=https://x.test/fake-exec&token=tk&event=wedding&title=Ay%C5%9Fe%20%26%20Mehmet&qr=' +
-    encodeURIComponent(BASE + '/upload.html?api=x') + '&poll=4000&slide=2000');
+  await page.goto(BASE + '/slideshow.html?e=evt123&k=key456&event=wedding&title=Ay%C5%9Fe%20%26%20Mehmet&qr=' +
+    encodeURIComponent(BASE + '/upload.html?e=x') + '&poll=4000&slide=2000');
 
   await page.waitForTimeout(1800);
   ok(await page.locator('.pol-layer.visible .polaroid').count() === 1, 'ilk polaroid görünür');
@@ -86,11 +85,10 @@ const svgPhoto = (label, color) =>
   const ctx2 = await browser.newContext({ viewport: { width: 1280, height: 720 } });
   const p2 = await ctx2.newPage();
   p2.on('pageerror', e => failures.push('empty pageerror: ' + e.message));
-  await p2.route(/^https:\/\/x\.test\/fake-exec/, route => {
-    const cb = new URL(route.request().url()).searchParams.get('callback');
-    route.fulfill({ contentType: 'application/javascript', body: `${cb}({"status":"ok","count":0,"files":[]})` });
+  await p2.route('**/api/list*', route => {
+    route.fulfill({ contentType: 'application/json', body: '{"status":"ok","count":0,"files":[]}' });
   });
-  await p2.goto(BASE + '/slideshow.html?api=https://x.test/fake-exec&event=trip&qr=' + encodeURIComponent(BASE + '/u'));
+  await p2.goto(BASE + '/slideshow.html?e=evt123&k=key456&event=trip&qr=' + encodeURIComponent(BASE + '/u'));
   await p2.waitForTimeout(1200);
   ok(await p2.locator('#stageEmpty').isVisible(), 'boş durumda büyük QR ekranı');
   await p2.screenshot({ path: 'shots/slideshow-empty.png' });

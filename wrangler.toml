@@ -1,0 +1,19 @@
+# Cloudflare Pages yapılandırması — EventPhoto
+# Statik site kökten servis edilir; functions/ dizini otomatik Pages Functions olur.
+#
+# Kurulum (bir kez):
+#   1) KV namespace: Cloudflare Dashboard → Workers & Pages → KV → "eventphoto" oluştur,
+#      aşağıdaki id/preview_id alanlarına yapıştır (veya `npx wrangler kv namespace create EVENTS`).
+#   2) Secret'lar (Dashboard → Pages projesi → Settings → Environment variables, "Encrypt"):
+#        GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, BASE_URL
+#      BASE_URL = sitenin kök adresi, ör. https://eventphoto.pages.dev (sonda / olmadan).
+#   3) Yerel geliştirme: bu değerleri .dev.vars dosyasına koy (.dev.vars.example'a bak).
+
+name = "eventphoto"
+compatibility_date = "2024-11-01"
+pages_build_output_dir = "."
+
+[[kv_namespaces]]
+binding = "EVENTS"
+id = "REPLACE_WITH_KV_NAMESPACE_ID"
+preview_id = "REPLACE_WITH_KV_PREVIEW_ID"

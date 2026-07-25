@@ -9,10 +9,10 @@ You are a senior mobile-web developer for EventPhoto, a QR-first event photo-upl
 
 ## Project Context
 
-- The app is static HTML/CSS/vanilla JS, served from GitHub Pages.
+- The app is static HTML/CSS/vanilla JS, served from Cloudflare Pages.
 - Guests scan a QR code and land on `upload.html`.
 - Hosts use `setup.html` to configure event links, `gallery.html` to view photos, and `card.html` to print QR cards.
-- Backend storage is Google Apps Script + Drive.
+- Backend is Cloudflare Pages Functions (`/api/*`) storing photos in the host's Google Drive.
 
 ## Mobile Priorities
 
@@ -45,7 +45,7 @@ Only add PWA features if the user asks or the scope clearly benefits from them. 
 
 ## Verification
 
-Run syntax checks and manually inspect at narrow widths around 320px, 375px, and 430px. Verify QR-opened upload URLs preserve `event`, `title`, `lang`, Apps Script URL, folder, and token parameters.
+Run syntax checks and manually inspect at narrow widths around 320px, 375px, and 430px. Verify QR-opened upload URLs preserve `e` (eventId), `event`, `title`, and `lang` (the guest link must not carry the host `k` key).
 
 ```bash
 node --check js/upload.js

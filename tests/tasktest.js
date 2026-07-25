@@ -13,19 +13,22 @@ const file = n => ({ name: n, mimeType: 'image/png', buffer: PNG });
   page.on('pageerror', e => failures.push('pageerror: ' + e.message));
 
   let posted = [];
-  await page.route(/^https:\/\/x\.test\/fake-exec/, route => {
-    if (route.request().method() === 'POST') {
-      posted.push(JSON.parse(route.request().postData()));
-      setTimeout(() => route.fulfill({ contentType: 'application/json', body: '{"status":"ok"}' }), 250);
-    } else {
-      // Doğrulama listesi: gerçek sunucu gibi yüklenen uploadId'leri geri ver
-      const cb = new URL(route.request().url()).searchParams.get('callback');
-      const files = posted.map((b, i) => ({ id: 'f' + i, d: 'EventPhoto · UploadId: ' + b.uploadId }));
-      route.fulfill({ contentType: 'application/javascript; charset=utf-8', body: `${cb}(${JSON.stringify({ status: 'ok', files })})` });
-    }
+  await page.route('**/api/upload*', route => {
+    // Meta query parametrelerinde; gövde ikili görsel. Sunucu gerçek JSON döndürür.
+    const url = new URL(route.request().url());
+    const meta = {
+      guestName: url.searchParams.get('guestName'),
+      task: url.searchParams.get('task'),
+      uploadId: url.searchParams.get('uploadId')
+    };
+    posted.push(meta);
+    setTimeout(() => route.fulfill({
+      contentType: 'application/json',
+      body: JSON.stringify({ status: 'ok', uploadId: meta.uploadId, fileId: 'f' + posted.length, name: 'x.jpg' })
+    }), 250);
   });
 
-  await page.goto(BASE + '/upload.html?api=https://x.test/fake-exec&event=wedding&title=Test&token=tk');
+  await page.goto(BASE + '/upload.html?e=evt123&event=wedding&title=Test');
   await page.waitForTimeout(600);
 
   ok(await page.locator('.task-chip').count() === 6, 'düğün: 6 görev çipi');
@@ -55,22 +58,23 @@ const file = n => ({ name: n, mimeType: 'image/png', buffer: PNG });
   await page.waitForTimeout(2500);
 
   ok(posted.length === 3, `3 fotoğraf paralel POST edildi (${posted.length})`);
-  ok(posted.every(b => b.task === 'Dans pistinden bir kare'), 'her payload.task doğru');
-  ok(posted.every(b => b.guestName === 'Ayşe Teyze' && b.token === 'tk'), 'payload isim + token doğru');
+  ok(posted.every(b => b.task === 'Dans pistinden bir kare'), 'her yükleme task=doğru');
+  ok(posted.every(b => b.guestName === 'Ayşe Teyze'), 'yükleme guestName doğru');
+  ok(posted.every(b => !!b.uploadId), 'her yüklemede uploadId var');
   ok(await page.locator('#successScreen').isVisible(), 'başarı ekranı');
   ok((await page.evaluate(() => localStorage.getItem('eventPhotoGuestName'))) === 'Ayşe Teyze',
      'ad gönderimde cihaza kaydedildi');
 
   // Aynı cihazda ikinci ziyaret: ad otomatik dolu gelmeli
   const pageB = await page.context().newPage();
-  await pageB.goto(BASE + '/upload.html?api=x&event=wedding');
+  await pageB.goto(BASE + '/upload.html?e=evt123&event=wedding');
   await pageB.waitForTimeout(300);
   ok((await pageB.inputValue('#guestName')) === 'Ayşe Teyze', 'ad ikinci ziyarette hatırlanıyor');
   await page.context().close();
 
   // tasks=0 → çipler gizli
   const p3 = await (await browser.newContext()).newPage();
-  await p3.goto(BASE + '/upload.html?api=x&event=wedding&tasks=0');
+  await p3.goto(BASE + '/upload.html?e=evt123&event=wedding&tasks=0');
   await p3.waitForTimeout(300);
   ok(!(await p3.locator('#taskField').isVisible()), 'tasks=0 → görev alanı gizli');
   await browser.close();

@@ -1,7 +1,7 @@
-/* Yükleme doğrulaması dayanıklılık testi:
-   A) Güncel sunucu (uploadId geri veriyor)     → kesin doğrulama, başarı
-   B) Eski sunucu (dosyalar var ama uploadId yok) → iyimser başarı (yanlış alarm YOK)
-   C) Gerçek kayıp (kimlik destekli ama bizimki listede yok) → doğrulama hatası gösterilir  */
+/* Yükleme yanıt sözleşmesi testi (aynı origin, gerçek yanıt):
+   A) Sunucu status:ok  → başarı ekranı, uyarı yok
+   B) Sunucu status:error → başarı YOK, hata gösterilir
+   (Eski "opaque + fail-open doğrulama" mantığı kaldırıldı.) */
 const { chromium } = require('playwright-core');
 const BASE = 'http://localhost:8000';
 let failures = [];
@@ -10,7 +10,7 @@ const ok = (c, l) => { console.log((c ? '  ✓ ' : '  ✗ ') + l); if (!c) failu
 const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64');
 const file = n => ({ name: n, mimeType: 'image/png', buffer: PNG });
 
-/* mode: 'new' (id yankılar) | 'old' (dosya var, id yok) | 'miss' (başka id var, bizimki yok) */
+/* mode: 'ok' → status:ok | 'err' → status:error */
 async function run(browser, mode) {
   const posted = [];
   const ctx = await browser.newContext({ viewport: { width: 390, height: 900 } });
@@ -18,57 +18,49 @@ async function run(browser, mode) {
   let perr = null;
   page.on('pageerror', e => perr = e.message);
 
-  await page.route(/^https:\/\/x\.test\/fake-exec/, route => {
-    const req = route.request();
-    if (req.method() === 'POST') {
-      const body = JSON.parse(req.postData());
-      posted.push(body);
-      route.fulfill({ contentType: 'application/json', body: '{"status":"ok"}' });
-      return;
+  await page.route('**/api/upload*', route => {
+    const url = new URL(route.request().url());
+    const uploadId = url.searchParams.get('uploadId');
+    posted.push(uploadId);
+    if (mode === 'ok') {
+      route.fulfill({
+        contentType: 'application/json',
+        body: JSON.stringify({ status: 'ok', uploadId, fileId: 'f' + posted.length, name: 'x.jpg' })
+      });
+    } else {
+      route.fulfill({
+        status: 502,
+        contentType: 'application/json',
+        body: JSON.stringify({ status: 'error', code: 'server_error', message: 'Yükleme tamamlanamadı' })
+      });
     }
-    // GET = JSONP list
-    const cb = new URL(req.url()).searchParams.get('callback');
-    let files = [];
-    if (mode === 'new') {
-      files = posted.map((b, i) => ({ id: 'f' + i, d: 'EventPhoto · UploadId: ' + b.uploadId }));
-    } else if (mode === 'old') {
-      files = posted.map((b, i) => ({ id: 'f' + i, d: 'EventPhoto · Katılımcı: X' })); // kimlik YOK
-    } else if (mode === 'miss') {
-      files = [{ id: 'z', d: 'EventPhoto · UploadId: baskasi_123' }]; // kimlik destekli ama bizimki yok
-    }
-    route.fulfill({ contentType: 'application/javascript; charset=utf-8', body: `${cb}(${JSON.stringify({ status: 'ok', files })})` });
   });
 
-  await page.goto(BASE + '/upload.html?api=https://x.test/fake-exec&event=wedding&title=Test&token=tk');
+  await page.goto(BASE + '/upload.html?e=evt123&event=wedding&title=Test');
   await page.waitForTimeout(400);
   await page.setInputFiles('#galleryInput', [file('a.png'), file('b.png')]);
   await page.waitForTimeout(300);
   await page.fill('#guestName', 'Ayşe Teyze');
   await page.click('#sendBarBtn');
-  // yükleme + doğrulama + (başarıda) 900ms geçişli başarı ekranı
-  await page.waitForTimeout(3500);
+  await page.waitForTimeout(2500); // yükleme + (başarıda) 900ms geçişli başarı ekranı
 
   const success = await page.locator('#successScreen').isVisible();
   const errShown = await page.locator('#statusNote').isVisible().catch(() => false);
-  const errText = errShown ? (await page.locator('#statusNote').textContent()) : '';
   if (perr) failures.push(`[${mode}] pageerror: ${perr}`);
   await ctx.close();
-  return { success, errShown, errText, posted: posted.length };
+  return { success, errShown, posted: posted.length };
 }
 
 (async () => {
   const browser = await chromium.launch({ channel: 'chrome' });
 
-  const A = await run(browser, 'new');
-  ok(A.posted === 2 && A.success && !A.errShown, `A) güncel sunucu → başarı ekranı, uyarı yok (${JSON.stringify(A)})`);
+  const A = await run(browser, 'ok');
+  ok(A.posted === 2 && A.success && !A.errShown, `A) status:ok → başarı ekranı, uyarı yok (${JSON.stringify(A)})`);
 
-  const B = await run(browser, 'old');
-  ok(B.success && !B.errShown, `B) eski sunucu (id yok) → iyimser başarı, "doğrulanamadı" YOK (${JSON.stringify(B)})`);
-
-  const C = await run(browser, 'miss');
-  ok(!C.success && C.errShown && /doğrulan/i.test(C.errText), `C) gerçek kayıp → doğrulama hatası gösteriliyor (${JSON.stringify({ success: C.success, errShown: C.errShown })})`);
+  const B = await run(browser, 'err');
+  ok(!B.success && B.errShown, `B) status:error → başarı YOK, hata gösteriliyor (${JSON.stringify(B)})`);
 
   await browser.close();
-  console.log(failures.length ? `\n${failures.length} BAŞARISIZ: ${failures.join(' | ')}` : '\nDOĞRULAMA DAYANIKLILIK TESTLERİ GEÇTİ ✓');
+  console.log(failures.length ? `\n${failures.length} BAŞARISIZ: ${failures.join(' | ')}` : '\nYÜKLEME YANIT TESTLERİ GEÇTİ ✓');
   process.exit(failures.length ? 1 : 0);
 })().catch(e => { console.error('Hata:', e); process.exit(2); });

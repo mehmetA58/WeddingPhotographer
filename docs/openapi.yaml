@@ -1,379 +1,253 @@
 openapi: 3.0.3
 info:
-  title: EventPhoto Apps Script API
-  version: 1.0.0
+  title: EventPhoto API
+  version: 2.0.0
   description: |
-    API contract for the EventPhoto static web app.
+    EventPhoto backend contract — Cloudflare Pages Functions, served same-origin
+    under `/api`. Uploads send raw image bytes; responses are real JSON (no CORS
+    workarounds). Each event is identified by an unguessable `e` (eventId) baked
+    into the guest QR. Gallery/slideshow listing additionally requires the host
+    key `k` (adminKey), which is never shared with guests.
 
-    The backend is a Google Apps Script Web App deployed as `/exec`.
-    Browser uploads are sent with `fetch(..., { mode: "no-cors" })`, so the
-    response is opaque. The frontend includes a client-generated `uploadId`
-    and verifies success by reading the gallery list through JSONP. GET list
-    calls may use JSONP by passing `callback`.
+    OAuth uses the server-side authorization-code flow with only the
+    non-sensitive `drive.file` scope, so no Google app verification is required.
 servers:
-  - url: https://script.google.com/macros/s/{deploymentId}/exec
-    description: Google Apps Script Web App deployment URL
+  - url: '{origin}/api'
+    description: Site origin (e.g. https://eventphoto.pages.dev)
     variables:
-      deploymentId:
-        default: YOUR_DEPLOYMENT_ID
-        description: Apps Script deployment id from the Web App URL
+      origin:
+        default: https://eventphoto.pages.dev
 tags:
   - name: Health
-  - name: Setup
-  - name: Gallery
+  - name: OAuth
   - name: Upload
-paths:
-  /:
-    get:
-      tags:
-        - Health
-        - Setup
-        - Gallery
-      summary: Ping, setup, or list files
-      description: |
-        Multipurpose Apps Script GET endpoint.
+  - name: Gallery
+  - name: Notes
 
-        - No `action` or `action=ping` returns service status.
-        - `action=setup` stores token and Drive folder settings in Script Properties and returns HTML. It requires `setupKey`.
-        - `action=list` returns gallery data, optionally wrapped as JSONP when `callback` is supplied.
-      parameters:
-        - name: action
-          in: query
-          schema:
-            type: string
-            enum: [ping, setup, list]
-            default: ping
-          description: Endpoint mode.
-        - name: callback
-          in: query
-          schema:
-            type: string
-            pattern: '^[A-Za-z_$][0-9A-Za-z_$]*(\.[A-Za-z_$][0-9A-Za-z_$]*)*$'
-          description: Optional JSONP callback name for GET JSON responses.
-        - name: token
-          in: query
-          schema:
-            type: string
-          description: Shared event token. Required for `list` when TOKEN is configured; saved during `setup` when provided.
-        - name: setupKey
-          in: query
-          schema:
-            type: string
-          description: Secret one-time setup/admin key required for `action=setup`.
-        - name: folderId
-          in: query
-          schema:
-            type: string
-          description: Drive folder id saved during `setup`.
-        - name: folderName
-          in: query
-          schema:
-            type: string
-            default: Etkinlik Fotoğrafları
-          description: Drive folder name saved during `setup`.
-        - name: max
-          in: query
-          schema:
-            type: integer
-            minimum: 1
-            maximum: 1000
-            default: 500
-          description: Maximum number of image files returned for `action=list`.
-        - name: notes
-          in: query
-          schema:
-            type: string
-            enum: ["1"]
-          description: Set to `1` to include guest-book notes in `action=list`.
-        - name: refresh
-          in: query
-          schema:
-            type: string
-            enum: ["1"]
-          description: Set to `1` to rebuild the upload index from Drive before returning `action=list`.
+paths:
+  /ping:
+    get:
+      tags: [Health]
+      summary: Health check
       responses:
-        "200":
-          description: Response depends on `action`.
+        '200':
+          description: Service is up
           content:
             application/json:
               schema:
-                oneOf:
-                  - $ref: "#/components/schemas/PingResponse"
-                  - $ref: "#/components/schemas/ListResponse"
-                  - $ref: "#/components/schemas/ErrorResponse"
-              examples:
-                ping:
-                  summary: Ping response
-                  value:
-                    status: ready
-                    service: eventphoto-api
-                list:
-                  summary: Gallery response
-                  value:
-                    status: ok
-                    count: 2
-                    folderId: 1abcDriveFolder
-                    folderUrl: https://drive.google.com/drive/folders/1abcDriveFolder
-                    files:
-                      - id: 1abcFile
-                        name: 2026-07-08_20-15-10_Ayse_IMG-001_1234.jpg
-                        t: 1783530910000
-                        createdAt: "2026-07-08T17:15:10.000Z"
-                        size: 2459012
-                        d: "EventPhoto · Katılımcı: Ayşe · Görev: Dans pistinden bir kare · UploadId: u_abc123"
-                    notes:
-                      - id: n_abc123
-                        g: Ayşe
-                        m: Bu gece çok güzeldi.
-                        t: 1783530915000
-            application/javascript:
-              schema:
-                type: string
-              example: __gcb_ab12({"status":"ok","count":0,"files":[]})
-            text/html:
-              schema:
-                type: string
-              example: "<!DOCTYPE html><html><body>Kurulum Başarılı</body></html>"
-    post:
-      tags:
-        - Upload
-      summary: Upload a photo or save a guest-book note
+                type: object
+                properties:
+                  status: { type: string, example: ready }
+                  service: { type: string, example: eventphoto-api }
+
+  /oauth/start:
+    get:
+      tags: [OAuth]
+      summary: Begin host Google OAuth
+      description: Stores a short-lived state + event context in KV and 302-redirects to Google's consent screen.
+      parameters:
+        - name: title
+          in: query
+          schema: { type: string }
+          description: Event title (used for the Drive folder name)
+        - name: event
+          in: query
+          schema: { type: string }
+          description: Event type key (e.g. wedding)
+      responses:
+        '302': { description: Redirect to Google consent }
+        '500': { description: Missing server configuration }
+
+  /oauth/callback:
+    get:
+      tags: [OAuth]
+      summary: Google OAuth return
       description: |
-        Accepts `text/plain` containing a JSON object. This avoids CORS preflight
-        for Apps Script. The actual Apps Script response is JSON, but the browser
-        upload flow uses `no-cors`, so client JavaScript cannot read it.
+        Exchanges the authorization code for tokens, creates the Drive folder,
+        stores the event in KV, and 302-redirects back to
+        `setup.html?e=<eventId>&k=<adminKey>` (or `setup.html?err=<code>`).
+      parameters:
+        - name: code
+          in: query
+          schema: { type: string }
+        - name: state
+          in: query
+          schema: { type: string }
+        - name: error
+          in: query
+          schema: { type: string }
+      responses:
+        '302': { description: Redirect back to setup.html }
+
+  /upload:
+    post:
+      tags: [Upload]
+      summary: Upload one photo
+      description: |
+        Request body is the raw (optionally client-resized) image bytes.
+        Metadata travels in query parameters. Idempotent on `uploadId`.
+      parameters:
+        - name: e
+          in: query
+          required: true
+          schema: { type: string }
+          description: eventId
+        - name: guestName
+          in: query
+          required: true
+          schema: { type: string, maxLength: 40 }
+        - name: task
+          in: query
+          schema: { type: string, maxLength: 80 }
+        - name: uploadId
+          in: query
+          schema: { type: string, maxLength: 80 }
+          description: Client-generated id for dedupe / retry safety
+        - name: filename
+          in: query
+          schema: { type: string }
+        - name: mimeType
+          in: query
+          schema: { type: string, example: image/jpeg }
       requestBody:
         required: true
         content:
-          text/plain:
-            schema:
-              oneOf:
-                - $ref: "#/components/schemas/UploadPhotoRequest"
-                - $ref: "#/components/schemas/SaveNoteRequest"
-            examples:
-              uploadPhoto:
-                summary: Photo upload payload
-                value: |
-                  {
-                    "token": "shared-event-token",
-                    "guestName": "Ayşe",
-                    "uploadId": "u_abc123",
-                    "task": "Dans pistinden bir kare",
-                    "filename": "IMG_001.jpg",
-                    "mimeType": "image/jpeg",
-                    "data": "/9j/4AAQSkZJRgABAQ..."
-                  }
-              saveNote:
-                summary: Guest-book note payload
-                value: |
-                  {
-                    "type": "note",
-                    "token": "shared-event-token",
-                    "guestName": "Ayşe",
-                    "noteId": "n_abc123",
-                    "message": "Bu gece çok güzeldi."
-                  }
+          image/jpeg:
+            schema: { type: string, format: binary }
+          image/png:
+            schema: { type: string, format: binary }
       responses:
-        "200":
-          description: JSON response from Apps Script.
+        '200':
+          description: Uploaded (or duplicate)
           content:
             application/json:
-              schema:
-                oneOf:
-                  - $ref: "#/components/schemas/UploadPhotoResponse"
-                  - $ref: "#/components/schemas/SaveNoteResponse"
-                  - $ref: "#/components/schemas/ErrorResponse"
-              examples:
-                uploaded:
-                  value:
-                    status: ok
-                    uploadId: u_abc123
-                    fileId: 1abcFile
-                    name: 2026-07-08_20-15-10_Ayse_IMG-001_1234.jpg
-                note:
-                  value:
-                    status: ok
-                    type: note
-                invalidToken:
-                  value:
-                    status: error
-                    code: invalid_token
-                    message: Geçersiz güvenlik anahtarı
+              schema: { $ref: '#/components/schemas/UploadResponse' }
+        '400': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '413': { $ref: '#/components/responses/Error' }
+
+  /list:
+    get:
+      tags: [Gallery]
+      summary: List photos (and notes) for the host
+      parameters:
+        - name: e
+          in: query
+          required: true
+          schema: { type: string }
+          description: eventId
+        - name: k
+          in: query
+          required: true
+          schema: { type: string }
+          description: adminKey (host key)
+        - name: notes
+          in: query
+          schema: { type: string, enum: ['1'] }
+          description: Include guest-book notes
+        - name: max
+          in: query
+          schema: { type: integer, default: 500, maximum: 1000 }
+      responses:
+        '200':
+          description: Gallery list
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ListResponse' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+
+  /note:
+    post:
+      tags: [Notes]
+      summary: Save a guest-book note
+      description: Appends the note to KV (live feed) and writes a `Not_*.txt` keepsake to Drive.
+      parameters:
+        - name: e
+          in: query
+          required: true
+          schema: { type: string }
+          description: eventId
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [guestName, message]
+              properties:
+                guestName: { type: string, maxLength: 40 }
+                message: { type: string, maxLength: 500 }
+                noteId: { type: string, maxLength: 80 }
+      responses:
+        '200':
+          description: Saved (or duplicate)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/NoteResponse' }
+        '400': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+
 components:
+  responses:
+    Error:
+      description: Error
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
   schemas:
-    PingResponse:
+    Error:
       type: object
-      required: [status, service]
       properties:
-        status:
-          type: string
-          example: ready
-        service:
-          type: string
-          example: eventphoto-api
-    ListResponse:
+        status: { type: string, example: error }
+        code: { type: string, example: invalid_token }
+        message: { type: string }
+    FileMeta:
       type: object
-      required: [status, count, files]
       properties:
-        status:
-          type: string
-          enum: [ok]
-        count:
-          type: integer
-          description: Total image count before `max` slicing.
-        folderId:
-          type: string
-        folderUrl:
-          type: string
-          format: uri
-        files:
-          type: array
-          items:
-            $ref: "#/components/schemas/GalleryFile"
-        notes:
-          type: array
-          items:
-            $ref: "#/components/schemas/GuestNote"
-    GalleryFile:
-      type: object
-      required: [id, name, t, createdAt, size]
-      properties:
-        id:
-          type: string
-          description: Google Drive file id.
-        name:
-          type: string
-        t:
-          type: integer
-          format: int64
-          description: Creation timestamp in milliseconds.
-        createdAt:
-          type: string
-          description: ISO string when available from Apps Script.
-        size:
-          type: integer
-          format: int64
-          description: File size in bytes.
+        id: { type: string }
+        name: { type: string }
+        t: { type: integer, description: Created-time epoch ms }
+        createdAt: { type: string, format: date-time }
+        size: { type: integer }
         d:
           type: string
-          description: Drive file description containing guest/task metadata.
-    GuestNote:
+          description: 'Caption source: "EventPhoto · Katılımcı: X · Görev: Y · UploadId: Z"'
+    Note:
       type: object
       properties:
-        g:
-          type: string
-          description: Guest name.
-        id:
-          type: string
-          description: Client-generated guest-book note id.
-        m:
-          type: string
-          description: Note message.
-        t:
-          type: integer
-          format: int64
-          description: Creation timestamp in milliseconds.
-    UploadPhotoRequest:
+        id: { type: string }
+        g: { type: string, description: Guest name }
+        m: { type: string, description: Note text }
+        t: { type: integer, description: Epoch ms }
+    UploadResponse:
       type: object
-      required: [guestName, uploadId, filename, mimeType, data]
       properties:
-        token:
-          type: string
-        guestName:
-          type: string
-          maxLength: 40
-        uploadId:
-          type: string
-          maxLength: 80
-          description: Client-generated idempotency key used to verify and deduplicate uploads.
-        task:
-          type: string
-          maxLength: 60
-        filename:
-          type: string
-        mimeType:
-          type: string
-          enum:
-            - image/jpeg
-            - image/jpg
-            - image/png
-            - image/webp
-            - image/gif
-            - image/heic
-            - image/heif
-            - image/bmp
-            - image/tiff
-          example: image/jpeg
-        data:
-          type: string
-          format: byte
-          description: Base64 file data without the `data:*/*;base64,` prefix.
-    SaveNoteRequest:
+        status: { type: string, example: ok }
+        duplicate: { type: boolean }
+        uploadId: { type: string }
+        fileId: { type: string }
+        name: { type: string }
+    ListResponse:
       type: object
-      required: [type, guestName, noteId, message]
       properties:
-        type:
-          type: string
-          enum: [note]
-        token:
-          type: string
-        guestName:
-          type: string
-          maxLength: 40
-        noteId:
-          type: string
-          maxLength: 80
-          description: Client-generated idempotency key used to verify and deduplicate notes.
-        message:
-          type: string
-          maxLength: 500
-    UploadPhotoResponse:
+        status: { type: string, example: ok }
+        count: { type: integer }
+        folderId: { type: string }
+        folderUrl: { type: string }
+        files:
+          type: array
+          items: { $ref: '#/components/schemas/FileMeta' }
+        notes:
+          type: array
+          items: { $ref: '#/components/schemas/Note' }
+    NoteResponse:
       type: object
-      required: [status, fileId, name]
       properties:
-        status:
-          type: string
-          enum: [ok]
-        uploadId:
-          type: string
-        duplicate:
-          type: boolean
-        fileId:
-          type: string
-        name:
-          type: string
-    SaveNoteResponse:
-      type: object
-      required: [status, type]
-      properties:
-        status:
-          type: string
-          enum: [ok]
-        type:
-          type: string
-          enum: [note]
-        noteId:
-          type: string
-        duplicate:
-          type: boolean
-        savedProperties:
-          type: boolean
-          description: Whether the note was stored in Script Properties for gallery/live wall listing.
-        savedDrive:
-          type: boolean
-          description: Whether the note was also written to Drive as a `Not_*.txt` keepsake.
-        fileId:
-          type: string
-          description: Drive file id for the note text file when available.
-    ErrorResponse:
-      type: object
-      required: [status, message]
-      properties:
-        status:
-          type: string
-          enum: [error]
-        code:
-          type: string
-          example: invalid_token
-        message:
-          type: string
+        status: { type: string, example: ok }
+        type: { type: string, example: note }
+        noteId: { type: string }
+        duplicate: { type: boolean }
+        savedProperties: { type: boolean }
+        savedDrive: { type: boolean }
+        fileId: { type: string }
