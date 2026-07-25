@@ -1,25 +1,31 @@
 {
-  "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "weddingphotographer",
-  "main": "worker.js",
-  "compatibility_date": "2026-07-25",
-  "compatibility_flags": ["nodejs_compat"],
-  "observability": {
-    "enabled": true
-  },
-  // Statik site kökten servis edilir; /api/* worker.js'e düşer.
-  "assets": {
-    "directory": ".",
-    "binding": "ASSETS",
-    "html_handling": "auto-trailing-slash",
-    "not_found_handling": "none"
-  },
-  // EventPhoto etkinlik kayıtları + notlar + access-token cache.
-  // KV namespace'i Cloudflare'de oluşturup id'yi buraya yaz
-  // (veya: npx wrangler kv namespace create EVENTS).
-  "kv_namespaces": [
-    { "binding": "EVENTS", "id": "REPLACE_WITH_KV_NAMESPACE_ID" }
-  ]
-  // Secret'lar (Cloudflare dashboard veya yerelde .dev.vars):
-  //   GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, BASE_URL
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "weddingphotographer",
+	"main": "worker.js",
+	"compatibility_date": "2026-07-25",
+	"compatibility_flags": [
+		"nodejs_compat"
+	],
+	"observability": {
+		"enabled": true
+	},
+	// Statik site kökten servis edilir; /api/* worker.js'e düşer.
+	"assets": {
+		"directory": ".",
+		"binding": "ASSETS",
+		"html_handling": "auto-trailing-slash",
+		"not_found_handling": "none"
+	},
+	// EventPhoto etkinlik kayıtları + notlar + access-token cache.
+	// KV namespace'i Cloudflare'de oluşturup id'yi buraya yaz
+	// (veya: npx wrangler kv namespace create EVENTS).
+	"kv_namespaces": [
+		{
+			"binding": "EVENTS",
+			"id": "4bb9137560c14e32978b6b239197a296",
+			"remote": true
+		}
+	]
+	// Secret'lar (Cloudflare dashboard veya yerelde .dev.vars):
+	//   GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, BASE_URL
 }
