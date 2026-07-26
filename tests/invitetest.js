@@ -16,7 +16,7 @@ const ok = (c, l) => { console.log((c ? '  ✓ ' : '  ✗ ') + l); if (!c) failu
   await page.goto(BASE + '/invite.html');
   await page.waitForTimeout(600);
   ok(await page.locator('#inviteBuilder').isVisible(), 'oluşturucu modu açıldı');
-  ok(await page.locator('#invConceptGrid .concept-card').count() === 9, '9 etkinlik kartı');
+  ok(await page.locator('#invConceptGrid .concept-card').count() === 10, '10 etkinlik kartı');
 
   await page.click('.concept-card[data-key="wedding"]');
   await page.fill('#invTitleIn', 'Ayşe & Mehmet');

@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>EventPhoto — QR ile Ortak Etkinlik Fotoğraf Albümü | Ücretsiz &amp; Sunucusuz</title>
-  <meta name="description" content="Düğün, nişan, doğum günü, gezi… Misafirler QR okutup fotoğraf yükler; kareler kendi Google Drive'ınıza kaydedilir ve mekandaki ekranda canlı polaroid duvarı olarak döner. Üyelik yok, uygulama yok, ücretsiz." />
+  <meta name="description" content="Düğün, nişan, doğum günü, konser, gezi… Misafirler QR okutup fotoğraf yükler; kareler kendi Google Drive'ınıza kaydedilir ve mekandaki ekranda canlı polaroid duvarı olarak döner. Üyelik yok, uygulama yok, ücretsiz." />
   <meta name="theme-color" content="#FBF6EC" />
   <link rel="canonical" href="https://mehmeta58.github.io/WeddingPhotographer/" />
 
@@ -47,7 +47,7 @@
       "Etkinliğe özel fotoğraf görevleri",
       "Anı Defteri (misafir notları)",
       "Dijital davetiye (link içinde yaşar)",
-      "9 etkinlik konsepti, Türkçe/İngilizce"
+      "10 etkinlik konsepti, Türkçe/İngilizce"
     ],
     "inLanguage": ["tr", "en"]
   }
@@ -77,6 +77,9 @@
 </head>
 <body class="lp">
 
+  <!-- İmza: sayfa başındaki uçak postası şeridi -->
+  <div class="airmail lp-airmail-top" aria-hidden="true"></div>
+
   <!-- ==================== NAV ==================== -->
   <nav class="lp-nav" id="lpNav" aria-label="Site">
     <a class="lp-logo" href="#top" aria-label="EventPhoto ana sayfa">
@@ -87,7 +90,7 @@
       <a href="#nasil-calisir">Nasıl Çalışır</a>
       <a href="#canli-sunum">Canlı Sunum</a>
       <a href="#ozellikler">Özellikler</a>
-      <a href="#davetiye">Davetiye</a>
+      <a href="#konseptler">Konseptler</a>
       <a href="#sss">SSS</a>
     </div>
     <a class="lp-btn lp-btn-gold" href="setup.html">Albüm Oluştur</a>
@@ -102,167 +105,207 @@
     <a href="#nasil-calisir">Nasıl Çalışır</a>
     <a href="#canli-sunum">Canlı Sunum</a>
     <a href="#ozellikler">Özellikler</a>
-    <a href="#davetiye">Davetiye</a>
+    <a href="#konseptler">Konseptler</a>
+    <a href="#fiyat">Fiyat</a>
     <a href="#sss">SSS</a>
     <a href="setup.html">Albüm Oluştur →</a>
   </div>
 
   <!-- ==================== HERO ==================== -->
   <header class="lp-hero" id="top">
-    <div class="lp-hero-stage" id="heroStage">
-
-      <!-- Saçılan polaroidler (kaydırdıkça yükselir) — başlık bandı boş bırakılır -->
-      <figure class="lp-pol" data-depth="0.9" style="--r:5deg;  left:2%;  top:6%"><img src="assets/demo/dans-pisti.svg" alt="Dans pisti fotoğrafı" width="800" height="600" /><figcaption>Ayşe Teyze</figcaption></figure>
-      <figure class="lp-pol" data-depth="1.1" style="--r:-5deg; right:2%; top:7%"><img src="assets/demo/kadeh.svg" alt="Kadeh kaldırma fotoğrafı" width="800" height="600" /><figcaption>Mehmet Amca</figcaption></figure>
-      <figure class="lp-pol" data-depth="1.4" style="--r:-7deg; left:5%;  top:56%"><img src="assets/demo/gun-batimi.svg" alt="Gün batımı fotoğrafı" width="800" height="600" /><figcaption>Deniz</figcaption></figure>
-      <figure class="lp-pol" data-depth="1.7" style="--r:8deg;  right:5%; top:54%"><img src="assets/demo/pasta.svg" alt="Doğum günü pastası fotoğrafı" width="800" height="600" /><figcaption>Zeynep</figcaption></figure>
-      <figure class="lp-pol" data-depth="2.0" style="--r:3deg;  left:21%; top:82%"><img src="assets/demo/isiklar.svg" alt="Işıklar fotoğrafı" width="800" height="600" /><figcaption>Elif</figcaption></figure>
-      <figure class="lp-pol" data-depth="1.5" style="--r:-9deg; right:21%; top:84%"><img src="assets/demo/manzara.svg" alt="Manzara fotoğrafı" width="800" height="600" /><figcaption>Can</figcaption></figure>
-
-      <!-- Telefonda gerçek yükleme ekranı -->
-      <div class="lp-phone-wrap" id="heroPhone">
-        <div class="lp-phone">
-          <img src="assets/shot-phone-wedding.jpg" alt="EventPhoto misafir yükleme ekranı — düğün konsepti" width="780" height="1600" fetchpriority="high" />
-        </div>
-      </div>
-
-      <!-- Metin fazları -->
+    <div class="lp-wrap lp-hero-grid">
       <div class="lp-hero-copy">
-        <div class="lp-phase lp-phase-1" id="phase1">
-          <p class="lp-eyebrow">QR ile ortak etkinlik albümü</p>
-          <h1 class="lp-h1">Anılar <em>birlikte</em> birikir.</h1>
-          <p class="lp-hero-sub">Misafirlerin çektiği her kare, üyeliksiz ve uygulamasız,
-            saniyeler içinde senin albümünde.</p>
+        <p class="lp-kicker">QR ile ortak etkinlik albümü</p>
+        <h1 class="lp-h1">Anılar <em>birlikte</em> birikir.</h1>
+        <p class="lp-lead">Misafirlerin çektiği her kare — üyeliksiz, uygulamasız —
+          saniyeler içinde senin albümünde ve mekandaki ekranda canlı döner.</p>
+        <div class="lp-cta-row">
+          <a class="lp-btn lp-btn-gold" href="setup.html">Ücretsiz Albüm Oluştur <span class="arr">→</span></a>
+          <a class="lp-btn lp-btn-line" href="#canli-sunum">Canlı Demoyu Gör</a>
         </div>
-        <div class="lp-phase lp-phase-2" id="phase2">
-          <p class="lp-eyebrow">Sunucusuz · Ücretsiz · Kendi Drive'ında</p>
-          <h2 class="lp-h1">QR okut. <em>Yükle.</em><br />Ekranda izle.</h2>
-          <div class="lp-cta-row">
-            <a class="lp-btn lp-btn-gold" href="setup.html">Ücretsiz Albüm Oluştur <span class="arr">→</span></a>
-            <a class="lp-btn lp-btn-line" href="#canli-sunum">Canlı Demoyu Gör</a>
-          </div>
-        </div>
+        <p class="lp-hero-note">Üyelik yok · Uygulama yok · Fotoğraflar yalnızca senin Google Drive'ında</p>
       </div>
 
-      <div class="lp-scroll-hint" aria-hidden="true">Kaydır</div>
+      <div class="lp-hero-art" aria-hidden="true">
+        <figure class="lp-photo lp-photo-a" style="--r:-5deg">
+          <span class="stamp"><img src="assets/demo/gun-batimi.svg" alt="" width="800" height="600" fetchpriority="high" /></span>
+          <figcaption>Deniz</figcaption>
+        </figure>
+        <figure class="lp-photo lp-photo-b" style="--r:4deg">
+          <span class="stamp"><img src="assets/demo/dans-pisti.svg" alt="" width="800" height="600" /></span>
+          <figcaption>Ayşe Teyze</figcaption>
+        </figure>
+        <figure class="lp-photo lp-photo-c" style="--r:-3deg">
+          <span class="stamp"><img src="assets/demo/pasta.svg" alt="" width="800" height="600" /></span>
+          <figcaption>Zeynep</figcaption>
+        </figure>
+        <span class="lp-hand-note">senin albümün ↗</span>
+      </div>
     </div>
   </header>
 
   <main>
+    <!-- ==================== GÜVEN ŞERİDİ (dürüst) ==================== -->
+    <section class="lp-strip" aria-label="Misafir akışı">
+      <div class="lp-wrap">
+        <ul class="lp-strip-row">
+          <li><span class="lp-strip-no">01</span> QR'ı okut</li>
+          <li aria-hidden="true" class="lp-strip-arr">→</li>
+          <li><span class="lp-strip-no">02</span> Fotoğrafını yükle</li>
+          <li aria-hidden="true" class="lp-strip-arr">→</li>
+          <li><span class="lp-strip-no">03</span> Ekranda gör</li>
+          <li class="lp-strip-tag">Üyelik yok · uygulama yok</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ==================== KAYAN FOTO ŞERİDİ ==================== -->
+    <section class="lp-marquee-sec" aria-label="Etkinlik kareleri">
+      <div class="lp-marquee" id="lpMarquee">
+        <div class="lp-marquee-track">
+          <figure class="lp-mq" style="--r:-4deg"><span class="stamp"><img src="assets/demo/gun-batimi.svg" alt="" width="800" height="600" loading="lazy" /></span></figure>
+          <figure class="lp-mq" style="--r:3deg"><span class="stamp"><img src="assets/demo/dans-pisti.svg" alt="" width="800" height="600" loading="lazy" /></span></figure>
+          <figure class="lp-mq" style="--r:-2deg"><span class="stamp"><img src="assets/demo/pasta.svg" alt="" width="800" height="600" loading="lazy" /></span></figure>
+          <figure class="lp-mq" style="--r:5deg"><span class="stamp"><img src="assets/demo/kadeh.svg" alt="" width="800" height="600" loading="lazy" /></span></figure>
+          <figure class="lp-mq" style="--r:-3deg"><span class="stamp"><img src="assets/demo/manzara.svg" alt="" width="800" height="600" loading="lazy" /></span></figure>
+          <figure class="lp-mq" style="--r:4deg"><span class="stamp"><img src="assets/demo/isiklar.svg" alt="" width="800" height="600" loading="lazy" /></span></figure>
+          <figure class="lp-mq" style="--r:-5deg"><span class="stamp"><img src="assets/demo/konfeti.svg" alt="" width="800" height="600" loading="lazy" /></span></figure>
+          <figure class="lp-mq" style="--r:2deg"><span class="stamp"><img src="assets/demo/sahil.svg" alt="" width="800" height="600" loading="lazy" /></span></figure>
+        </div>
+      </div>
+    </section>
+
     <!-- ==================== NASIL ÇALIŞIR ==================== -->
     <section class="lp-section" id="nasil-calisir" aria-labelledby="stepsTitle">
       <div class="lp-wrap">
-        <header class="lp-steps-head rv">
+        <header class="lp-head rv">
           <p class="lp-eyebrow">Nasıl çalışır</p>
           <h2 class="lp-h2" id="stepsTitle">Üç adımda canlı albüm.</h2>
+          <p class="lp-sub">Kurulum dakikalar sürer; gerisini misafirler halleder.</p>
         </header>
 
-        <article class="lp-step lp-step-1" style="--i:0">
-          <div class="lp-step-copy">
-            <div class="lp-step-no">Adım 01</div>
+        <div class="lp-steps rv">
+          <article class="lp-step">
+            <div class="postmark lp-step-mark">ADIM<br />01</div>
             <h3>QR albümünü oluştur</h3>
             <p>Etkinlik türünü seç, Google Drive'ını bağla; masalara koyacağın QR ve
-              yazdırılabilir kartlar dakikalar içinde hazır. Üyelik yok, uygulama yok.</p>
-          </div>
-          <div class="lp-step-shot">
-            <img src="assets/shot-setup.jpg" alt="EventPhoto kurulum ekranı: dokuz etkinlik konseptinden seçim" width="960" height="1640" loading="lazy" />
-          </div>
-        </article>
-
-        <article class="lp-step lp-step-2" style="--i:1">
-          <div class="lp-step-copy">
-            <div class="lp-step-no">Adım 02</div>
+              yazdırılabilir kartlar hazır. Üyelik yok, uygulama yok.</p>
+            <img src="assets/shot-setup.jpg" alt="EventPhoto kurulum ekranı: etkinlik konsepti seçimi" width="960" height="1640" loading="lazy" />
+          </article>
+          <article class="lp-step">
+            <div class="postmark lp-step-mark">ADIM<br />02</div>
             <h3>Misafirler yüklesin</h3>
             <p>Okut, seç, gönder — hepsi bu. İsteyen "Dans pistinden bir kare" gibi bir
-              fotoğraf görevi kapar, isteyen Anı Defteri'ne el yazısı hissli bir not düşer.</p>
-          </div>
-          <div class="lp-step-shot">
+              fotoğraf görevi kapar, isteyen Anı Defteri'ne not düşer.</p>
             <img src="assets/shot-phone-birthday.jpg" alt="Misafir yükleme ekranı: fotoğraf görevleri ve Anı Defteri" width="780" height="1600" loading="lazy" />
-          </div>
-        </article>
-
-        <article class="lp-step lp-step-3" style="--i:2">
-          <div class="lp-step-copy">
-            <div class="lp-step-no">Adım 03</div>
+          </article>
+          <article class="lp-step">
+            <div class="postmark lp-step-mark">ADIM<br />03</div>
             <h3>Canlı duvarda izle</h3>
-            <p>Mekandaki TV'de her yeni kare, masaya bırakılan bir polaroid gibi yerine
-              oturur. Misafirler kendi karelerinin ekrana düştüğünü görünce gerisi kendiliğinden gelir.</p>
-          </div>
-          <div class="lp-step-shot">
+            <p>Mekandaki TV'de her yeni kare, masaya bırakılan bir polaroid gibi belirir.
+              Misafirler karesini ekranda görünce gerisi kendiliğinden gelir.</p>
             <img src="assets/shot-slideshow.jpg" alt="Canlı sunum ekranı: polaroid duvarı ve köşede QR" width="1600" height="900" loading="lazy" />
-          </div>
-        </article>
+          </article>
+        </div>
       </div>
     </section>
 
     <!-- ==================== CANLI SUNUM (GERÇEK DEMO) ==================== -->
     <section class="lp-section lp-demo" id="canli-sunum" aria-labelledby="demoTitle">
       <div class="lp-wrap">
-        <div class="lp-demo-grid">
-          <header class="rv" style="text-align:center">
-            <p class="lp-eyebrow">Canlı sunum</p>
-            <h2 class="lp-h2" id="demoTitle">Bu ekran şu anda çalışıyor.</h2>
-            <p class="lp-sub" style="margin:0 auto">Aşağıdaki televizyonda video değil,
-              <b>ürünün kendisi</b> dönüyor — örnek karelerle, gerçek sunum ekranı.</p>
-          </header>
-          <div class="rv">
-            <div class="lp-tv" id="lpTv" data-src="slideshow.html?demo=1&amp;slide=3500&amp;event=wedding&amp;title=Ay%C5%9Fe%20%26%20Mehmet">
-              <img src="assets/shot-slideshow.jpg" alt="Canlı sunum ekranı önizlemesi" width="1600" height="900" loading="lazy" />
-            </div>
-            <div class="lp-tv-stand" aria-hidden="true"></div>
-            <p class="lp-demo-note">
-              <span class="date-stamp" aria-hidden="true">’26 07 09</span>
-              <a href="slideshow.html?demo=1&amp;event=wedding&amp;title=Ay%C5%9Fe%20%26%20Mehmet" target="_blank" rel="noopener">Demoyu tam ekran aç →</a>
-            </p>
+        <header class="lp-head rv">
+          <p class="lp-eyebrow">Canlı sunum</p>
+          <h2 class="lp-h2" id="demoTitle">Bu ekran şu anda çalışıyor.</h2>
+          <p class="lp-sub">Aşağıdaki televizyonda video değil, <b>ürünün kendisi</b> dönüyor —
+            örnek karelerle, gerçek sunum ekranı.</p>
+        </header>
+        <div class="rv">
+          <div class="lp-tv" id="lpTv" data-src="slideshow.html?demo=1&amp;slide=3500&amp;event=wedding&amp;title=Ay%C5%9Fe%20%26%20Mehmet">
+            <img src="assets/shot-slideshow.jpg" alt="Canlı sunum ekranı önizlemesi" width="1600" height="900" loading="lazy" />
           </div>
+          <div class="lp-tv-stand" aria-hidden="true"></div>
+          <p class="lp-demo-note">
+            <span class="date-stamp" aria-hidden="true">canlı</span>
+            <a href="slideshow.html?demo=1&amp;event=wedding&amp;title=Ay%C5%9Fe%20%26%20Mehmet" target="_blank" rel="noopener">Demoyu tam ekran aç →</a>
+          </p>
         </div>
       </div>
     </section>
 
-    <!-- ==================== ÖZELLİKLER (AKORDEON) ==================== -->
+    <!-- ==================== ÖZELLİKLER (dönüşümlü satırlar) ==================== -->
     <section class="lp-section" id="ozellikler" aria-labelledby="featTitle">
       <div class="lp-wrap">
-        <header class="lp-steps-head rv">
+        <header class="lp-head rv">
           <p class="lp-eyebrow">Özellikler</p>
           <h2 class="lp-h2" id="featTitle">Albümden fazlası.</h2>
         </header>
-        <div class="lp-acc rv" id="lpAcc">
-          <button type="button" class="lp-acc-item is-active" aria-expanded="true">
-            <img src="assets/shot-slideshow.jpg" alt="" width="1600" height="900" loading="lazy" />
-            <span class="lp-acc-label"><h3>Canlı Sunum Ekranı</h3>
-              <p>Yüklenen kareler saniyeler içinde TV'de polaroid olarak belirir; köşedeki QR misafirleri paylaşmaya çağırır.</p></span>
-          </button>
-          <button type="button" class="lp-acc-item" aria-expanded="false">
-            <img src="assets/shot-phone-trip.jpg" alt="" width="780" height="1600" loading="lazy" />
-            <span class="lp-acc-label"><h3>Fotoğraf Görevleri</h3>
-              <p>"En güzel manzara", "Kadeh kaldırma anı"… Etkinliğe özel görevler geceye oyun katar; görev, karenin altyazısı olur.</p></span>
-          </button>
-          <button type="button" class="lp-acc-item" aria-expanded="false">
-            <img src="assets/shot-guestbook.jpg" alt="" width="600" height="580" loading="lazy" />
-            <span class="lp-acc-label"><h3>Anı Defteri</h3>
-              <p>Misafirler el yazısı hissli kısa notlar bırakır; notlar sunumda döner, Drive'da kalıcı hatıra olur.</p></span>
-          </button>
-          <button type="button" class="lp-acc-item" aria-expanded="false">
-            <img src="assets/shot-invite-card.jpg" alt="" width="720" height="1106" loading="lazy" />
-            <span class="lp-acc-label"><h3>Davetiye</h3>
-              <p>Mühürlü zarfla açılan, takvime eklenen, WhatsApp'tan LCV alan dijital davetiye — verisi linkin içinde yaşar.</p></span>
-          </button>
-          <button type="button" class="lp-acc-item" aria-expanded="false">
-            <img src="assets/shot-gallery.jpg" alt="" width="1280" height="1130" loading="lazy" />
-            <span class="lp-acc-label"><h3>Özel Galeri</h3>
-              <p>Tüm kareler yalnızca size özel linkte: büyük görüntüleme, misafir + görev altyazıları, Drive klasörüne tek tık.</p></span>
-          </button>
+
+        <div class="lp-feature rv">
+          <div class="lp-feature-copy">
+            <p class="lp-kicker">Canlı sunum ekranı</p>
+            <h3>Kareler mekanda canlı döner</h3>
+            <p>Yüklenen her fotoğraf saniyeler içinde TV'de polaroid olarak belirir; köşedeki
+              QR misafirleri paylaşmaya çağırır. Gece kendi kendini büyütür.</p>
+          </div>
+          <div class="lp-feature-shot">
+            <img src="assets/shot-slideshow.jpg" alt="Canlı sunum ekranı" width="1600" height="900" loading="lazy" />
+          </div>
+        </div>
+
+        <div class="lp-feature lp-feature-rev rv">
+          <div class="lp-feature-copy">
+            <p class="lp-kicker">Fotoğraf görevleri</p>
+            <h3>Geceye oyun katan kareler</h3>
+            <p>"En güzel manzara", "Kadeh kaldırma anı"… Etkinliğe özel görevler misafirleri
+              çeker; seçilen görev, karenin altyazısı olur.</p>
+          </div>
+          <div class="lp-feature-shot">
+            <img src="assets/shot-phone-trip.jpg" alt="Fotoğraf görevleri ekranı" width="780" height="1600" loading="lazy" />
+          </div>
+        </div>
+
+        <div class="lp-feature rv">
+          <div class="lp-feature-copy">
+            <p class="lp-kicker">Anı Defteri</p>
+            <h3>Sadece fotoğraf değil, söz de kalır</h3>
+            <p>Misafirler el yazısı hissli kısa notlar bırakır; notlar sunumda döner ve
+              Drive'da kalıcı hatıraya dönüşür.</p>
+          </div>
+          <div class="lp-feature-shot">
+            <img src="assets/shot-guestbook.jpg" alt="Anı Defteri ekranı" width="600" height="580" loading="lazy" />
+          </div>
+        </div>
+
+        <div class="lp-feature-cards rv">
+          <a class="lp-fcard" href="invite.html">
+            <img src="assets/shot-invite-card.jpg" alt="Dijital davetiye" width="720" height="1106" loading="lazy" />
+            <div class="lp-fcard-body">
+              <h3>Davetiye</h3>
+              <p>Mühürlü zarfla açılan, takvime eklenen, WhatsApp'tan LCV alan dijital davetiye —
+                verisi linkin içinde yaşar.</p>
+              <span class="lp-fcard-link">Davetiye oluştur →</span>
+            </div>
+          </a>
+          <a class="lp-fcard" href="setup.html">
+            <img src="assets/shot-gallery.jpg" alt="Özel galeri" width="1280" height="1130" loading="lazy" />
+            <div class="lp-fcard-body">
+              <h3>Özel Galeri</h3>
+              <p>Tüm kareler yalnızca size özel linkte: büyük görüntüleme, misafir + görev
+                altyazıları, Drive klasörüne tek tık.</p>
+              <span class="lp-fcard-link">Albüm oluştur →</span>
+            </div>
+          </a>
         </div>
       </div>
     </section>
 
-    <!-- ==================== TEMA ŞERİDİ ==================== -->
-    <section class="lp-section" id="temalar" aria-labelledby="themeTitle">
+    <!-- ==================== KONSEPTLER (etkileşimli tema) ==================== -->
+    <section class="lp-section lp-concepts" id="konseptler" aria-labelledby="themeTitle">
       <div class="lp-wrap" style="text-align:center">
-        <header class="rv">
-          <p class="lp-eyebrow">Dokuz konsept</p>
+        <header class="lp-head rv">
+          <p class="lp-eyebrow">On konsept</p>
           <h2 class="lp-h2" id="themeTitle">Konsept, etkinliğine uyar.</h2>
-          <p class="lp-sub" style="margin:0 auto">Bir türe dokun ve <b>bu sayfanın</b> renk
+          <p class="lp-sub" style="margin-left:auto;margin-right:auto">Bir türe dokun ve <b>bu sayfanın</b> renk
             değiştirmesini izle — davetiyeden yükleme ekranına her şey aynı palete boyanır.</p>
         </header>
         <div class="lp-themes-word rv" id="themeWord" aria-live="polite">Düğün</div>
@@ -276,28 +319,70 @@
           <button type="button" class="lp-theme-chip" data-event="farewell"    style="--dot:#8B7BB7">Veda Partisi</button>
           <button type="button" class="lp-theme-chip" data-event="trip"        style="--dot:#4F9FA3">Gezi</button>
           <button type="button" class="lp-theme-chip" data-event="meeting"     style="--dot:#5F84B8">Toplantı</button>
+          <button type="button" class="lp-theme-chip" data-event="concert"     style="--dot:#8B3FBF">Konser</button>
         </div>
       </div>
     </section>
 
-    <!-- ==================== DAVETİYE ==================== -->
-    <section class="lp-section lp-invite" id="davetiye" aria-labelledby="invTitle">
+    <!-- ==================== NEDEN (değer önerileri, dürüst) ==================== -->
+    <section class="lp-section" id="neden" aria-labelledby="whyTitle">
       <div class="lp-wrap">
-        <div class="lp-invite-grid">
-          <div class="rv">
-            <p class="lp-eyebrow">Davetiye</p>
-            <h2 class="lp-h2" id="invTitle">Önce davetiye,<br />sonra albüm.</h2>
-            <p class="lp-sub">Tarih, mekan ve el yazısı mesajınla zarif bir davetiye hazırla.
-              Davetlin linki açınca mühürlü zarfı görür; dokununca kart çıkar — takvime ekler,
-              haritayı açar, WhatsApp'tan LCV bildirir. Sunucu yok: davetiye, linkin içinde yaşar.</p>
-            <div class="lp-cta-row" style="justify-content:flex-start; margin-top:26px">
-              <a class="lp-btn lp-btn-gold" href="invite.html">Davetiye Oluştur <span class="arr">→</span></a>
-            </div>
+        <header class="lp-head rv">
+          <p class="lp-eyebrow">Neden EventPhoto</p>
+          <h2 class="lp-h2" id="whyTitle">Sade, çünkü öyle tasarlandı.</h2>
+        </header>
+        <div class="lp-why rv">
+          <div class="lp-why-card">
+            <h3>Sunucusuz</h3>
+            <p>Aracı bir sunucu yok. Sayfalar statik, fotoğraflar doğrudan Drive'ında; teknik
+              bakım da yok.</p>
           </div>
-          <div class="lp-invite-visual rv" aria-hidden="true">
-            <img class="card-shot" src="assets/shot-invite-card.jpg" alt="" width="720" height="1106" loading="lazy" />
-            <img class="env-shot" src="assets/shot-invite-envelope.jpg" alt="" width="720" height="506" loading="lazy" />
+          <div class="lp-why-card">
+            <h3>Kendi Drive'ında</h3>
+            <p>Kareler hiçbir üçüncü tarafa kopyalanmaz. Albümün tek sahibi sensin.</p>
           </div>
+          <div class="lp-why-card">
+            <h3>Üyeliksiz</h3>
+            <p>Misafir QR'ı okutur, adını yazar, gönderir. İndirme, kayıt ve şifre yok.</p>
+          </div>
+          <div class="lp-why-card">
+            <h3>Canlı ekran</h3>
+            <p>Kareler mekandaki TV'de saniyeler içinde belirir; notlar da araya karışır.</p>
+          </div>
+          <div class="lp-why-card">
+            <h3>Davetiye dahil</h3>
+            <p>Aynı yerden mühürlü dijital davetiye hazırla; verisi linkin içinde yaşar.</p>
+          </div>
+          <div class="lp-why-card">
+            <h3>Türkçe &amp; İngilizce</h3>
+            <p>Kurulumdan misafir ekranına kadar iki dil; on farklı etkinlik konsepti.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== FİYAT (dürüst tek plan) ==================== -->
+    <section class="lp-section lp-pricing" id="fiyat" aria-labelledby="priceTitle">
+      <div class="lp-wrap">
+        <header class="lp-head rv">
+          <p class="lp-eyebrow">Fiyat</p>
+          <h2 class="lp-h2" id="priceTitle">Tek plan: ücretsiz.</h2>
+        </header>
+        <div class="lp-plan rv">
+          <div class="airmail" aria-hidden="true"></div>
+          <div class="lp-plan-top">
+            <span class="lp-plan-name">Ücretsiz</span>
+            <span class="lp-plan-price">₺0<small>/ sonsuza dek</small></span>
+          </div>
+          <ul class="lp-plan-list">
+            <li>Sınırsız etkinlik ve QR albümü</li>
+            <li>Canlı sunum ekranı + Anı Defteri</li>
+            <li>Fotoğraf görevleri + dijital davetiye</li>
+            <li>Aracı sunucu yok · abonelik yok</li>
+            <li>Depolama = kendi Google Drive kotan</li>
+          </ul>
+          <a class="lp-btn lp-btn-gold lp-plan-cta" href="setup.html">Ücretsiz Albüm Oluştur <span class="arr">→</span></a>
+          <p class="lp-plan-note">Tek "maliyet" kendi Drive alanın; başka gizli ücret yok.</p>
         </div>
       </div>
     </section>
@@ -305,7 +390,7 @@
     <!-- ==================== SSS ==================== -->
     <section class="lp-section" id="sss" aria-labelledby="faqTitle">
       <div class="lp-wrap">
-        <header class="lp-steps-head rv" style="text-align:center">
+        <header class="lp-head rv">
           <p class="lp-eyebrow">Merak edilenler</p>
           <h2 class="lp-h2" id="faqTitle">Sorular &amp; yanıtlar.</h2>
         </header>
@@ -346,6 +431,19 @@
             <p>Hayır. Davetiye tamamen bağımsızdır: tarih, mekan ve mesajınız linkin içine yazılır;
               linki alan herkes mühürlü zarfı açıp davetiyeyi görür. PNG olarak da indirilebilir.</p>
           </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== SON CTA ==================== -->
+    <section class="lp-cta-band" aria-labelledby="ctaTitle">
+      <div class="lp-wrap">
+        <div class="airmail" aria-hidden="true"></div>
+        <h2 class="lp-cta-title" id="ctaTitle">Bir sonraki etkinliğin<br /><em>birlikte</em> biriksin.</h2>
+        <p class="lp-cta-sub">Dakikalar içinde QR albümünü oluştur; misafirlerin gerisini getirsin.</p>
+        <div class="lp-cta-row lp-cta-center">
+          <a class="lp-btn lp-btn-gold" href="setup.html">Ücretsiz Albüm Oluştur <span class="arr">→</span></a>
+          <a class="lp-btn lp-btn-line" href="invite.html">Önce Davetiye Hazırla</a>
         </div>
       </div>
     </section>

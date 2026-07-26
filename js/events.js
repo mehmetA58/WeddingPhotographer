@@ -23,7 +23,8 @@
     { key: 'welcome',     names: false, tasks: ['greet', 'hug', 'group', 'smile'] },
     { key: 'farewell',    names: false, tasks: ['hug', 'group', 'memory', 'smile'] },
     { key: 'trip',        names: false, tasks: ['view', 'group', 'food', 'candid', 'funny'] },
-    { key: 'meeting',     names: false, tasks: ['team', 'stage', 'coffee', 'detail'] }
+    { key: 'meeting',     names: false, tasks: ['team', 'stage', 'coffee', 'detail'] },
+    { key: 'concert',     names: false, tasks: ['stage', 'crowd', 'lights', 'selfie', 'moment'] }
   ];
 
   var DEFAULT_KEY = 'wedding';

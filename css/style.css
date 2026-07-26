@@ -119,6 +119,15 @@ html[data-event="meeting"] {
   --cream-2: #D9E2EE;
 }
 
+html[data-event="concert"] {
+  --gold: #8B3FBF;
+  --gold-dark: #5E2A82;
+  --gold-light: #CDA6E6;
+  --gold-bg: #F3E9FB;
+  --cream: #EFE6F6;
+  --cream-2: #DFCFED;
+}
+
 * { box-sizing: border-box; }
 
 img,

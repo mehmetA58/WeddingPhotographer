@@ -81,31 +81,19 @@ const VIEWPORTS = [
     await c3.close();
   }
 
-  /* ---- 3) Landing parallax: yükseklik-yalnızca resize sahneyi zıplatmıyor ---- */
+  /* ---- 3) Landing (evently düzeni): mobilde yatay taşma yok + hata yok ---- */
   {
     const ctx = await browser.newContext({ viewport: { width: 390, height: 844 } });
     const pg = await ctx.newPage();
+    let perr = null; pg.on('pageerror', e => perr = e.message);
     await pg.goto(BASE + '/index.html', { waitUntil: 'load' });
     await pg.waitForTimeout(600);
-    // hero ortasına kaydır
-    const heroH = await pg.locator('.lp-hero').evaluate(el => el.offsetHeight);
-    await pg.evaluate(h => window.scrollTo(0, (h - window.innerHeight) * 0.5), heroH);
-    await pg.waitForTimeout(300);
-    const t1 = await pg.locator('#heroStage').evaluate(el => el.style.transform || '');
-    const ph2a = await pg.locator('#phase2').evaluate(el => getComputedStyle(el).opacity);
-    // URL çubuğu simülasyonu: yalnızca yükseklik değişir (genişlik aynı)
-    await pg.setViewportSize({ width: 390, height: 740 });
-    await pg.waitForTimeout(300);
-    const t2 = await pg.locator('#heroStage').evaluate(el => el.style.transform || '');
-    const ph2b = await pg.locator('#phase2').evaluate(el => getComputedStyle(el).opacity);
-    ok(t1 === t2 && ph2a === ph2b, `parallax: yükseklik-yalnızca resize'de sahne sabit (t:'${t1}'=='${t2}', op:${ph2a}==${ph2b})`);
-    // Genişlik değişince yeniden ölçmeli (hata vermemeli)
-    await pg.setViewportSize({ width: 360, height: 740 });
-    await pg.waitForTimeout(300);
-    let perr = null; pg.on('pageerror', e => perr = e.message);
-    await pg.evaluate(() => window.dispatchEvent(new Event('scroll')));
-    await pg.waitForTimeout(200);
-    ok(!perr, 'parallax: genişlik değişiminde hata yok');
+    ok(await pg.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), 'landing: mobilde yatay taşma yok');
+    // Sayfayı sonuna kaydır: marquee/kolaj gibi öğeler taşma yaratmamalı
+    await pg.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+    await pg.waitForTimeout(400);
+    ok(await pg.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), 'landing: kaydırınca da taşma yok');
+    ok(!perr, 'landing: mobilde JS hatası yok');
     await ctx.close();
   }
 

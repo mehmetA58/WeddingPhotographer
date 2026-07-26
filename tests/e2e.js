@@ -63,7 +63,7 @@ const ok = (cond, label) => {
   p = await newPage('setup');
   await p.goto(BASE + '/setup.html');
   await p.waitForTimeout(600);
-  ok(await p.locator('.concept-card').count() === 9, 'setup: 9 etkinlik kartı');
+  ok(await p.locator('.concept-card').count() === 10, 'setup: 10 etkinlik kartı');
   ok((await p.textContent('#eventLabel')).trim() === '1 · Etkinlik Türü', 'setup: etiket "1 · Etkinlik Türü"');
   ok((await p.textContent('#eventTitleLabel')).trim().indexOf('2 · ') === 0, 'setup: başlık etiketi "2 · …"');
   ok(await p.locator('#generateBtn').isDisabled(), 'setup: bağlanmadan üret butonu kapalı');

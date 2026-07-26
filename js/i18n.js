@@ -122,6 +122,13 @@
       'event.meeting.titleLabel': 'Toplantı / Organizasyon Adı',
       'event.meeting.titlePlaceholder': 'Örn. Yıllık Şirket Toplantısı',
 
+      'event.concert.name': 'Konser',
+      'event.concert.welcome': '{title} konserine hoş geldiniz!',
+      'event.concert.welcomeDefault': 'Konsere Hoş Geldiniz!',
+      'event.concert.subtitle': 'Bu geceden çektiğiniz kareleri bizimle paylaşın!',
+      'event.concert.titleLabel': 'Konser / Sanatçı Adı',
+      'event.concert.titlePlaceholder': 'Örn. Yaz Festivali 2026',
+
       'task.wedding.selfie': 'Çiftle bir selfie',
       'task.wedding.dance': 'Dans pistinden bir kare',
       'task.wedding.table': 'Masanızdan bir detay',
@@ -164,6 +171,11 @@
       'task.meeting.stage': 'Sahneden bir kare',
       'task.meeting.coffee': 'Kahve molası',
       'task.meeting.detail': 'Etkinlikten bir detay',
+      'task.concert.stage': 'Sahneden bir kare',
+      'task.concert.crowd': 'Kalabalıktan bir an',
+      'task.concert.lights': 'Işık şovu',
+      'task.concert.selfie': 'Konser selfie\'si',
+      'task.concert.moment': 'En coşkulu an',
 
       'upload.eyebrow': 'Hoş Geldiniz',
       'upload.welcomeDefault': 'Etkinliğimize Hoş Geldiniz!',
@@ -252,6 +264,7 @@
       'invite.farewell.headline': 'Veda Partisine Davetlisiniz',
       'invite.trip.headline': 'Gezimize Katılmaya Davetlisiniz',
       'invite.meeting.headline': 'Toplantımıza Davetlisiniz',
+      'invite.concert.headline': 'Konsere Davetlisiniz',
 
       'invite.builderEyebrow': 'Davetiye · Sunucusuz & Ücretsiz',
       'invite.brandHtml': 'Etkinlik<span class="amp">Davetiyesi</span>',
@@ -410,6 +423,13 @@
       'event.meeting.titleLabel': 'Meeting / Organization Name',
       'event.meeting.titlePlaceholder': 'e.g., Annual Company Meeting',
 
+      'event.concert.name': 'Concert',
+      'event.concert.welcome': 'Welcome to {title}!',
+      'event.concert.welcomeDefault': 'Welcome to the Concert!',
+      'event.concert.subtitle': 'Share the shots you took tonight!',
+      'event.concert.titleLabel': 'Concert / Artist Name',
+      'event.concert.titlePlaceholder': 'e.g. Summer Festival 2026',
+
       'task.wedding.selfie': 'A selfie with the couple',
       'task.wedding.dance': 'A shot from the dance floor',
       'task.wedding.table': 'A detail from your table',
@@ -452,6 +472,11 @@
       'task.meeting.stage': 'A shot from the stage',
       'task.meeting.coffee': 'The coffee break',
       'task.meeting.detail': 'A detail from the event',
+      'task.concert.stage': 'A shot from the stage',
+      'task.concert.crowd': 'A moment from the crowd',
+      'task.concert.lights': 'The light show',
+      'task.concert.selfie': 'A concert selfie',
+      'task.concert.moment': 'The most hyped moment',
 
       'upload.eyebrow': 'Welcome',
       'upload.welcomeDefault': 'Welcome to Our Event!',
@@ -540,6 +565,7 @@
       'invite.farewell.headline': 'You Are Invited to a Farewell Party',
       'invite.trip.headline': 'Join Us on Our Trip',
       'invite.meeting.headline': 'You Are Invited to Our Meeting',
+      'invite.concert.headline': 'You Are Invited to a Concert',
 
       'invite.builderEyebrow': 'Invitation · Serverless & Free',
       'invite.brandHtml': 'Event<span class="amp">Invitation</span>',
