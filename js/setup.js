@@ -36,6 +36,7 @@
   var googleError       = $('googleError');
   var generateBtn       = $('generateBtn');
   var reconnectBtn      = $('reconnectBtn');
+  var rotateBtn         = $('rotateBtn');
 
   var LS_KEY            = 'eventPhotoSetup';
   var LS_GSETUP         = 'eventPhotoGoogleSetup';
@@ -91,7 +92,7 @@
   langEl.value = i18n.getLang();
 
   if (oauthErr) {
-    showNote('error', t('setup.oauthError', { code: oauthErr }));
+    showNote('error', t('setup.oauthError', { code: escapeHtml(oauthErr) }));
     try { history.replaceState(null, '', location.pathname); } catch (e) {}
   }
 
@@ -178,6 +179,19 @@
     setupComplete.classList.add('hidden');
     googleNotAuthed.classList.remove('hidden');
     updateGenerateState();
+  });
+
+  if (rotateBtn) rotateBtn.addEventListener('click', function () {
+    fetch('/api/admin/rotate', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ eventId: eventId, adminKey: adminKey })
+    }).then(function (r) { return r.json(); }).then(function (data) {
+      if (!data || data.status !== 'ok') throw new Error('rotate_failed');
+      adminKey = data.adminKey;
+      saveGoogleState();
+      if (!resultSec.classList.contains('hidden')) generateBtn.click();
+      showNoteResult('ok', t('setup.rotateOk'), rotateBtn);
+    }).catch(function () { showNote('error', t('setup.rotateFail')); });
   });
 
   function showSetupComplete() {
@@ -364,6 +378,12 @@
       .replace(/[ıİ]/g, 'i').replace(/[şŞ]/g, 's').replace(/[ğĞ]/g, 'g')
       .replace(/[üÜ]/g, 'u').replace(/[öÖ]/g, 'o').replace(/[çÇ]/g, 'c')
       .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
   }
 
 })();

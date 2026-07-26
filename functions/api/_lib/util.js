@@ -8,6 +8,15 @@ export const MAX_UPLOAD_BYTES = 40 * 1024 * 1024; // ~40MB ham dosya
 export const MAX_NOTE_ITEMS = 120;
 export const NOTE_LIST_LIMIT = 50;
 export const MAX_LIST_ITEMS = 1000;
+export const ADMIN_KEY_TTL_MS = 30 * 24 * 60 * 60 * 1000;
+
+export function isValidAdminKey(record, key) {
+  if (!record || !key || key !== record.adminKey) return false;
+  var expiresAt = Number(record.adminKeyExpiresAt || 0);
+  // Records created before expiry was introduced get a bounded migration window.
+  if (!expiresAt) expiresAt = Number(record.createdAt || 0) + ADMIN_KEY_TTL_MS;
+  return expiresAt > Date.now();
+}
 
 /* --- JSON yanıt sarmalayıcı ------------------------------------------- */
 export function json(obj, status) {

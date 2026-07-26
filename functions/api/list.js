@@ -1,7 +1,7 @@
 /* GET /api/list?e=<eventId>&k=<adminKey>&notes=1 — ev sahibi galeri/sunum listesi.
    Yanıt şekli js/api.js'in beklediğiyle birebir (files[].d = "EventPhoto · Katılımcı: …"). */
-import { json, buildDescription } from './_lib/util.js';
-import { getAccessToken, driveListImages } from './_lib/google.js';
+import { json, buildDescription, isValidAdminKey } from './_lib/util.js';
+import { getAccessToken, driveListImages, driveRemoveAnyonePermissions } from './_lib/google.js';
 import { loadNotes } from './_lib/notes.js';
 
 export async function onRequestGet({ request, env }) {
@@ -14,7 +14,7 @@ export async function onRequestGet({ request, env }) {
   const rec = JSON.parse(recRaw);
 
   // Galeri/sunum yalnızca ev sahibinin anahtarıyla açılır (misafir QR'ı listeleyemez).
-  if (!adminKey || adminKey !== rec.adminKey) {
+  if (!adminKey || adminKey !== rec.adminKey || !isValidAdminKey(rec, adminKey)) {
     return json({ status: 'error', code: 'invalid_token', message: 'Geçersiz güvenlik anahtarı' }, 403);
   }
 
@@ -24,6 +24,20 @@ export async function onRequestGet({ request, env }) {
   try {
     const accessToken = await getAccessToken(env, eventId, rec.refreshToken);
     const driveFiles = await driveListImages(accessToken, rec.folderId, max);
+
+    // Migrate files made public by older deployments. This runs once per event.
+    if (!rec.publicPhotosMigratedAt) {
+      const migrationFiles = driveFiles.length < max
+        ? driveFiles
+        : await driveListImages(accessToken, rec.folderId, 1000);
+      const migration = await Promise.all(migrationFiles.map((f) =>
+        driveRemoveAnyonePermissions(accessToken, f.id).then(() => true).catch(() => false)
+      ));
+      if (migrationFiles.length < 1000 && migration.every(Boolean)) {
+        rec.publicPhotosMigratedAt = Date.now();
+        await env.EVENTS.put('event:' + eventId, JSON.stringify(rec));
+      }
+    }
 
     const files = driveFiles.map((f) => {
       const ap = f.appProperties || {};

@@ -232,12 +232,12 @@ mock'lar; gerçek Google/Cloudflare gerektirmez.
   yönetin; secret'ları paylaşmayın.
 - **Kapsam dar:** `drive.file` yalnızca uygulamanın oluşturduğu dosya/klasörlere erişir;
   organizatörün Drive'ındaki diğer hiçbir dosyaya erişemez.
-- **Anyone-with-link thumbnail:** Yüklenen her fotoğraf, galeri küçük resimleri Google
-  CDN'den yüklenebilsin diye "bağlantıya sahip olan görüntüleyebilir" yapılır. Dosya
-  ID'leri tahmin edilemez ve liste `k=` ile korunur; yani fotoğraflar herkese açık
-  **listelenmez**, ama ID'yi bilen görebilir. İstemiyorsanız `functions/api/upload.js`
-  içindeki `driveSetAnyoneReader(...)` çağrısını kaldırın (o zaman thumbnail'lar
-  yüklenmez, fotoğrafları yalnızca Drive'dan görürsünüz).
+- **Özel thumbnail:** Yeni yüklenen fotoğraflar artık Drive'da public yapılmaz. Galeri ve
+  sunum, görseli `k=` ile korunan `/api/photo` proxy'sinden alır; proxy ayrıca dosyanın
+  etkinlik klasörüne ait olduğunu doğrular. Anahtarlar 30 gün geçerlidir ve kurulum
+  ekranından yenilenebilir.
+- Daha önceki sürümlerde `anyone-with-link` yapılmış dosyalar Drive'da public kalabilir;
+  bunları bir kez Drive paylaşım ayarlarından private yapın. Yeni yüklemeler bu izni oluşturmaz.
 
 ---
 

@@ -36,10 +36,14 @@
     return apiFetch('/api/list?' + qs.toString(), opts.timeoutMs);
   }
 
-  /* Google Drive küçük resim servisi (dosyalar "bağlantıya sahip olan
-     görüntüler" olduğu için token gerektirmeden <img>'de yüklenir). */
-  function thumb(id, w) {
-    return 'https://drive.google.com/thumbnail?id=' + id + '&sz=w' + w;
+  /* Özel görselleri aynı-origin backend proxy üzerinden yükle. */
+  function thumb(id, w, eventId, token) {
+    var qs = new URLSearchParams();
+    qs.set('e', eventId || '');
+    qs.set('k', token || '');
+    qs.set('id', id || '');
+    qs.set('w', String(w || 600));
+    return '/api/photo?' + qs.toString();
   }
 
   /* Dosya description'ından misafir adı / görevi ayıkla.

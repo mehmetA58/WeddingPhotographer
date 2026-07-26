@@ -238,7 +238,7 @@
       done();
     };
     img.onerror = function () { done(); }; // yüklenemeyen kareyi atla
-    img.src = item.src || Api.thumb(item.id, 1600);
+    img.src = item.src || Api.thumb(item.id, 1600, EVENT_ID, ADMIN_KEY);
   }
 
   function polaroidHtml(item, isNew) {

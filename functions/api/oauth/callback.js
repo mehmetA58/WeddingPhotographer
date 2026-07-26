@@ -2,7 +2,7 @@
    code→token değişir, Drive klasörü oluşturur, event kaydını KV'ye yazar,
    setup.html'e ?e=<eventId>&k=<adminKey> ile geri döner. */
 import { exchangeCode, driveCreateFolder, emailFromIdToken } from '../_lib/google.js';
-import { randomId, DEFAULT_FOLDER_NAME } from '../_lib/util.js';
+import { randomId, DEFAULT_FOLDER_NAME, ADMIN_KEY_TTL_MS } from '../_lib/util.js';
 
 function back(env, params) {
   const base = String(env.BASE_URL || '').replace(/\/+$/, '');
@@ -37,6 +37,7 @@ export async function onRequestGet({ request, env }) {
 
     const eventId = randomId();
     const adminKey = randomId();
+    const createdAt = Date.now();
     const record = {
       refreshToken: tokens.refresh_token,
       folderId: folder.id,
@@ -45,7 +46,9 @@ export async function onRequestGet({ request, env }) {
       event: ctx.event || '',
       adminKey: adminKey,
       ownerEmail: emailFromIdToken(tokens.id_token),
-      createdAt: Date.now()
+      createdAt: createdAt,
+      adminKeyCreatedAt: createdAt,
+      adminKeyExpiresAt: createdAt + ADMIN_KEY_TTL_MS
     };
     await env.EVENTS.put('event:' + eventId, JSON.stringify(record));
 

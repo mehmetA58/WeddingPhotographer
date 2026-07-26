@@ -6,7 +6,7 @@ import {
   buildFileName, buildDescription, MAX_UPLOAD_BYTES
 } from './_lib/util.js';
 import {
-  getAccessToken, driveUploadMedia, driveSetAnyoneReader, driveFindByUploadId
+    getAccessToken, driveUploadMedia, driveFindByUploadId
 } from './_lib/google.js';
 
 export async function onRequestPost({ request, env }) {
@@ -68,9 +68,6 @@ export async function onRequestPost({ request, env }) {
       }
     };
     const file = await driveUploadMedia(accessToken, meta, mime, buf);
-
-    // Thumbnail'ların token'sız yüklenmesi için paylaşıma aç (başarısız olsa da yükleme geçerli).
-    try { await driveSetAnyoneReader(accessToken, file.id); } catch (e) {}
 
     return json({ status: 'ok', uploadId, fileId: file.id, name: file.name });
   } catch (err) {

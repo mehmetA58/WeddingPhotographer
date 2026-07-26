@@ -123,15 +123,6 @@ export async function driveCreateFolder(accessToken, name) {
   });
 }
 
-/** "Bağlantıya sahip olan görüntüleyebilir" — thumbnail'lar Google CDN'den doğrudan yüklenir. */
-export async function driveSetAnyoneReader(accessToken, fileId) {
-  return driveJson(DRIVE + '/files/' + fileId + '/permissions', accessToken, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ role: 'reader', type: 'anyone' })
-  });
-}
-
 /** multipart/related ile ikili (veya metin) dosyayı klasöre yükler. */
 export async function driveUploadMedia(accessToken, meta, mediaType, mediaBody) {
   const boundary = '----eventphoto' + Math.random().toString(16).slice(2);
@@ -175,4 +166,41 @@ export async function driveListImages(accessToken, folderId, max) {
   });
   const data = await driveJson(url, accessToken, { method: 'GET' });
   return data.files || [];
+}
+
+export async function driveDownloadImage(accessToken, folderId, fileId) {
+  const meta = await driveJson(
+    DRIVE + '/files/' + encodeURIComponent(fileId) + '?fields=id,parents,mimeType',
+    accessToken,
+    { method: 'GET' }
+  );
+  if (!meta.parents || meta.parents.indexOf(folderId) < 0 ||
+      !String(meta.mimeType || '').startsWith('image/')) {
+    const err = new Error('photo_not_found');
+    err.status = 404;
+    throw err;
+  }
+  const res = await fetch(DRIVE + '/files/' + encodeURIComponent(fileId) + '?alt=media', {
+    headers: { Authorization: 'Bearer ' + accessToken }
+  });
+  if (!res.ok) {
+    const err = new Error('photo_download_failed');
+    err.status = res.status;
+    throw err;
+  }
+  return { body: res.body, mimeType: meta.mimeType };
+}
+
+export async function driveRemoveAnyonePermissions(accessToken, fileId) {
+  const data = await driveJson(
+    DRIVE + '/files/' + encodeURIComponent(fileId) + '/permissions?fields=permissions(id,type)',
+    accessToken,
+    { method: 'GET' }
+  );
+  const publicPermissions = (data.permissions || []).filter((p) => p.type === 'anyone');
+  await Promise.all(publicPermissions.map((p) => driveJson(
+    DRIVE + '/files/' + encodeURIComponent(fileId) + '/permissions/' + encodeURIComponent(p.id),
+    accessToken,
+    { method: 'DELETE' }
+  )));
 }

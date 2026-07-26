@@ -84,7 +84,7 @@
       img.loading = 'lazy';
       img.decoding = 'async';
       img.alt = f.name || '';
-      img.src = thumb(f.id, 600);
+      img.src = thumb(f.id, 600, EVENT_ID, ADMIN_KEY);
       img.onerror = function () { cell.classList.add('g-fail'); img.remove(); };
       cell.appendChild(img);
       cell.addEventListener('click', function () { openLightbox(i); });
@@ -135,7 +135,7 @@
   function updateLightbox() {
     var f = files[lbIndex];
     if (!f) return;
-    lbImg.src = thumb(f.id, 1600);
+    lbImg.src = thumb(f.id, 1600, EVENT_ID, ADMIN_KEY);
     lbOpen.href = 'https://drive.google.com/file/d/' + f.id + '/view';
 
     // Altyazı: misafir adı + görev (dosya description'ından)
