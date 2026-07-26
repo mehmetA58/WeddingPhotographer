@@ -221,6 +221,11 @@ mock'lar; gerçek Google/Cloudflare gerektirmez.
 
 ## 🔒 Güvenlik notları
 
+Güvenlik kontrolleri yayın öncesi zorunludur. Her değişiklikte
+`node tests/security-smoke.test.js` çalıştırılır; bu kontrol başarısız olursa
+GitHub Actions yayını durdurur. Private Drive dosyaları, süreli/yenilenebilir
+admin anahtarları, güvenli DOM çıktıları ve güvenlik header'ları proje kuralıdır.
+
 - Tasarım gereği giriş yok: **QR/eventId'ye sahip herkes yükleyebilir** (misafirler anonim).
   Bu yüzden misafir QR'ını yalnızca mekânda kullanın.
 - **Galeri/sunum ayrı anahtarla korunur:** listeleme yalnızca `k=` (adminKey) ile açılır;

@@ -1,4 +1,4 @@
-import { json, isValidAdminKey, randomId, ADMIN_KEY_TTL_MS } from '../../_lib/util.js';
+import { json, isValidAdminKey, randomId, ADMIN_KEY_TTL_MS } from '../_lib/util.js';
 
 export async function onRequestPost({ request, env }) {
   let body = {};

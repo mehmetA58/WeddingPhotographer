@@ -87,6 +87,23 @@ Cloudflare/Google configuration steps required.
 
 ## Security & Configuration Tips
 
+### Mandatory security gate
+
+Security behavior is a hard project invariant. Do not merge or deploy a change
+unless `node tests/security-smoke.test.js` passes. Any exception requires an
+explicit security review and an accompanying test update.
+
+- Drive files must remain private. Never reintroduce `anyone` permissions;
+  gallery/slideshow images must be served through the authenticated `/api/photo`
+  proxy, which verifies both the admin key and the event folder parent.
+- Admin keys must be expiring and rotatable. New endpoints must use the shared
+  admin-key validator; never add a permanent bearer token or bypass rotation.
+- Values originating in URL parameters, request bodies, Drive metadata, notes,
+  or guest input must not be inserted into `innerHTML` without explicit HTML
+  escaping. Prefer `textContent` and DOM APIs.
+- Preserve `Referrer-Policy: no-referrer` and `X-Content-Type-Options: nosniff`
+  on Worker responses.
+
 Do not commit secrets. `GOOGLE_CLIENT_SECRET` and the KV namespace id are set in
 Cloudflare (Pages env + KV binding), never in the repo; local values live in the
 gitignored `.dev.vars`. Host refresh tokens are stored in KV — treat the project

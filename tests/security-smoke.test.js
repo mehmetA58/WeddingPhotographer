@@ -8,7 +8,12 @@ const read = (p) => fs.readFileSync(p, 'utf8');
 
 const upBackend = read('functions/api/upload.js');
 const listBackend = read('functions/api/list.js');
+const photoBackend = read('functions/api/photo.js');
+const rotateBackend = read('functions/api/admin/rotate.js');
+const util = read('functions/api/_lib/util.js');
+const callback = read('functions/api/oauth/callback.js');
 const google = read('functions/api/_lib/google.js');
+const worker = read('worker.js');
 const setup = read('js/setup.js');
 const upload = read('js/upload.js');
 const api = read('js/api.js');
@@ -23,6 +28,18 @@ assert(upBackend.includes("code: 'missing_guest'"), 'backend must reject missing
 /* --- Backend: galeri gizliliği ayrı ev-sahibi anahtarıyla korunur --- */
 assert(listBackend.includes('rec.adminKey'), 'list must validate the host admin key');
 assert(listBackend.includes("code: 'invalid_token'"), 'list must reject a wrong admin key');
+assert(photoBackend.includes('isValidAdminKey'), 'photo proxy must validate the admin key');
+assert(photoBackend.includes('driveDownloadImage'), 'photos must be served through the private proxy');
+assert(photoBackend.includes('folderId'), 'photo proxy must verify the event folder');
+assert(rotateBackend.includes('ADMIN_KEY_TTL_MS'), 'admin key rotation must preserve expiry');
+assert(util.includes('ADMIN_KEY_TTL_MS'), 'admin key expiry must be defined centrally');
+assert(callback.includes('adminKeyExpiresAt'), 'new events must receive an expiring admin key');
+assert(!google.includes('driveSetAnyoneReader'), 'Drive files must never be made public');
+assert(!upBackend.includes('driveSetAnyoneReader'), 'uploads must not grant public Drive access');
+assert(api.includes('/api/photo'), 'frontend thumbnails must use the private photo proxy');
+assert(setup.includes('escapeHtml(oauthErr)'), 'OAuth error query values must be HTML-escaped');
+assert(worker.includes("Referrer-Policy', 'no-referrer"), 'Worker must prevent referrer leakage');
+assert(worker.includes("X-Content-Type-Options', 'nosniff"), 'Worker must set nosniff');
 
 /* --- OAuth kapsamı yalnızca drive.file (non-sensitive) — göç garantisi --- */
 assert(google.includes('drive.file'), 'OAuth must use the drive.file scope');
