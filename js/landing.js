@@ -66,6 +66,8 @@
   var hint   = $('.lp-scroll-hint');
   var pols   = $$('.lp-pol', stage);
   var steps  = $$('.lp-step');
+  /* Adım kartları yalnız ≥861px'te sticky yığın (CSS ile aynı kırılım). */
+  var stepMq = window.matchMedia('(min-width: 861px)');
 
   var ticking = false;
   /* Ölçümler önbelleğe alınır: mobilde URL çubuğu açılıp kapanınca yalnızca
@@ -129,11 +131,17 @@
         ? '0 40px 90px -40px rgba(40, 28, 14, ' + (0.55 * end) + ')' : '';
     }
 
-    /* --- Adım kartları: üstteki kart, alttaki yükselirken hafifçe küçülür --- */
-    for (var i = 0; i < steps.length - 1; i++) {
-      var nextTop = steps[i + 1].getBoundingClientRect().top;
-      var x = clamp01(1 - (nextTop - (86 + i * 30)) / (vh * 0.7));
-      steps[i].style.transform = 'scale(' + (1 - 0.055 * x) + ')';
+    /* --- Adım kartları: yalnız masaüstünde sticky yığın; üstteki kart, alttaki
+       yükselirken hafifçe küçülür. Mobilde kartlar akışta olduğundan dokunma ve
+       masaüstünden kalan scale'i temizle (aksi halde kaydırırken binme/zıplama). --- */
+    if (stepMq.matches) {
+      for (var i = 0; i < steps.length - 1; i++) {
+        var nextTop = steps[i + 1].getBoundingClientRect().top;
+        var x = clamp01(1 - (nextTop - (72 + i * 26)) / (vh * 0.7));
+        steps[i].style.transform = 'scale(' + (1 - 0.055 * x) + ')';
+      }
+    } else {
+      for (var j = 0; j < steps.length; j++) steps[j].style.transform = '';
     }
   }
 

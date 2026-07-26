@@ -347,6 +347,23 @@ body.lp { line-height: 1.6; }
   .lp-step { grid-template-columns: 1fr; min-height: 0; }
   .lp-step-shot { order: 2; padding-top: 0; }
 }
+/* Masaüstü sticky yığın: her kart, sticky penceresine (100vh - top) sığmalı.
+   Uzun portre ekran görüntüleri kartı viewport'tan uzun yapıp "önce kay, sonra
+   yapış" davranışıyla üst üste binmeye yol açıyordu; kartı ve görseli sınırlıyoruz.
+   transform-origin:top → JS scale'i 30px'lik "peek" hizasını bozmasın. */
+@media (min-width: 861px) {
+  .lp-step {
+    top: calc(72px + var(--i) * 26px);
+    min-height: min(66vh, 520px);
+    transform-origin: top center;
+  }
+  .lp-step-shot { align-items: center; }
+  .lp-step-shot img {
+    max-height: calc(min(66vh, 520px) - 2 * clamp(20px, 3vw, 44px));
+    width: auto;
+    max-width: 100%;
+  }
+}
 
 /* =========================================================================
    Canlı Sunum sahnesi (koyu bölüm + gerçek demo)
@@ -497,7 +514,9 @@ body.lp { line-height: 1.6; }
   gap: clamp(28px, 5vw, 72px);
   align-items: center;
 }
-.lp-invite-visual { position: relative; min-height: 420px; }
+/* min-height genişliğe bağlı: 861–1024px arası daralan sütunda döndürülmüş
+   .card-shot konteynerden taşıp gövdeye/zarfa binmesin. */
+.lp-invite-visual { position: relative; min-height: clamp(470px, 42vw, 560px); }
 .lp-invite-visual img { height: auto; }
 .lp-invite-visual .card-shot {
   width: min(340px, 78%);
@@ -758,6 +777,18 @@ body.lp { line-height: 1.6; }
   .lp-theme-chip { padding-left: 14px; padding-right: 14px; }
 }
 
+/* Kısa/yatay ekran (ör. yatay telefon): dikey alan az; metni yukarı çek,
+   dekoratif telefon ve kaydır ipucunu gizle ki fazlar telefon/polaroidlerle
+   üst üste binmesin. */
+@media (max-height: 560px) and (min-width: 641px) {
+  .lp-hero-copy { top: 7vh; }
+  .lp-phone-wrap { display: none; }
+  .lp-scroll-hint { display: none; }
+  /* Üstteki iki polaroid, alçak ekranda başlık bandına giriyor — gizle. */
+  .lp-hero-stage .lp-pol:nth-of-type(1),
+  .lp-hero-stage .lp-pol:nth-of-type(2) { display: none; }
+}
+
 /* =========================================================================
    Hareket azaltma + JS'siz durum
    ========================================================================= */
@@ -769,6 +800,12 @@ body.lp { line-height: 1.6; }
   .lp-menu { transition: none; }
   .lp-ko video { display: none; }
   .lp-acc-item, .lp-acc-item img, .lp-acc-label p { transition: none; }
+  /* update() reduced-motion'da çağrılmadığı için phase-2 opacity:0'da kalıp ana
+     CTA görünmez oluyordu; no-JS ile aynı statik durumu uygula. `.js .lp-phase-2`
+     (satır 261) daha yüksek özgüllükte olduğundan burada da `html.js` ile eşit/üstün
+     özgüllük gerekiyor. */
+  html.js .lp-phase-1 { display: none; }
+  html.js .lp-phase-2 { position: static; opacity: 1; }
 }
 /* JS yoksa: her iki hero fazı yerine yalnızca ikincisi, statik */
 html:not(.js) .lp-phase-1 { display: none; }
