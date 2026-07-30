@@ -6,9 +6,11 @@ let failures = [];
 const ok = (c, l) => { console.log((c ? '  ✓ ' : '  ✗ ') + l); if (!c) failures.push(l); };
 
 (async () => {
-  const browser = await chromium.launch({ channel: 'chrome' });
+  // --enable-unsafe-swiftshader: GPU'suz makinelerde yazılımsal WebGL açılsın,
+  // yoksa hero3d sessizce statik fallback'e düşer ve aşağıdaki testler patlar.
+  const browser = await chromium.launch({ channel: 'chrome', args: ['--enable-unsafe-swiftshader'] });
 
-  /* ---- 1) Masaüstü: hero, nav, marquee, reveal, demo, tema ---- */
+  /* ---- 1) Masaüstü: hero (3D sahne), nav, reveal, demo, tema ---- */
   const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   const p = await ctx.newPage();
   p.on('pageerror', e => failures.push('pageerror: ' + e.message));
@@ -33,8 +35,26 @@ const ok = (c, l) => { console.log((c ? '  ✓ ' : '  ✗ ') + l); if (!c) failu
   ok(imgs.every(i => i.alt), 'tüm görsellerde alt niteliği');
   ok(imgs.every(i => i.w), 'tüm görsellerde width/height');
 
-  // Marquee: kusursuz döngü için içerik ikilendi (8 orijinal → 16)
-  ok(await p.locator('.lp-marquee-track .lp-mq').count() === 16, 'marquee: içerik ikilendi (16 kare)');
+  // Hero: three.js sahnesi kuruldu
+  ok(await p.locator('.lp-hero3d-canvas').count() === 1, 'hero3d: canvas eklendi');
+  ok(await p.evaluate(() => document.documentElement.classList.contains('hero3d-on')), 'hero3d: etkin');
+  ok(await p.getAttribute('.lp-hero3d', 'data-hero-stage') === '0', 'hero3d: 0. aşamada başlar');
+
+  // Kaydırdıkça aşamalar ilerler ve koyu sahneye geçilir
+  await p.evaluate(() => window.scrollTo(0, window.innerHeight * 1.6));
+  await p.waitForTimeout(700);
+  ok(Number(await p.getAttribute('.lp-hero3d', 'data-hero-stage')) >= 1, 'hero3d: aşama ilerledi');
+  await p.evaluate(() => window.scrollTo(0, window.innerHeight * 3.1));
+  await p.waitForTimeout(700);
+  ok(await p.getAttribute('.lp-hero3d', 'data-hero-stage') === '3', 'hero3d: koyu aşamaya geçti');
+  await p.screenshot({ path: 'shots/lp-hero3d-dark.png' });
+
+  // Hero geçilince kare döngüsü durur (pil/CPU)
+  await p.locator('#fiyat').scrollIntoViewIfNeeded();
+  await p.waitForTimeout(500);
+  ok(await p.evaluate(() => window.__hero3d && window.__hero3d.running === false), 'hero3d: ekran dışında durdu');
+  await p.evaluate(() => window.scrollTo(0, 0));
+  await p.waitForTimeout(400);
 
   // Kaydır: nav blur hap + reveal blokları açılıyor
   await p.evaluate(() => window.scrollTo(0, 700));
@@ -95,6 +115,7 @@ const ok = (c, l) => { console.log((c ? '  ✓ ' : '  ✗ ') + l); if (!c) failu
   await m.waitForTimeout(1000);
   ok(await m.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), 'mobil: yatay taşma yok');
   ok(await m.locator('#lpMenuBtn').isVisible(), 'mobil: menü butonu görünür');
+  ok(!(await m.evaluate(() => document.documentElement.classList.contains('hero3d-on'))), 'mobil: statik hero (3D yok)');
   await m.click('#lpMenuBtn');
   await m.waitForTimeout(700);
   ok(await m.locator('#lpMenu').evaluate(el => el.classList.contains('open')), 'mobil: menü açıldı');
@@ -111,7 +132,8 @@ const ok = (c, l) => { console.log((c ? '  ✓ ' : '  ✗ ') + l); if (!c) failu
   await r.waitForTimeout(900);
   ok(await r.locator('.lp-h1').isVisible(), 'rm: hero başlığı statik görünür');
   ok(await r.locator('.rv').first().evaluate(el => el.classList.contains('in')), 'rm: rv blokları açık');
-  ok((await r.locator('.lp-marquee-track').evaluate(el => getComputedStyle(el).animationName)) === 'none', 'rm: marquee durdu');
+  ok(await r.locator('.lp-hero3d-canvas').count() === 0, 'rm: 3D hero kurulmadı');
+  ok(await r.locator('.lp-hero-art').isVisible(), 'rm: statik kolaj görünür');
   await r.locator('#canli-sunum').scrollIntoViewIfNeeded();
   await r.waitForTimeout(500);
   ok(await r.locator('#lpTv img').isVisible(), 'rm: TV poster görselde kaldı');

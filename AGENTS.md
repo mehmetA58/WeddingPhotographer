@@ -17,6 +17,10 @@ Cloudflare Worker backend (static assets + same-origin `/api/*` router).
   - `i18n.js` for Turkish/English copy
   - `events.js` for supported event types
   - `qrcode.min.js` vendored QR library
+  - `hero3d.js` the landing hero's three.js scroll scene — the one ES module on
+    the site, injected by `landing.js` only when WebGL is available, the viewport
+    is ≥768px and reduced motion is off; otherwise the static hero stays
+  - `vendor/three.module.min.js` + `vendor/three.core.min.js` vendored three.js
 - `worker.js` is the Worker entry point: routes `/api/*` to the handlers below and
   serves everything else via the static-assets binding (`env.ASSETS`).
 - `functions/api/` holds the backend handlers (Pages-Functions signature
@@ -62,6 +66,9 @@ cd tests && node e2e.js             # + notetest/tasktest/verifytest/slidetest/m
 ## Coding Style & Naming Conventions
 
 Browser code (`js/`) is ES5-compatible vanilla JS (runs on mobile browsers).
+The sole exception is `js/hero3d.js`, an ES module loaded behind a capability
+check — keep the modern syntax there, and keep `landing.js` free of `import()`
+so old engines can still parse it.
 Backend code (`functions/`) is modern ES modules on the Cloudflare Workers
 runtime — no Node.js APIs. Two-space indentation in HTML/CSS/JS. Prefer clear
 IDs and camelCase variables, e.g. `eventTitleEl`, `currentGallery`. Keep

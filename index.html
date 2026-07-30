@@ -111,35 +111,97 @@
     <a href="setup.html">Albüm Oluştur →</a>
   </div>
 
-  <!-- ==================== HERO ==================== -->
-  <header class="lp-hero" id="top">
-    <div class="lp-wrap lp-hero-grid">
-      <div class="lp-hero-copy">
-        <p class="lp-kicker">QR ile ortak etkinlik albümü</p>
-        <h1 class="lp-h1">Anılar <em>birlikte</em> birikir.</h1>
-        <p class="lp-lead">Misafirlerin çektiği her kare — üyeliksiz, uygulamasız —
-          saniyeler içinde senin albümünde ve mekandaki ekranda canlı döner.</p>
-        <div class="lp-cta-row">
-          <a class="lp-btn lp-btn-gold" href="setup.html">Ücretsiz Albüm Oluştur <span class="arr">→</span></a>
-          <a class="lp-btn lp-btn-line" href="#canli-sunum">Canlı Demoyu Gör</a>
-        </div>
-        <p class="lp-hero-note">Üyelik yok · Uygulama yok · Fotoğraflar yalnızca senin Google Drive'ında</p>
+  <!-- ==================== HERO (three.js pinned scrollytelling) ====================
+       Zenginleştirilmemiş halde bu blok bugünkü iki sütunlu hero'dur; hero3d.js
+       yüklenirse <html> üzerine .hero3d-on gelir ve bölüm 500vh'lik pinned
+       sahneye dönüşür. Fallback DOM'u (.lp-hero-art) yerinde kalır.
+       ============================================================================ -->
+  <header class="lp-hero3d" id="top" data-hero-stage="0">
+    <div class="lp-hero3d-sticky">
+
+      <!-- z:0 — kartların arkasından geçen dev tipografi -->
+      <div class="lp-hero3d-back" aria-hidden="true">
+        <span data-bg-stage="0">ANILAR</span>
+        <span data-bg-stage="1">BİRLİKTE</span>
+        <span data-bg-stage="2">TEK KARE</span>
+        <span data-bg-stage="3">CANLI</span>
+        <span data-bg-stage="4">ALBÜM</span>
       </div>
 
-      <div class="lp-hero-art" aria-hidden="true">
-        <figure class="lp-photo lp-photo-a" style="--r:-5deg">
-          <span class="stamp"><img src="assets/demo/gun-batimi.svg" alt="" width="800" height="600" fetchpriority="high" /></span>
-          <figcaption>Deniz</figcaption>
-        </figure>
-        <figure class="lp-photo lp-photo-b" style="--r:4deg">
-          <span class="stamp"><img src="assets/demo/dans-pisti.svg" alt="" width="800" height="600" /></span>
-          <figcaption>Ayşe Teyze</figcaption>
-        </figure>
-        <figure class="lp-photo lp-photo-c" style="--r:-3deg">
-          <span class="stamp"><img src="assets/demo/pasta.svg" alt="" width="800" height="600" /></span>
-          <figcaption>Zeynep</figcaption>
-        </figure>
-        <span class="lp-hand-note">senin albümün ↗</span>
+      <!-- z:1 — canvas hero3d.js tarafından buraya eklenir -->
+
+      <!-- z:2 — gerçek metin ve butonlar -->
+      <div class="lp-hero3d-front">
+        <div class="lp-wrap lp-hero3d-grid">
+          <div class="lp-hero3d-copy">
+
+            <div class="lp-hero3d-stage lp-hero3d-stage-0">
+              <p class="lp-kicker">QR ile ortak etkinlik albümü</p>
+              <h1 class="lp-h1">Anılar <em>birlikte</em> birikir.</h1>
+              <p class="lp-lead">Misafirlerin çektiği her kare — üyeliksiz, uygulamasız —
+                saniyeler içinde senin albümünde ve mekandaki ekranda canlı döner.</p>
+              <div class="lp-cta-row">
+                <a class="lp-btn lp-btn-gold" href="setup.html">Ücretsiz Albüm Oluştur <span class="arr">→</span></a>
+                <a class="lp-btn lp-btn-line" href="#canli-sunum">Canlı Demoyu Gör</a>
+              </div>
+              <p class="lp-hero-note">Üyelik yok · Uygulama yok · Fotoğraflar yalnızca senin Google Drive'ında</p>
+            </div>
+
+            <div class="lp-hero3d-stage lp-hero3d-stage-1" aria-hidden="true">
+              <p class="lp-kicker">Misafir akışı</p>
+              <h2 class="lp-hero3d-h2">Her misafir bir kare bırakır.</h2>
+              <p class="lp-lead">QR'ı okutur, fotoğrafını seçer, gönderir. Kareler tek tek
+                senin albümünde birikir.</p>
+            </div>
+
+            <div class="lp-hero3d-stage lp-hero3d-stage-2" aria-hidden="true">
+              <p class="lp-kicker">Anı Defteri &amp; görevler</p>
+              <h2 class="lp-hero3d-h2">En güzel an, anında öne çıkar.</h2>
+              <p class="lp-lead">"Dans pistinden bir kare" gibi görevler, misafir adları ve
+                el yazısı notlar her fotoğrafın yanında durur.</p>
+            </div>
+
+            <div class="lp-hero3d-stage lp-hero3d-stage-3" aria-hidden="true">
+              <p class="lp-kicker">Canlı sunum</p>
+              <h2 class="lp-hero3d-h2">Salondaki ekranda canlı.</h2>
+              <p class="lp-lead">Yüklenen her kare, masaya bırakılan bir polaroid gibi
+                mekandaki televizyonda belirir.</p>
+              <div class="lp-cta-row">
+                <a class="lp-btn lp-btn-line" href="#canli-sunum">Canlı Demoyu Gör</a>
+              </div>
+            </div>
+
+            <div class="lp-hero3d-stage lp-hero3d-stage-4" aria-hidden="true">
+              <p class="lp-kicker">Etkinlik sonrası</p>
+              <h2 class="lp-hero3d-h2">Albümün seni bekliyor.</h2>
+              <p class="lp-lead">Tüm kareler kendi Google Drive'ında; tek link, tek klasör,
+                aracı sunucu yok.</p>
+              <div class="lp-cta-row">
+                <a class="lp-btn lp-btn-gold" href="setup.html">Ücretsiz Albüm Oluştur <span class="arr">→</span></a>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Zenginleştirilmemiş hal: bugünkü pul çerçeveli kolaj -->
+          <div class="lp-hero-art" aria-hidden="true">
+            <figure class="lp-photo lp-photo-a" style="--r:-5deg">
+              <span class="stamp"><img src="assets/demo/gun-batimi.svg" alt="" width="800" height="600" fetchpriority="high" /></span>
+              <figcaption>Deniz</figcaption>
+            </figure>
+            <figure class="lp-photo lp-photo-b" style="--r:4deg">
+              <span class="stamp"><img src="assets/demo/dans-pisti.svg" alt="" width="800" height="600" /></span>
+              <figcaption>Ayşe Teyze</figcaption>
+            </figure>
+            <figure class="lp-photo lp-photo-c" style="--r:-3deg">
+              <span class="stamp"><img src="assets/demo/pasta.svg" alt="" width="800" height="600" /></span>
+              <figcaption>Zeynep</figcaption>
+            </figure>
+            <span class="lp-hand-note">senin albümün ↗</span>
+          </div>
+        </div>
+
+        <p class="lp-hero3d-hint" aria-hidden="true">Kaydır <span>↓</span> &nbsp;·&nbsp; Kartları sürükle <span>↔</span></p>
       </div>
     </div>
   </header>
@@ -156,22 +218,6 @@
           <li><span class="lp-strip-no">03</span> Ekranda gör</li>
           <li class="lp-strip-tag">Üyelik yok · uygulama yok</li>
         </ul>
-      </div>
-    </section>
-
-    <!-- ==================== KAYAN FOTO ŞERİDİ ==================== -->
-    <section class="lp-marquee-sec" aria-label="Etkinlik kareleri">
-      <div class="lp-marquee" id="lpMarquee">
-        <div class="lp-marquee-track">
-          <figure class="lp-mq" style="--r:-4deg"><span class="stamp"><img src="assets/demo/gun-batimi.svg" alt="" width="800" height="600" loading="lazy" /></span></figure>
-          <figure class="lp-mq" style="--r:3deg"><span class="stamp"><img src="assets/demo/dans-pisti.svg" alt="" width="800" height="600" loading="lazy" /></span></figure>
-          <figure class="lp-mq" style="--r:-2deg"><span class="stamp"><img src="assets/demo/pasta.svg" alt="" width="800" height="600" loading="lazy" /></span></figure>
-          <figure class="lp-mq" style="--r:5deg"><span class="stamp"><img src="assets/demo/kadeh.svg" alt="" width="800" height="600" loading="lazy" /></span></figure>
-          <figure class="lp-mq" style="--r:-3deg"><span class="stamp"><img src="assets/demo/manzara.svg" alt="" width="800" height="600" loading="lazy" /></span></figure>
-          <figure class="lp-mq" style="--r:4deg"><span class="stamp"><img src="assets/demo/isiklar.svg" alt="" width="800" height="600" loading="lazy" /></span></figure>
-          <figure class="lp-mq" style="--r:-5deg"><span class="stamp"><img src="assets/demo/konfeti.svg" alt="" width="800" height="600" loading="lazy" /></span></figure>
-          <figure class="lp-mq" style="--r:2deg"><span class="stamp"><img src="assets/demo/sahil.svg" alt="" width="800" height="600" loading="lazy" /></span></figure>
-        </div>
       </div>
     </section>
 

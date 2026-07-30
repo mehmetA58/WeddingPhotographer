@@ -2,11 +2,11 @@
    landing.js — EventPhoto tanıtım sayfası etkileşimleri
    - Nav kaydırma durumu + mobil menü
    - Kayarken beliren bloklar (.rv)
-   - Kayan foto şeridi (marquee) — kusursuz döngü için içerik ikilenir
    - Konsept şeridi: data-event ile sayfanın kendisi palete boyanır
    - TV mockup'ına canlı demo iframe'inin tembel yüklenmesi
    - Footer videosu ekran dışındayken durur
-   prefers-reduced-motion: marquee durur, reveal anında görünür.
+   - hero3d.js'in koşullu yüklenmesi (WebGL + ≥768px + hareket azaltma yok)
+   prefers-reduced-motion: 3D hero kurulmaz, reveal anında görünür.
    ========================================================================= */
 
 (function () {
@@ -55,19 +55,6 @@
       });
     }, { threshold: 0.12 });
     rvs.forEach(function (el) { io.observe(el); });
-  }
-
-  /* =====================================================================
-     Marquee: içerik ikilenir → -50% animasyonu kusursuz döner
-     ===================================================================== */
-  var track = $('.lp-marquee-track');
-  if (track && !reduce) {
-    var originals = $$('.lp-mq', track);
-    originals.forEach(function (fig) {
-      var clone = fig.cloneNode(true);
-      clone.setAttribute('aria-hidden', 'true');
-      track.appendChild(clone);
-    });
   }
 
   /* =====================================================================
@@ -121,5 +108,29 @@
       });
     }, { threshold: 0.05 });
     vIo.observe(koVideo);
+  }
+
+  /* =====================================================================
+     Hero: three.js sahnesi yalnızca desteklenen ortamda yüklenir.
+     Modül olarak enjekte edilir; type="module" tanımayan tarayıcı etiketi
+     yok sayar ve statik hero olduğu gibi kalır. import() sözdizimi burada
+     KULLANILMAZ — eski motorlarda bu dosyanın tamamını parse hatasına
+     düşürürdü.
+     ===================================================================== */
+  function hasWebGL() {
+    try {
+      var c = document.createElement('canvas');
+      return !!(c.getContext('webgl2') || c.getContext('webgl'));
+    } catch (e) { return false; }
+  }
+  var wide = true;
+  try { wide = window.matchMedia('(min-width: 768px)').matches; } catch (e) {}
+
+  if (!reduce && wide && 'IntersectionObserver' in window && hasWebGL()) {
+    var mod = document.createElement('script');
+    mod.type = 'module';
+    mod.src = 'js/hero3d.js';
+    mod.onerror = function () {};
+    document.head.appendChild(mod);
   }
 })();

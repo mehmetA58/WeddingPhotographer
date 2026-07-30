@@ -71,8 +71,7 @@ body.lp { line-height: 1.6; background: var(--cream); }
 /* Landing'in büyük foto kolajı: temiz beyaz "kartpostal" çerçevesi.
    (style.css'teki .stamp maskesi bu boyutta tüm kareyi delerek halftone
    görüntüsü verdiğinden burada maske kapatılır; perfore pul app'te kalır.) */
-.lp-photo .stamp,
-.lp-mq .stamp {
+.lp-photo .stamp {
   display: block;
   -webkit-mask: none;
   mask: none;
@@ -81,8 +80,7 @@ body.lp { line-height: 1.6; background: var(--cream); }
   border-radius: 4px;
   box-shadow: inset 0 0 0 1px rgba(55, 43, 30, .06);
 }
-.lp-photo .stamp img,
-.lp-mq .stamp img { display: block; width: 100%; height: auto; border-radius: 2px; }
+.lp-photo .stamp img { display: block; width: 100%; height: auto; border-radius: 2px; }
 
 /* =========================================================================
    Sayfa başı airmail şeridi
@@ -195,18 +193,37 @@ body.lp { line-height: 1.6; background: var(--cream); }
 
 /* =========================================================================
    Hero — sakin, foto-ağırlıklı (evently düzeni + pul çerçeveli kolaj)
+   Bu blok hero'nun ZENGİNLEŞTİRİLMEMİŞ halidir: JS yoksa, WebGL yoksa,
+   hareket azaltmadaysa veya <768px ise görünen budur. hero3d.js başarıyla
+   kurulursa <html>'e .hero3d-on gelir ve aşağıdaki pinned blok devralır.
    ========================================================================= */
-.lp-hero {
+.lp-hero3d {
   padding: clamp(112px, 17vh, 168px) 0 clamp(56px, 9vh, 96px);
   background:
     radial-gradient(120% 80% at 78% 0%, var(--gold-bg), transparent 60%),
     linear-gradient(180deg, var(--surface), var(--cream));
 }
-.lp-hero-grid {
+.lp-hero3d-grid {
   display: grid;
   grid-template-columns: 1.05fr .95fr;
   align-items: center;
   gap: clamp(28px, 5vw, 64px);
+}
+/* Zenginleştirilmemiş halde yalnızca ilk aşama ve kolaj görünür */
+.lp-hero3d-back,
+.lp-hero3d-hint,
+.lp-hero3d-stage-1,
+.lp-hero3d-stage-2,
+.lp-hero3d-stage-3,
+.lp-hero3d-stage-4 { display: none; }
+.lp-hero3d-h2 {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: clamp(38px, 5.4vw, 68px);
+  line-height: 1.04;
+  letter-spacing: -.02em;
+  color: var(--ink);
+  margin: 0;
 }
 .lp-h1 {
   font-family: var(--serif);
@@ -266,6 +283,166 @@ body.lp { line-height: 1.6; background: var(--cream); }
 }
 
 /* =========================================================================
+   Hero — three.js pinned sahnesi (yalnızca .hero3d-on)
+   500vh'lik bölüm, içinde tek ekranlık sticky sahne. Katmanlar:
+     z0 .lp-hero3d-back   — kartların ARKASINDAN geçen dev tipografi
+     z1 canvas            — şeffaf zeminli WebGL (hero3d.js ekler)
+     z2 .lp-hero3d-front  — gerçek metin + tıklanabilir butonlar
+   Aşama koreografisi CSS'te: JS yalnızca [data-hero-stage] değerini yazar.
+   ========================================================================= */
+.hero3d-on .lp-hero3d {
+  height: 500vh;
+  padding: 0;
+  background: none;
+}
+.hero3d-on .lp-hero3d-sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
+  background: var(--cream);
+  transition: background-color .45s linear;
+}
+.hero3d-on .lp-hero-art { display: none; }
+/* Metin üstte hizalanır; kart bandı alt yarıdan geçer.
+   Flex sütununda .lp-wrap kendi içeriğine büzüşür; tam genişlik vererek
+   metin sütununu sayfanın sol kenarına sabitliyoruz. */
+.hero3d-on .lp-hero3d-front > .lp-wrap { width: 100%; }
+.hero3d-on .lp-hero3d-grid {
+  grid-template-columns: minmax(0, 640px) 1fr;
+  height: 100%;
+  align-content: start;
+  padding-top: clamp(84px, 11vh, 132px);
+}
+.hero3d-on .lp-hero3d-copy {
+  position: relative;
+  display: grid;
+}
+.hero3d-on .lp-hero3d-copy .lp-lead { max-width: 38ch; }
+
+/* Katman 0: dev tipografi */
+.hero3d-on .lp-hero3d-back {
+  display: block;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+.hero3d-on .lp-hero3d-back span {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) scale(1.06);
+  white-space: nowrap;
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: clamp(120px, 19vw, 300px);
+  line-height: 1;
+  letter-spacing: -.04em;
+  color: var(--cream-2);
+  opacity: 0;
+  transition: opacity .5s ease, transform .7s cubic-bezier(.2, .8, .3, 1);
+}
+.hero3d-on .lp-hero3d[data-hero-stage="0"] [data-bg-stage="0"],
+.hero3d-on .lp-hero3d[data-hero-stage="1"] [data-bg-stage="1"],
+.hero3d-on .lp-hero3d[data-hero-stage="2"] [data-bg-stage="2"],
+.hero3d-on .lp-hero3d[data-hero-stage="3"] [data-bg-stage="3"],
+.hero3d-on .lp-hero3d[data-hero-stage="4"] [data-bg-stage="4"] {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+/* Katman 1: canvas */
+.hero3d-on .lp-hero3d-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: pan-y;
+  cursor: grab;
+}
+.hero3d-on .lp-hero3d-canvas.is-dragging { cursor: grabbing; }
+
+/* Katman 2: metin — yalnızca etkileşimli öğeler tıklanabilir */
+.hero3d-on .lp-hero3d-front {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  pointer-events: none;
+}
+.hero3d-on .lp-hero3d-front a,
+.hero3d-on .lp-hero3d-front button { pointer-events: auto; }
+
+/* Aşama panelleri üst üste yığılır, aktif olan belirir */
+.hero3d-on .lp-hero3d-stage {
+  grid-area: 1 / 1;
+  display: block;
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity .45s ease, transform .55s cubic-bezier(.2, .8, .3, 1);
+  visibility: hidden;
+}
+.hero3d-on .lp-hero3d[data-hero-stage="0"] .lp-hero3d-stage-0,
+.hero3d-on .lp-hero3d[data-hero-stage="1"] .lp-hero3d-stage-1,
+.hero3d-on .lp-hero3d[data-hero-stage="2"] .lp-hero3d-stage-2,
+.hero3d-on .lp-hero3d[data-hero-stage="3"] .lp-hero3d-stage-3,
+.hero3d-on .lp-hero3d[data-hero-stage="4"] .lp-hero3d-stage-4 {
+  opacity: 1;
+  transform: none;
+  visibility: visible;
+}
+
+/* Koyu zemin: metin kreme döner. [data-hero-dark] hero3d.js tarafından
+   zeminin ölçülen parlaklığına göre konur — aşama sınırında değil, renk
+   geçişinin tam ortasında devreye girer. */
+.hero3d-on .lp-hero3d[data-hero-dark] .lp-h1,
+.hero3d-on .lp-hero3d[data-hero-dark] .lp-hero3d-h2 { color: var(--surface); }
+.hero3d-on .lp-hero3d[data-hero-dark] .lp-lead,
+.hero3d-on .lp-hero3d[data-hero-dark] .lp-hero-note { color: #C9C1B2; }
+.hero3d-on .lp-hero3d[data-hero-dark] .lp-kicker { color: var(--gold-light); }
+.hero3d-on .lp-hero3d[data-hero-dark] .lp-hero3d-back span { color: rgba(255, 253, 247, .07); }
+.hero3d-on .lp-hero3d[data-hero-dark] .lp-btn-line {
+  color: var(--surface);
+  border-color: rgba(255, 253, 247, .45);
+  background: rgba(255, 253, 247, .08);
+}
+.hero3d-on .lp-hero3d .lp-h1,
+.hero3d-on .lp-hero3d .lp-hero3d-h2,
+.hero3d-on .lp-hero3d .lp-lead,
+.hero3d-on .lp-hero3d .lp-hero-note,
+.hero3d-on .lp-hero3d .lp-kicker,
+.hero3d-on .lp-hero3d .lp-btn-line { transition: color .35s linear, border-color .35s linear, background-color .35s linear; }
+
+/* Kaydırma / sürükleme ipucu */
+.hero3d-on .lp-hero3d-hint {
+  display: block;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: clamp(18px, 4vh, 34px);
+  margin: 0;
+  text-align: center;
+  font: 700 11.5px var(--mono);
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--muted);
+  transition: opacity .4s ease, color .4s ease;
+}
+.hero3d-on .lp-hero3d-hint span { display: inline-block; animation: lpHintNudge 2.4s ease-in-out infinite; }
+.hero3d-on .lp-hero3d[data-hero-dark] .lp-hero3d-hint { color: #8D8272; }
+.hero3d-on .lp-hero3d:not([data-hero-stage="0"]) .lp-hero3d-hint { opacity: 0; }
+@keyframes lpHintNudge {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(3px); }
+}
+
+/* =========================================================================
    Güven şeridi (dürüst akış — sahte istatistik yok)
    ========================================================================= */
 .lp-strip {
@@ -297,23 +474,6 @@ body.lp { line-height: 1.6; background: var(--cream); }
   text-transform: uppercase;
   color: var(--muted);
 }
-
-/* =========================================================================
-   Kayan foto şeridi (marquee)
-   ========================================================================= */
-.lp-marquee-sec { padding: clamp(40px, 7vh, 72px) 0; overflow: hidden; }
-.lp-marquee { overflow: hidden; -webkit-mask: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); mask: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); }
-.lp-marquee-track {
-  display: flex;
-  gap: 20px;
-  width: max-content;
-  animation: lpMarquee 46s linear infinite;
-}
-.lp-marquee:hover .lp-marquee-track { animation-play-state: paused; }
-@keyframes lpMarquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-.lp-mq { margin: 0; flex: 0 0 auto; width: clamp(150px, 18vw, 220px); transform: rotate(var(--r, 0deg)); filter: drop-shadow(0 18px 30px rgba(55, 43, 30, .22)); }
-.lp-mq img { aspect-ratio: 4 / 3; object-fit: cover; }
-html:not(.js) .lp-marquee-track { animation: none; }
 
 /* =========================================================================
    Nasıl çalışır — üç temiz kart (postmark adım numaraları)
@@ -616,7 +776,7 @@ html:not(.js) .lp-marquee-track { animation: none; }
    Responsive
    ========================================================================= */
 @media (max-width: 860px) {
-  .lp-hero-grid { grid-template-columns: 1fr; gap: 40px; }
+  .lp-hero3d-grid { grid-template-columns: 1fr; gap: 40px; }
   .lp-hero-art { min-height: 320px; max-width: 460px; }
   .lp-steps { grid-template-columns: 1fr; }
   .lp-feature, .lp-feature-cards { grid-template-columns: 1fr; }
@@ -640,7 +800,7 @@ html:not(.js) .lp-marquee-track { animation: none; }
   .lp-logo img { width: 28px; height: 28px; }
   .lp-menu { padding: calc(72px + env(safe-area-inset-top, 0px)) 7vw calc(32px + env(safe-area-inset-bottom, 0px)); }
 
-  .lp-hero { padding-top: calc(104px + env(safe-area-inset-top, 0px)); }
+  .lp-hero3d { padding-top: calc(104px + env(safe-area-inset-top, 0px)); }
   .lp-cta-row .lp-btn { width: 100%; justify-content: center; }
   .lp-hero-art { min-height: 300px; margin: 0 auto; }
 
@@ -659,13 +819,51 @@ html:not(.js) .lp-marquee-track { animation: none; }
   .lp-logo b { max-width: 128px; overflow: hidden; text-overflow: ellipsis; }
 }
 
+/* Emniyet kemeri: hero3d.js yalnızca ≥768px'te yüklenir, yine de sınıf bir
+   şekilde kalırsa (ör. yükleme sonrası pencere daralması) statik hero'ya dön. */
+@media (max-width: 767px) {
+  .hero3d-on .lp-hero3d {
+    height: auto;
+    padding: clamp(104px, 15vh, 150px) 0 clamp(48px, 8vh, 80px);
+    background:
+      radial-gradient(120% 80% at 78% 0%, var(--gold-bg), transparent 60%),
+      linear-gradient(180deg, var(--surface), var(--cream));
+  }
+  .hero3d-on .lp-hero3d-sticky { position: static; height: auto; overflow: visible; background: none; }
+  .hero3d-on .lp-hero3d-canvas,
+  .hero3d-on .lp-hero3d-back,
+  .hero3d-on .lp-hero3d-hint { display: none; }
+  .hero3d-on .lp-hero-art { display: block; }
+  .hero3d-on .lp-hero3d-front { position: static; pointer-events: auto; }
+  .hero3d-on .lp-hero3d-copy { display: block; min-height: 0; }
+  .hero3d-on .lp-hero3d-stage { display: none; }
+  .hero3d-on .lp-hero3d-stage-0 { display: block; opacity: 1; transform: none; visibility: visible; }
+}
+
 /* =========================================================================
    Hareket azaltma
    ========================================================================= */
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  .lp-marquee-track { animation: none; }
   .lp-menu { transition: none; }
   .lp-ko video { display: none; }
   .js .rv { opacity: 1; transform: none; transition: none; }
+
+  /* 3D hero hiç kurulmaz; sınıf yine de gelirse statik hero'ya dön */
+  .hero3d-on .lp-hero3d {
+    height: auto;
+    padding: clamp(112px, 17vh, 168px) 0 clamp(56px, 9vh, 96px);
+    background:
+      radial-gradient(120% 80% at 78% 0%, var(--gold-bg), transparent 60%),
+      linear-gradient(180deg, var(--surface), var(--cream));
+  }
+  .hero3d-on .lp-hero3d-sticky { position: static; height: auto; overflow: visible; background: none; }
+  .hero3d-on .lp-hero3d-canvas,
+  .hero3d-on .lp-hero3d-back,
+  .hero3d-on .lp-hero3d-hint { display: none; }
+  .hero3d-on .lp-hero-art { display: block; }
+  .hero3d-on .lp-hero3d-front { position: static; pointer-events: auto; }
+  .hero3d-on .lp-hero3d-copy { display: block; min-height: 0; }
+  .hero3d-on .lp-hero3d-stage { display: none; }
+  .hero3d-on .lp-hero3d-stage-0 { display: block; opacity: 1; transform: none; visibility: visible; }
 }
