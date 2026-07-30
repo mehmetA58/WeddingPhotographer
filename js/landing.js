@@ -5,7 +5,7 @@
    - Konsept şeridi: data-event ile sayfanın kendisi palete boyanır
    - TV mockup'ına canlı demo iframe'inin tembel yüklenmesi
    - Footer videosu ekran dışındayken durur
-   - hero3d.js'in koşullu yüklenmesi (WebGL + ≥768px + hareket azaltma yok)
+   - hero3d.js'in koşullu yüklenmesi (WebGL + yeterli bellek + hareket azaltma yok)
    prefers-reduced-motion: 3D hero kurulmaz, reveal anında görünür.
    ========================================================================= */
 
@@ -123,10 +123,11 @@
       return !!(c.getContext('webgl2') || c.getContext('webgl'));
     } catch (e) { return false; }
   }
-  var wide = true;
-  try { wide = window.matchMedia('(min-width: 768px)').matches; } catch (e) {}
+  /* Sahne mobilde de çalışır; yalnızca belleği çok kısıtlı cihazlarda
+     (≤1GB) statik hero'da kalınır. */
+  var roomy = !(navigator.deviceMemory && navigator.deviceMemory <= 1);
 
-  if (!reduce && wide && 'IntersectionObserver' in window && hasWebGL()) {
+  if (!reduce && roomy && 'IntersectionObserver' in window && hasWebGL()) {
     var mod = document.createElement('script');
     mod.type = 'module';
     mod.src = 'js/hero3d.js';

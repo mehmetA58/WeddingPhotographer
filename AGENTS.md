@@ -18,8 +18,11 @@ Cloudflare Worker backend (static assets + same-origin `/api/*` router).
   - `events.js` for supported event types
   - `qrcode.min.js` vendored QR library
   - `hero3d.js` the landing hero's three.js scroll scene — the one ES module on
-    the site, injected by `landing.js` only when WebGL is available, the viewport
-    is ≥768px and reduced motion is off; otherwise the static hero stays
+    the site, injected by `landing.js` when WebGL is available, the device has
+    more than 1GB of memory and reduced motion is off; otherwise the static hero
+    stays. It runs on mobile too: the scene reads `camera.aspect` and switches to
+    a narrow-viewport composition (single text column, lower card band, centred
+    focus card)
   - `vendor/three.module.min.js` + `vendor/three.core.min.js` vendored three.js
 - `worker.js` is the Worker entry point: routes `/api/*` to the handlers below and
   serves everything else via the static-assets binding (`env.ASSETS`).

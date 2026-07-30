@@ -115,7 +115,14 @@ const ok = (c, l) => { console.log((c ? '  ✓ ' : '  ✗ ') + l); if (!c) failu
   await m.waitForTimeout(1000);
   ok(await m.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), 'mobil: yatay taşma yok');
   ok(await m.locator('#lpMenuBtn').isVisible(), 'mobil: menü butonu görünür');
-  ok(!(await m.evaluate(() => document.documentElement.classList.contains('hero3d-on'))), 'mobil: statik hero (3D yok)');
+  ok(await m.evaluate(() => document.documentElement.classList.contains('hero3d-on')), 'mobil: 3D hero etkin');
+  ok(await m.locator('.lp-hero3d-canvas').count() === 1, 'mobil: canvas eklendi');
+  await m.evaluate(() => window.scrollTo(0, window.innerHeight * 3.1));
+  await m.waitForTimeout(700);
+  ok(await m.getAttribute('.lp-hero3d', 'data-hero-stage') === '3', 'mobil: aşamalar ilerliyor');
+  await m.screenshot({ path: 'shots/lp-mobile-hero3d.png' });
+  await m.evaluate(() => window.scrollTo(0, 0));
+  await m.waitForTimeout(400);
   await m.click('#lpMenuBtn');
   await m.waitForTimeout(700);
   ok(await m.locator('#lpMenu').evaluate(el => el.classList.contains('open')), 'mobil: menü açıldı');

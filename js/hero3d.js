@@ -125,8 +125,15 @@ function paintPolaroid(img, caption, paper, inkSoft) {
    ------------------------------------------------------------------------- */
 /* half = sıranın z=0 düzlemindeki yarı genişliği (world birimi).
    Kart grubu layout() içinde dikeyde aşağı kaydırıldığından, öne çıkan kartın
-   y değerleri bu kaydırmayı geri alarak kartı ekran ortasına taşır. */
-function buildKeyframes(count, half, lift) {
+   y değerleri bu kaydırmayı geri alarak kartı ekran ortasına taşır.
+   narrow (dikey/dar viewport): öne çıkan kart ortalanır ve biraz küçülür —
+   yanlara kaçarsa ekrandan taşar, tam ortaya gelirse metnin altına girer. */
+function buildKeyframes(count, half, lift, narrow) {
+  const heroX2 = narrow ? 0 : 0.30;
+  const heroX3 = narrow ? 0 : 0.36;
+  const heroY = narrow ? lift * 0.5 : lift;
+  const heroS2 = narrow ? 1.1 : 1.5;
+  const heroS3 = narrow ? 1.15 : 1.75;
   const frames = [];
   for (let i = 0; i < count; i++) {
     const t = count === 1 ? 0.5 : i / (count - 1);
@@ -158,23 +165,23 @@ function buildKeyframes(count, half, lift) {
       },
       /* 2 — orta kart öne çıkar, diğerleri düzgün sırada geriler */
       {
-        x: isHero ? half * 0.30 : centered * half * 2.15,
-        y: isHero ? lift : lift * 0.72,
+        x: isHero ? half * heroX2 : centered * half * 2.15,
+        y: isHero ? heroY : lift * 0.72,
         z: isHero ? 2.4 : -1.0 - away * 0.15,
         rx: 0,
         ry: isHero ? rad(-8) : rad(-centered * 16),
         rz: isHero ? 0 : rad(side * 3),
-        s: isHero ? 1.5 : 0.9
+        s: isHero ? heroS2 : 0.9
       },
-      /* 3 — koyu zemin, tek kart sağda baskın ve dönüyor */
+      /* 3 — koyu zemin, tek kart baskın ve dönüyor */
       {
-        x: isHero ? half * 0.36 : centered * half * 2.7,
-        y: isHero ? lift : lift * 0.72,
+        x: isHero ? half * heroX3 : centered * half * 2.7,
+        y: isHero ? heroY : lift * 0.72,
         z: isHero ? 3.1 : -1.4,
         rx: 0,
         ry: isHero ? rad(-18) : rad(-centered * 12),
         rz: 0,
-        s: isHero ? 1.75 : 0.85
+        s: isHero ? heroS3 : 0.85
       },
       /* 4 — sıra geri gelir, hafif yukarı süzülür */
       {
@@ -277,15 +284,18 @@ async function init() {
     /* Kart aralığı, kamera düzlemindeki görünür genişlikten türetilir */
     const visibleH = 2 * Math.tan(rad(camera.fov) / 2) * camera.position.z;
     const visibleW = visibleH * camera.aspect;
-    /* CARD_W kadar pay bırakılır ki kenardaki kartlar kırpılmasın */
+    /* CARD_W kadar pay bırakılır ki geniş ekranda kenardaki kartlar
+       kırpılmasın; dar ekranda alt sınır devreye girer ve bant taşar. */
     const perCard = clamp((visibleW - CARD_W) / (PHOTOS.length - 1), 0.72, 1.3);
     const half = (perCard * (PHOTOS.length - 1)) / 2;
 
     /* Sıra alt yarıya iner; metin bloğu üstte kalır, yalnızca başlığın
-       alt satırı kartların arkasından geçer (videodaki bindirme). */
-    const drop = visibleH * 0.22;
+       alt satırı kartların arkasından geçer (videodaki bindirme).
+       Dikey ekranda metin daha çok yer kapladığından bant biraz daha iner. */
+    const narrow = camera.aspect < 1.15;
+    const drop = visibleH * (narrow ? 0.29 : 0.22);
     group.position.y = -drop;
-    keyframes = buildKeyframes(PHOTOS.length, half, drop);
+    keyframes = buildKeyframes(PHOTOS.length, half, drop, narrow);
   }
   layout();
 

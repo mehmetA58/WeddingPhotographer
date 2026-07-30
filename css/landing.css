@@ -819,25 +819,27 @@ body.lp { line-height: 1.6; background: var(--cream); }
   .lp-logo b { max-width: 128px; overflow: hidden; text-overflow: ellipsis; }
 }
 
-/* Emniyet kemeri: hero3d.js yalnızca ≥768px'te yüklenir, yine de sınıf bir
-   şekilde kalırsa (ör. yükleme sonrası pencere daralması) statik hero'ya dön. */
-@media (max-width: 767px) {
-  .hero3d-on .lp-hero3d {
-    height: auto;
-    padding: clamp(104px, 15vh, 150px) 0 clamp(48px, 8vh, 80px);
-    background:
-      radial-gradient(120% 80% at 78% 0%, var(--gold-bg), transparent 60%),
-      linear-gradient(180deg, var(--surface), var(--cream));
+/* Dar ekran: sahne aynen çalışır, düzen tek sütuna iner. Metin üstte,
+   kart bandı altta; bant ekranı taşar ve kenarlardan kırpılır — dar
+   viewport'ta "sıra" hissi böyle korunur. */
+@media (max-width: 860px) {
+  .hero3d-on .lp-hero3d-grid {
+    grid-template-columns: 1fr;
+    gap: 0;
+    padding-top: calc(clamp(76px, 11vh, 120px) + env(safe-area-inset-top, 0px));
   }
-  .hero3d-on .lp-hero3d-sticky { position: static; height: auto; overflow: visible; background: none; }
-  .hero3d-on .lp-hero3d-canvas,
-  .hero3d-on .lp-hero3d-back,
-  .hero3d-on .lp-hero3d-hint { display: none; }
-  .hero3d-on .lp-hero-art { display: block; }
-  .hero3d-on .lp-hero3d-front { position: static; pointer-events: auto; }
-  .hero3d-on .lp-hero3d-copy { display: block; min-height: 0; }
-  .hero3d-on .lp-hero3d-stage { display: none; }
-  .hero3d-on .lp-hero3d-stage-0 { display: block; opacity: 1; transform: none; visibility: visible; }
+  .hero3d-on .lp-hero3d-copy .lp-lead { max-width: 34ch; }
+  .hero3d-on .lp-hero3d-back span { font-size: clamp(84px, 26vw, 200px); }
+}
+
+@media (max-width: 640px) {
+  /* Mobilde CTA'lar tam genişlik; kartlarla çakışmasın diye ikincil
+     buton ve alt not yalnızca ilk aşamada, kompakt biçimde durur. */
+  .hero3d-on .lp-hero3d-grid { padding-top: calc(72px + env(safe-area-inset-top, 0px)); }
+  .hero3d-on .lp-hero3d .lp-cta-row { gap: 10px; margin-top: 22px; }
+  .hero3d-on .lp-hero3d .lp-lead { margin-top: 16px; }
+  .hero3d-on .lp-hero3d .lp-hero-note { margin-top: 14px; font-size: 12.5px; }
+  .hero3d-on .lp-hero3d-hint { bottom: calc(14px + env(safe-area-inset-bottom, 0px)); font-size: 10.5px; }
 }
 
 /* =========================================================================
